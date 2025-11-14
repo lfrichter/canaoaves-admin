@@ -1,75 +1,85 @@
-import { getDashboardStats, DashboardStats } from "@/app/actions/dashboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshButton } from "./_components/refresh-button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { getDashboardStats } from "@/app/actions/dashboard";
+import { RefreshButton } from "@/app/_components/refresh-button";
+import {
+  FileText,
+  ShieldAlert,
+  Building2,
+  ImageIcon,
+  Map,
+} from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
-  let stats: DashboardStats | null = null;
-  let error: string | null = null;
+  const stats = await getDashboardStats();
 
-  try {
-    stats = await getDashboardStats();
-  } catch (e: any) {
-    error = e.message;
-  }
+  const statItems = [
+    {
+      title: "Reivindicações Pendentes",
+      value: stats.pendingClaims,
+      icon: <FileText className="h-6 w-6 text-muted-foreground" />,
+      href: "/service-ownership-claims",
+    },
+    {
+      title: "Denúncias Pendentes",
+      value: stats.pendingReports,
+      icon: <ShieldAlert className="h-6 w-6 text-muted-foreground" />,
+      href: "/reports",
+    },
+    {
+      title: "Descrições de Cidades",
+      value: stats.pendingCityDescriptions,
+      icon: <Building2 className="h-6 w-6 text-muted-foreground" />,
+      href: "/city-descriptions",
+    },
+    {
+      title: "Imagens de Cidades",
+      value: stats.pendingCityImages,
+      icon: <ImageIcon className="h-6 w-6 text-muted-foreground" />,
+      href: "/city-images",
+    },
+    {
+      title: "Descrições de Estados",
+      value: stats.pendingStateDescriptions,
+      icon: <Map className="h-6 w-6 text-muted-foreground" />,
+      href: "/state-descriptions",
+    },
+  ];
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+    <div className="p-4 md:p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Visão Geral da Moderação
+        </h1>
         <RefreshButton />
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Erro!</strong>
-          <span className="block sm:inline"> {error}</span>
-        </div>
-      )}
-
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reivindicações Pendentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending_claims}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Denúncias Pendentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending_reports}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Descrições de Cidades Não Aprovadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.unapproved_city_descriptions}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Imagens de Cidades Não Aprovadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.unapproved_city_images}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Descrições de Estados Não Aprovadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.unapproved_state_descriptions}</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {statItems.map((item) => (
+          <Link href={item.href} key={item.title}>
+            <Card className="hover:bg-muted/50 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {item.title}
+                </CardTitle>
+                {item.icon}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{item.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  Itens aguardando revisão
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

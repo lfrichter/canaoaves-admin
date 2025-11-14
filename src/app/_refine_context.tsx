@@ -4,7 +4,7 @@ import { Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import React from "react";
 
-import routerProvider from "@refinedev/nextjs-router";
+import routerProvider from "@refinedev/nextjs-router/app";
 
 import "@/app/globals.css";
 import { Toaster } from "@/components/refine-ui/notification/toaster";

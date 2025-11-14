@@ -2,9 +2,8 @@
 
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
-const supabase = createSupabaseServiceRoleClient();
-
 export async function getList(resource: string, params: any) {
+  const supabase = createSupabaseServiceRoleClient();
   const {
     current = 1,
     pageSize = 10,
@@ -44,6 +43,7 @@ export async function getList(resource: string, params: any) {
 }
 
 export async function getOne(resource: string, id: string) {
+  const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).select("*").eq("id", id).single();
 
   if (error) {
@@ -56,6 +56,7 @@ export async function getOne(resource: string, id: string) {
 }
 
 export async function create(resource: string, variables: any) {
+  const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).insert(variables).select().single();
 
   if (error) {
@@ -68,6 +69,7 @@ export async function create(resource: string, variables: any) {
 }
 
 export async function update(resource: string, id: string, variables: any) {
+  const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).update(variables).eq("id", id).select().single();
 
   if (error) {
@@ -80,6 +82,7 @@ export async function update(resource: string, id: string, variables: any) {
 }
 
 export async function deleteOne(resource: string, id: string) {
+  const supabase = createSupabaseServiceRoleClient();
   const { error } = await supabase.from(resource).delete().eq("id", id);
 
   if (error) {

@@ -2,24 +2,24 @@
 
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
-export interface DashboardStats {
-  pending_claims: number;
-  pending_reports: number;
-  unapproved_city_descriptions: number;
-  unapproved_city_images: number;
-  unapproved_state_descriptions: number;
-}
+type DashboardStats = {
+  pendingClaims: number;
+  pendingReports: number;
+  pendingCityDescriptions: number;
+  pendingCityImages: number;
+  pendingStateDescriptions: number;
+};
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = createSupabaseServiceRoleClient();
 
   try {
     const [
-      { count: pending_claims },
-      { count: pending_reports },
-      { count: unapproved_city_descriptions },
-      { count: unapproved_city_images },
-      { count: unapproved_state_descriptions },
+      claimsResult,
+      reportsResult,
+      cityDescriptionsResult,
+      cityImagesResult,
+      stateDescriptionsResult,
     ] = await Promise.all([
       supabase
         .from("service_ownership_claims")
@@ -44,14 +44,21 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     ]);
 
     return {
-      pending_claims: pending_claims ?? 0,
-      pending_reports: pending_reports ?? 0,
-      unapproved_city_descriptions: unapproved_city_descriptions ?? 0,
-      unapproved_city_images: unapproved_city_images ?? 0,
-      unapproved_state_descriptions: unapproved_state_descriptions ?? 0,
+      pendingClaims: claimsResult.count ?? 0,
+      pendingReports: reportsResult.count ?? 0,
+      pendingCityDescriptions: cityDescriptionsResult.count ?? 0,
+      pendingCityImages: cityImagesResult.count ?? 0,
+      pendingStateDescriptions: stateDescriptionsResult.count ?? 0,
     };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
-    throw new Error("Failed to fetch dashboard stats.");
+    // In case of a general error, return all zeros to avoid breaking the UI
+    return {
+      pendingClaims: 0,
+      pendingReports: 0,
+      pendingCityDescriptions: 0,
+      pendingCityImages: 0,
+      pendingStateDescriptions: 0,
+    };
   }
 }

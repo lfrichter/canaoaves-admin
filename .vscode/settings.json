@@ -18,5 +18,9 @@
     "titleBar.inactiveBackground": "#0f396399",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "peacock.color": "#0f3963"
+  "peacock.color": "#0f3963",
+  "cSpell.words": [
+    "Supabase",
+    "SUPABASE"
+  ]
 }
