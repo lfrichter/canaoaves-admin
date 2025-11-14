@@ -55,13 +55,15 @@ export function Sidebar() {
           }
         )}
       >
-        {menuItems.map((item: TreeMenuItem) => (
-          <SidebarItem
-            key={item.key || item.name}
-            item={item}
-            selectedKey={selectedKey}
-          />
-        ))}
+        <div className="lg:hidden">
+          {menuItems.map((item: TreeMenuItem) => (
+            <SidebarItem
+              key={item.key || item.name}
+              item={item}
+              selectedKey={selectedKey}
+            />
+          ))}
+        </div>
       </ShadcnSidebarContent>
     </ShadcnSidebar>
   );

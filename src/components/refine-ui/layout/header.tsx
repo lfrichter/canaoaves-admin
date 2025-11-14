@@ -1,3 +1,6 @@
+"use client";
+
+import { Logo } from "@/components/logo";
 import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
 import {
@@ -6,20 +9,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
   useActiveAuthProvider,
+  useGetIdentity,
   useLogout,
+  useMenu,
   useRefineOptions,
 } from "@refinedev/core";
 import { LogOutIcon } from "lucide-react";
+import Link from "next/link";
 
 export const Header = () => {
   const { isMobile } = useSidebar();
-
   return <>{isMobile ? <MobileHeader /> : <DesktopHeader />}</>;
 };
+
+function HorizontalMenu() {
+  const { menuItems } = useMenu();
+
+  return (
+    <NavigationMenu>
+      <NavigationMenuList>
+        {menuItems.map((item) => (
+          <NavigationMenuItem key={item.key}>
+            <Link href={item.route || "/"} legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                {item.label}
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+        ))}
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
 
 function DesktopHeader() {
   return (
@@ -48,7 +80,6 @@ function DesktopHeader() {
 
 function MobileHeader() {
   const { open, isMobile } = useSidebar();
-
   const { title } = useRefineOptions();
 
   return (
@@ -95,7 +126,8 @@ function MobileHeader() {
           }
         )}
       >
-        <div>{title.icon}</div>
+        {/* Re-using a simplified logo for mobile */}
+        <img src="https://api.builder.io/api/v1/image/assets/TEMP/1f88cd11f8a5df44a75646386760f0de82578a46?width=170" alt="Logo" className="h-8 w-8" />
         <h2
           className={cn(
             "text-sm",
@@ -117,9 +149,18 @@ function MobileHeader() {
   );
 }
 
+const User = () => {
+  const { data: user } = useGetIdentity<{ name: string; email: string }>();
+  return (
+    <div className="flex items-center gap-2">
+      <UserAvatar />
+      <span className="text-sm font-medium">{user?.name ?? user?.email}</span>
+    </div>
+  );
+};
+
 const UserDropdown = () => {
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
-
   const authProvider = useActiveAuthProvider();
 
   if (!authProvider?.getIdentity) {
@@ -129,20 +170,17 @@ const UserDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <UserAvatar />
+        <User />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => {
             logout();
           }}
+          className="flex items-center gap-2 cursor-pointer text-destructive"
         >
-          <LogOutIcon
-            className={cn("text-destructive", "hover:text-destructive")}
-          />
-          <span className={cn("text-destructive", "hover:text-destructive")}>
-            {isLoggingOut ? "Logging out..." : "Logout"}
-          </span>
+          <LogOutIcon className="h-4 w-4" />
+          <span>{isLoggingOut ? "Saindo..." : "Sair"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

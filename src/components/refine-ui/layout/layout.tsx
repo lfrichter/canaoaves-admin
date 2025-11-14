@@ -1,19 +1,18 @@
 "use client";
 
-import { Header } from "@/components/refine-ui/layout/header";
+import { CustomHeader } from "@/components/layout/CustomHeader";
 import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { PropsWithChildren } from "react";
-import { Sidebar } from "./sidebar";
 
 export function Layout({ children }: PropsWithChildren) {
   return (
     <ThemeProvider>
       <SidebarProvider>
-        <Sidebar />
+        {/* <Sidebar /> // Sidebar is disabled for top-menu layout */}
         <SidebarInset>
-          <Header />
+          <CustomHeader />
           <main
             className={cn(
               "@container/main",
@@ -24,11 +23,8 @@ export function Layout({ children }: PropsWithChildren) {
               "flex",
               "flex-col",
               "flex-1",
-              "px-2",
-              "pt-4",
-              "md:p-4",
-              "lg:px-6",
-              "lg:pt-6"
+              "px-4",
+              "pt-24" // Padding for h-24 header
             )}
           >
             {children}

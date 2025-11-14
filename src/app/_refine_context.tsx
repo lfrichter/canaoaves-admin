@@ -12,6 +12,7 @@ import { useNotificationProvider } from "@/components/refine-ui/notification/use
 import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
 import { dataProvider } from "@providers/data-provider";
+import { Layout } from "@/components/refine-ui/layout/layout";
 
 type RefineContextProps = {
   children: React.ReactNode;
@@ -33,7 +34,9 @@ export const RefineContext = ({ children }: RefineContextProps) => {
             warnWhenUnsavedChanges: true,
           }}
         >
-          {children}
+          <Layout>
+            {children}
+          </Layout>
           <Toaster />
           <RefineKbar />
         </Refine>
