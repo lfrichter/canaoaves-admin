@@ -333,14 +333,16 @@ function SidebarInput({
   );
 }
 
-function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
+function SidebarHeader({ className, children, ...props }: React.ComponentProps<"div"> & { children?: React.ReactNode }) {
   return (
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
@@ -723,5 +725,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
+  useSidebar
 };
+

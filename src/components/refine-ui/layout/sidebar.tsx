@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -28,7 +29,6 @@ import {
   type TreeMenuItem,
 } from "@refinedev/core";
 import { ChevronRight, ListIcon } from "lucide-react";
-import React from "react";
 
 export function Sidebar() {
   const { open } = useShadcnSidebar();
@@ -55,15 +55,13 @@ export function Sidebar() {
           }
         )}
       >
-        <div className="lg:hidden">
-          {menuItems.map((item: TreeMenuItem) => (
-            <SidebarItem
-              key={item.key || item.name}
-              item={item}
-              selectedKey={selectedKey}
-            />
-          ))}
-        </div>
+        {menuItems.map((item: TreeMenuItem) => (
+          <SidebarItem
+            key={item.key || item.name}
+            item={item}
+            selectedKey={selectedKey}
+          />
+        ))}
       </ShadcnSidebarContent>
     </ShadcnSidebar>
   );
@@ -212,7 +210,6 @@ function SidebarItemLink({ item, selectedKey }: MenuItemProps) {
 }
 
 function SidebarHeader() {
-  const { title } = useRefineOptions();
   const { open, isMobile } = useShadcnSidebar();
 
   return (
@@ -245,21 +242,7 @@ function SidebarHeader() {
           }
         )}
       >
-        <div>{title.icon}</div>
-        <h2
-          className={cn(
-            "text-sm",
-            "font-bold",
-            "transition-opacity",
-            "duration-200",
-            {
-              "opacity-0": !open,
-              "opacity-100": open,
-            }
-          )}
-        >
-          {title.text}
-        </h2>
+        <Logo showText={open} />
       </div>
 
       <ShadcnSidebarTrigger

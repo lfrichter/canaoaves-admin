@@ -5,12 +5,13 @@ import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { PropsWithChildren } from "react";
+import { Sidebar } from "./sidebar";
 
 export function Layout({ children }: PropsWithChildren) {
   return (
     <ThemeProvider>
       <SidebarProvider>
-        {/* <Sidebar /> // Sidebar is disabled for top-menu layout */}
+        <Sidebar />
         <SidebarInset>
           <CustomHeader />
           <main
@@ -24,7 +25,7 @@ export function Layout({ children }: PropsWithChildren) {
               "flex-col",
               "flex-1",
               "px-4",
-              "pt-24" // Padding for h-24 header
+              "pt-16"
             )}
           >
             {children}
