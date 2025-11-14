@@ -100,6 +100,20 @@ export const authProviderClient: AuthProvider = {
     }
 
     if (user) {
+      const { data: profile, error: profileError } = await supabaseBrowserClient
+        .from("profiles")
+        .select("app_role")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || profile?.app_role !== "admin") {
+        return {
+          authenticated: false,
+          redirectTo: "/login",
+          logout: true,
+        };
+      }
+
       return {
         authenticated: true,
       };
@@ -111,21 +125,44 @@ export const authProviderClient: AuthProvider = {
     };
   },
   getPermissions: async () => {
-    const user = await supabaseBrowserClient.auth.getUser();
+    const { data: userData } = await supabaseBrowserClient.auth.getUser();
 
-    if (user) {
-      return user.data.user?.role;
+    if (userData?.user) {
+      const { data: profile, error: profileError } = await supabaseBrowserClient
+        .from("profiles")
+        .select("app_role")
+        .eq("id", userData.user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error fetching profile permissions:", profileError);
+        return null;
+      }
+
+      return profile?.app_role;
     }
 
     return null;
   },
   getIdentity: async () => {
-    const { data } = await supabaseBrowserClient.auth.getUser();
+    const { data: userData } = await supabaseBrowserClient.auth.getUser();
 
-    if (data?.user) {
+    if (userData?.user) {
+      const { data: profile, error: profileError } = await supabaseBrowserClient
+        .from("profiles")
+        .select("app_role")
+        .eq("id", userData.user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        return null;
+      }
+
       return {
-        ...data.user,
-        name: data.user.email,
+        ...userData.user,
+        name: userData.user.email,
+        app_role: profile?.app_role,
       };
     }
 
