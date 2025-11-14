@@ -16,11 +16,11 @@ import { Button } from "@/components/ui/button";
 
 export default function CategoryEdit() {
   const {
-    refineCore: { queryResult, onFinish },
+    refineCore: { query, onFinish },
     ...form
   } = useForm();
 
-  const record = queryResult?.data?.data;
+  const record = query?.data?.data;
 
   return (
     <EditView>

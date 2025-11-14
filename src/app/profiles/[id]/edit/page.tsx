@@ -22,11 +22,11 @@ import { Button } from "@/components/ui/button";
 
 export default function ProfileEdit() {
   const {
-    refineCore: { queryResult, onFinish },
+    refineCore: { query, onFinish },
     ...form
   } = useForm();
 
-  const record = queryResult?.data?.data;
+  const record = query?.data?.data;
 
   return (
     <EditView>

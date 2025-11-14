@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/core";
+import { useTable } from "@refinedev/react-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { EditButton, ShowButton, DeleteButton } from "@/components/refine-ui/buttons";
@@ -13,11 +13,6 @@ interface IServiceOffering {
 }
 
 export default function ServiceOfferingList() {
-  const table = useTable<IServiceOffering>({
-    resource: "service_offerings",
-    syncWithLocation: true,
-  });
-
   const columns = React.useMemo<ColumnDef<IServiceOffering>[]>(
     () => [
       {
@@ -48,10 +43,18 @@ export default function ServiceOfferingList() {
     []
   );
 
+  const table = useTable<IServiceOffering>({
+    refineCoreProps: {
+      resource: "service_offerings",
+      syncWithLocation: true,
+    },
+    columns,
+  });
+
   return (
     <ListView>
       <ListViewHeader title="Ofertas de Serviço" canCreate />
-      <DataTable table={{ ...table, reactTable: table.reactTable, columns }} />
+      <DataTable table={table} />
     </ListView>
   );
 }

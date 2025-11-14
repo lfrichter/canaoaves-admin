@@ -1,6 +1,6 @@
 "use client";
 
-import type { DataProvider } from "@refinedev/core";
+import type { DataProvider, BaseRecord, BaseKey } from "@refinedev/core";
 import {
   getList,
   getOne,
@@ -12,8 +12,8 @@ import {
 export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters }) => {
     const response = await getList(resource, {
-      current: pagination?.current,
-      pageSize: pagination?.pageSize,
+      current: (pagination as any)?.current,
+      pageSize: (pagination as any)?.pageSize,
       filters,
       sorters,
     });
@@ -47,7 +47,7 @@ export const dataProvider: DataProvider = {
   deleteOne: async ({ resource, id }) => {
     const response = await deleteOne(resource, id as string);
     return {
-      data: { id },
+      data: { id: id as BaseKey } as any, // TODO: This is a temporary fix. The deleteOne action should return the deleted record.
     };
   },
 

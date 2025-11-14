@@ -12,7 +12,7 @@ export async function getList(resource: string, params: any) {
     sorters = [],
   } = params;
 
-  let query = supabase.from(resource).select("*", { count: "exact" });
+  let query: any = supabase.from(resource).select("*", { count: "exact" });
 
   // Apply filters
   filters.forEach((filter: any) => {

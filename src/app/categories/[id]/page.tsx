@@ -5,8 +5,8 @@ import { ShowView, ShowViewHeader } from "@/components/refine-ui/views/show-view
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CategoryShow() {
-  const { queryResult } = useShow();
-  const { data, isLoading } = queryResult;
+  const { query } = useShow();
+  const { data, isLoading } = query;
   const record = data?.data;
 
   return (

@@ -2,10 +2,10 @@
 
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/core";
+import { useTable } from "@refinedev/react-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
-import { useMutation } from "@refinedev/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { handleContentApproval, deleteContent } from "@/app/actions/content";
 
@@ -17,51 +17,37 @@ interface ICityDescription {
 }
 
 export default function CityDescriptionList() {
-  const table = useTable<ICityDescription>({
-    resource: "city_descriptions",
-    filters: {
-      permanent: [
-        {
-          field: "approved",
-          operator: "eq",
-          value: false,
-        },
-      ],
+  const tableRef = React.useRef<any>(null);
+
+  const { mutate: approveMutate } = useMutation({
+    mutationFn: (id: string) => handleContentApproval("city_descriptions", id, true),
+    onSuccess: () => {
+      toast.success("Descrição de cidade aprovada com sucesso!");
+      tableRef.current?.refineCore.refetch();
     },
-    syncWithLocation: true,
+    onError: (error: any) => {
+      toast.error(`Erro ao aprovar descrição de cidade: ${error.message}`);
+    },
   });
 
-  const { mutate } = useMutation();
+  const { mutate: rejectMutate } = useMutation({
+    mutationFn: (id: string) => deleteContent("city_descriptions", id),
+    onSuccess: () => {
+      toast.success("Descrição de cidade rejeitada (excluída) com sucesso!");
+      tableRef.current?.refineCore.refetch();
+    },
+    onError: (error: any) => {
+      toast.error(`Erro ao rejeitar descrição de cidade: ${error.message}`);
+    },
+  });
 
-  const handleApprove = async (id: string) => {
-    mutate(
-      {
-        mutationFn: () => handleContentApproval("city_descriptions", id, true),
-        onSuccess: () => {
-          toast.success("Descrição de cidade aprovada com sucesso!");
-          table.refineCore.refetch();
-        },
-        onError: (error) => {
-          toast.error(`Erro ao aprovar descrição de cidade: ${error.message}`);
-        },
-      },
-    );
-  };
+  const handleApprove = React.useCallback(async (id: string) => {
+    approveMutate(id);
+  }, [approveMutate]);
 
-  const handleReject = async (id: string) => {
-    mutate(
-      {
-        mutationFn: () => deleteContent("city_descriptions", id),
-        onSuccess: () => {
-          toast.success("Descrição de cidade rejeitada (excluída) com sucesso!");
-          table.refineCore.refetch();
-        },
-        onError: (error) => {
-          toast.error(`Erro ao rejeitar descrição de cidade: ${error.message}`);
-        },
-      },
-    );
-  };
+  const handleReject = React.useCallback(async (id: string) => {
+    rejectMutate(id);
+  }, [rejectMutate]);
 
   const columns = React.useMemo<ColumnDef<ICityDescription>[]>(
     () => [
@@ -107,10 +93,29 @@ export default function CityDescriptionList() {
     [handleApprove, handleReject]
   );
 
+  const table = useTable<ICityDescription>({
+    refineCoreProps: {
+      resource: "city_descriptions",
+      filters: {
+        permanent: [
+          {
+            field: "approved",
+            operator: "eq",
+            value: false,
+          },
+        ],
+      },
+      syncWithLocation: true,
+    },
+    columns,
+  });
+
+  tableRef.current = table;
+
   return (
     <ListView>
       <ListViewHeader title="Descrições de Cidades para Aprovação" />
-      <DataTable table={{ ...table, reactTable: table.reactTable, columns }} />
+      <DataTable table={table} />
     </ListView>
   );
 }

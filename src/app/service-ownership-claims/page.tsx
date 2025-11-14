@@ -2,11 +2,11 @@
 
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/core";
+import { useTable } from "@refinedev/react-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { handleClaimApproval } from "@/app/actions/service-claims";
-import { useMutation } from "@refinedev/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner"; // Assuming sonner is used for notifications
 
 interface IServiceOwnershipClaim {
@@ -18,51 +18,37 @@ interface IServiceOwnershipClaim {
 }
 
 export default function ServiceOwnershipClaimList() {
-  const table = useTable<IServiceOwnershipClaim>({
-    resource: "service_ownership_claims",
-    filters: {
-      permanent: [
-        {
-          field: "status",
-          operator: "eq",
-          value: "pending",
-        },
-      ],
+  const tableRef = React.useRef<any>(null);
+
+  const { mutate: approveMutate } = useMutation({
+    mutationFn: (claimId: string) => handleClaimApproval(claimId, true),
+    onSuccess: () => {
+      toast.success("Reivindicação aprovada com sucesso!");
+      tableRef.current?.refineCore.refetch();
     },
-    syncWithLocation: true,
+    onError: (error: any) => {
+      toast.error(`Erro ao aprovar reivindicação: ${error.message}`);
+    },
   });
 
-  const { mutate } = useMutation();
+  const { mutate: rejectMutate } = useMutation({
+    mutationFn: (claimId: string) => handleClaimApproval(claimId, false),
+    onSuccess: () => {
+      toast.success("Reivindicação rejeitada com sucesso!");
+      tableRef.current?.refineCore.refetch();
+    },
+    onError: (error: any) => {
+      toast.error(`Erro ao rejeitar reivindicação: ${error.message}`);
+    },
+  });
 
-  const handleApprove = async (claimId: string) => {
-    mutate(
-      {
-        mutationFn: () => handleClaimApproval(claimId, true),
-        onSuccess: () => {
-          toast.success("Reivindicação aprovada com sucesso!");
-          table.refineCore.refetch();
-        },
-        onError: (error) => {
-          toast.error(`Erro ao aprovar reivindicação: ${error.message}`);
-        },
-      },
-    );
-  };
+  const handleApprove = React.useCallback(async (claimId: string) => {
+    approveMutate(claimId);
+  }, [approveMutate]);
 
-  const handleReject = async (claimId: string) => {
-    mutate(
-      {
-        mutationFn: () => handleClaimApproval(claimId, false),
-        onSuccess: () => {
-          toast.success("Reivindicação rejeitada com sucesso!");
-          table.refineCore.refetch();
-        },
-        onError: (error) => {
-          toast.error(`Erro ao rejeitar reivindicação: ${error.message}`);
-        },
-      },
-    );
-  };
+  const handleReject = React.useCallback(async (claimId: string) => {
+    rejectMutate(claimId);
+  }, [rejectMutate]);
 
   const columns = React.useMemo<ColumnDef<IServiceOwnershipClaim>[]>(
     () => [
@@ -113,10 +99,29 @@ export default function ServiceOwnershipClaimList() {
     [handleApprove, handleReject]
   );
 
+  const table = useTable<IServiceOwnershipClaim>({
+    refineCoreProps: {
+      resource: "service_ownership_claims",
+      filters: {
+        permanent: [
+          {
+            field: "status",
+            operator: "eq",
+            value: "pending",
+          },
+        ],
+      },
+      syncWithLocation: true,
+    },
+    columns,
+  });
+
+  tableRef.current = table;
+
   return (
     <ListView>
       <ListViewHeader title="Reivindicações de Propriedade de Serviço" />
-      <DataTable table={{ ...table, reactTable: table.reactTable, columns }} />
+      <DataTable table={table} />
     </ListView>
   );
 }

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/core";
+import { useTable } from "@refinedev/react-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { EditButton } from "@/components/refine-ui/buttons";
@@ -13,11 +13,6 @@ interface IStaticContent {
 }
 
 export default function StaticContentList() {
-  const table = useTable<IStaticContent>({
-    resource: "static_content",
-    syncWithLocation: true,
-  });
-
   const columns = React.useMemo<ColumnDef<IStaticContent>[]>(
     () => [
       {
@@ -41,10 +36,18 @@ export default function StaticContentList() {
     []
   );
 
+  const table = useTable<IStaticContent>({
+    refineCoreProps: {
+      resource: "static_content",
+      syncWithLocation: true,
+    },
+    columns,
+  });
+
   return (
     <ListView>
       <ListViewHeader title="Conteúdo Estático" />
-      <DataTable table={{ ...table, reactTable: table.reactTable, columns }} />
+      <DataTable table={table} />
     </ListView>
   );
 }

@@ -2,11 +2,11 @@
 
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/core";
+import { useTable } from "@refinedev/react-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { resolveReport, ignoreReport } from "@/app/actions/reports";
-import { useMutation } from "@refinedev/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface IReport {
@@ -18,51 +18,37 @@ interface IReport {
 }
 
 export default function ReportList() {
-  const table = useTable<IReport>({
-    resource: "reports",
-    filters: {
-      permanent: [
-        {
-          field: "status",
-          operator: "eq",
-          value: "pending",
-        },
-      ],
+  const tableRef = React.useRef<any>(null);
+
+  const { mutate: resolveMutate } = useMutation({
+    mutationFn: (reportId: string) => resolveReport(reportId),
+    onSuccess: () => {
+      toast.success("Denúncia resolvida com sucesso!");
+      tableRef.current?.refineCore.refetch();
     },
-    syncWithLocation: true,
+    onError: (error: any) => {
+      toast.error(`Erro ao resolver denúncia: ${error.message}`);
+    },
   });
 
-  const { mutate } = useMutation();
+  const { mutate: ignoreMutate } = useMutation({
+    mutationFn: (reportId: string) => ignoreReport(reportId),
+    onSuccess: () => {
+      toast.success("Denúncia ignorada com sucesso!");
+      tableRef.current?.refineCore.refetch();
+    },
+    onError: (error: any) => {
+      toast.error(`Erro ao ignorar denúncia: ${error.message}`);
+    },
+  });
 
-  const handleResolve = async (reportId: string) => {
-    mutate(
-      {
-        mutationFn: () => resolveReport(reportId),
-        onSuccess: () => {
-          toast.success("Denúncia resolvida com sucesso!");
-          table.refineCore.refetch();
-        },
-        onError: (error) => {
-          toast.error(`Erro ao resolver denúncia: ${error.message}`);
-        },
-      },
-    );
-  };
+  const handleResolve = React.useCallback(async (reportId: string) => {
+    resolveMutate(reportId);
+  }, [resolveMutate]);
 
-  const handleIgnore = async (reportId: string) => {
-    mutate(
-      {
-        mutationFn: () => ignoreReport(reportId),
-        onSuccess: () => {
-          toast.success("Denúncia ignorada com sucesso!");
-          table.refineCore.refetch();
-        },
-        onError: (error) => {
-          toast.error(`Erro ao ignorar denúncia: ${error.message}`);
-        },
-      },
-    );
-  };
+  const handleIgnore = React.useCallback(async (reportId: string) => {
+    ignoreMutate(reportId);
+  }, [ignoreMutate]);
 
   const columns = React.useMemo<ColumnDef<IReport>[]>(
     () => [
@@ -113,10 +99,29 @@ export default function ReportList() {
     [handleResolve, handleIgnore]
   );
 
+  const table = useTable<IReport>({
+    refineCoreProps: {
+      resource: "reports",
+      filters: {
+        permanent: [
+          {
+            field: "status",
+            operator: "eq",
+            value: "pending",
+          },
+        ],
+      },
+      syncWithLocation: true,
+    },
+    columns,
+  });
+
+  tableRef.current = table;
+
   return (
     <ListView>
       <ListViewHeader title="Denúncias" />
-      <DataTable table={{ ...table, reactTable: table.reactTable, columns }} />
+      <DataTable table={table} />
     </ListView>
   );
 }

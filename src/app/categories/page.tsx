@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/core";
+import { useTable } from "@refinedev/react-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { EditButton, ShowButton, DeleteButton } from "@/components/refine-ui/buttons";
@@ -13,11 +13,6 @@ interface ICategory {
 }
 
 export default function CategoryList() {
-  const table = useTable<ICategory>({
-    resource: "categories",
-    syncWithLocation: true,
-  });
-
   const columns = React.useMemo<ColumnDef<ICategory>[]>(
     () => [
       {
@@ -48,10 +43,18 @@ export default function CategoryList() {
     []
   );
 
+  const table = useTable<ICategory>({
+    refineCoreProps: {
+      resource: "categories",
+      syncWithLocation: true,
+    },
+    columns,
+  });
+
   return (
     <ListView>
       <ListViewHeader title="Categorias" canCreate />
-      <DataTable table={{ ...table, reactTable: table.reactTable, columns }} />
+      <DataTable table={table} />
     </ListView>
   );
 }
