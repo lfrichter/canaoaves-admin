@@ -1,6 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { SUPABASE_KEY, SUPABASE_URL } from "src/utils/supabase/constants";
+import { SUPABASE_KEY, SUPABASE_URL } from "./utils/supabase/constants";
 
 const protectedRoutes: string[] = [
   "/",
