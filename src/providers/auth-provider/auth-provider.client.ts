@@ -89,9 +89,8 @@ export const authProviderClient: AuthProvider = {
   },
   check: async () => {
     const { data, error } = await supabaseBrowserClient.auth.getUser();
-    const { user } = data;
 
-    if (error) {
+    if (error || !data?.user) {
       return {
         authenticated: false,
         redirectTo: "/login",
@@ -99,25 +98,18 @@ export const authProviderClient: AuthProvider = {
       };
     }
 
-    if (user) {
-      const userRole = user.user_metadata?.app_role;
+    const userRole = data.user.user_metadata?.app_role;
 
-      if (userRole !== "admin" && userRole !== "master") {
-        return {
-          authenticated: false,
-          redirectTo: "/login",
-          logout: true,
-        };
-      }
-
+    if (userRole !== "admin" && userRole !== "master") {
       return {
-        authenticated: true,
+        authenticated: false,
+        redirectTo: "/login",
+        logout: true,
       };
     }
 
     return {
-      authenticated: false,
-      redirectTo: "/login",
+      authenticated: true,
     };
   },
   getPermissions: async () => {

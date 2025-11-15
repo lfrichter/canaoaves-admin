@@ -29,6 +29,7 @@ import {
   MapPin, // Added
   ClipboardList, // Added
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 export function RefineContext({
@@ -37,6 +38,14 @@ export function RefineContext({
 }: {
   children: React.ReactNode;
 } & RefineProps) {
+  const pathname = usePathname();
+  const authPaths = ["/login", "/register", "/forgot-password"];
+  const isAuthPage = authPaths.includes(pathname);
+
+  const Layout = isAuthPage
+    ? ({ children }: { children: React.ReactNode }) => <>{children}</>
+    : CustomLayout;
+
   return (
     <DevtoolsProvider>
       <Refine
@@ -135,9 +144,9 @@ export function RefineContext({
         }}
         {...props}
       >
-        <CustomLayout Header={CustomHeader} Sider={CustomSider}>
+        <Layout Header={CustomHeader} Sider={CustomSider}>
           {children}
-        </CustomLayout>
+        </Layout>
       </Refine>
       <Toaster />
     </DevtoolsProvider>

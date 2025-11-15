@@ -20,9 +20,8 @@ export const authProviderServer: AuthProvider = {
   check: async () => {
     const client = await createSupabaseServerClient();
     const { data, error } = await client.auth.getUser();
-    const { user } = data;
 
-    if (error) {
+    if (error || !data?.user) {
       return {
         authenticated: false,
         logout: true,
@@ -30,40 +29,30 @@ export const authProviderServer: AuthProvider = {
       };
     }
 
-    if (user) {
-      return {
-        authenticated: true,
-        redirectTo: "/",
-      };
-    }
-
     return {
-      authenticated: false,
-      logout: true,
-      redirectTo: "/login",
+      authenticated: true,
+      redirectTo: "/",
     };
   },
   getPermissions: async () => {
     const client = await createSupabaseServerClient();
     const { data, error } = await client.auth.getUser();
-    const { user } = data;
 
-    if (error) {
+    if (error || !data?.user) {
       return null;
     }
 
-    return user?.user_metadata.app_role ?? null;
+    return data.user?.user_metadata.app_role ?? null;
   },
   getIdentity: async () => {
     const client = await createSupabaseServerClient();
     const { data, error } = await client.auth.getUser();
-    const { user } = data;
 
-    if (error) {
+    if (error || !data?.user) {
       return null;
     }
 
-    return user;
+    return data.user;
   },
   onError: async (error) => {
     if (error.status === 401) {
