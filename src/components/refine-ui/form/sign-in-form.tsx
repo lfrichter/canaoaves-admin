@@ -30,131 +30,234 @@ export const SignInForm = () => {
 
   const { title } = useRefineOptions();
 
-  const { mutate: login } = useLogin();
+    const { mutate: login, error } = useLogin();
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  
 
-    login({
-      email,
-      password,
-    });
-  };
+    const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
 
-  const handleSignInWithGoogle = () => {
-    login({
-      providerName: "google",
-    });
-  };
+      e.preventDefault();
 
-  const handleSignInWithGitHub = () => {
-    login({
-      providerName: "github",
-    });
-  };
+  
 
-  return (
-    <div
-      className={cn(
-        "flex",
-        "flex-col",
-        "items-center",
-        "justify-center",
-        "px-6",
-        "py-8",
-        "min-h-svh"
-      )}
-    >
-      <div className={cn("flex", "items-center", "justify-center")}>
-        {title.icon && (
-          <div
-            className={cn("text-foreground", "[&>svg]:w-12", "[&>svg]:h-12")}
-          >
-            {title.icon}
-          </div>
+      login({
+
+        email,
+
+        password,
+
+      });
+
+    };
+
+  
+
+    return (
+
+      <div
+
+        className={cn(
+
+          "flex",
+
+          "flex-col",
+
+          "items-center",
+
+          "justify-center",
+
+          "px-6",
+
+          "py-8",
+
+          "min-h-svh"
+
         )}
-      </div>
 
-      <Card className={cn("sm:w-[456px]", "p-12", "mt-6")}>
-        <CardHeader className={cn("px-0")}>
-          <CardTitle
-            className={cn(
-              "text-blue-600",
-              "dark:text-blue-400",
-              "text-3xl",
-              "font-semibold"
-            )}
-          >
-            Sign in
-          </CardTitle>
-          <CardDescription
-            className={cn("text-muted-foreground", "font-medium")}
-          >
-            Welcome back
-          </CardDescription>
-        </CardHeader>
+      >
 
-        <Separator />
+        <div className={cn("flex", "items-center", "justify-center")}>
 
-        <CardContent className={cn("px-0")}>
-          <form onSubmit={handleSignIn}>
-            <div className={cn("flex", "flex-col", "gap-2")}>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder=""
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+          {title.icon && (
+
             <div
-              className={cn("relative", "flex", "flex-col", "gap-2", "mt-6")}
+
+              className={cn("text-foreground", "[&>svg]:w-12", "[&>svg]:h-12")}
+
             >
-              <Label htmlFor="password">Password</Label>
-              <InputPassword
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+
+              {title.icon}
+
             </div>
 
-            <div
+          )}
+
+        </div>
+
+  
+
+        <Card className={cn("sm:w-[456px]", "p-12", "mt-6")}>
+
+          <CardHeader className={cn("px-0")}>
+
+            <CardTitle
+
               className={cn(
-                "flex items-center justify-between",
-                "flex-wrap",
-                "gap-2",
-                "mt-4"
+
+                "text-blue-600",
+
+                "dark:text-blue-400",
+
+                "text-3xl",
+
+                "font-semibold"
+
               )}
+
             >
-              <div className={cn("flex items-center", "space-x-2")}>
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) =>
-                    setRememberMe(checked === "indeterminate" ? false : checked)
-                  }
+
+              Sign in
+
+            </CardTitle>
+
+            <CardDescription
+
+              className={cn("text-muted-foreground", "font-medium")}
+
+            >
+
+              Welcome back
+
+            </CardDescription>
+
+          </CardHeader>
+
+  
+
+          <Separator />
+
+  
+
+          <CardContent className={cn("px-0")}>
+
+            <form onSubmit={handleSignIn}>
+
+              <div className={cn("flex", "flex-col", "gap-2")}>
+
+                <Label htmlFor="email">Email</Label>
+
+                <Input
+
+                  id="email"
+
+                  type="email"
+
+                  placeholder=""
+
+                  required
+
+                  value={email}
+
+                  onChange={(e) => setEmail(e.target.value)}
+
                 />
-                <Label htmlFor="remember">Remember me</Label>
+
               </div>
 
-            </div>
+              <div
 
-            <Button type="submit" size="lg" className={cn("w-full", "mt-6")}>
-              Sign in
-            </Button>
+                className={cn("relative", "flex", "flex-col", "gap-2", "mt-6")}
 
+              >
 
-          </form>
-        </CardContent>
+                <Label htmlFor="password">Password</Label>
 
-        <Separator />
+                <InputPassword
 
+                  value={password}
 
-      </Card>
-    </div>
-  );
-};
+                  onChange={(e) => setPassword(e.target.value)}
+
+                  required
+
+                />
+
+              </div>
+
+  
+
+              <div
+
+                className={cn(
+
+                  "flex items-center justify-between",
+
+                  "flex-wrap",
+
+                  "gap-2",
+
+                  "mt-4"
+
+                )}
+
+              >
+
+                <div className={cn("flex items-center", "space-x-2")}>
+
+                  <Checkbox
+
+                    id="remember"
+
+                    checked={rememberMe}
+
+                    onCheckedChange={(checked) =>
+
+                      setRememberMe(checked === "indeterminate" ? false : checked)
+
+                    }
+
+                  />
+
+                  <Label htmlFor="remember">Remember me</Label>
+
+                </div>
+
+              </div>
+
+  
+
+              <Button type="submit" size="lg" className={cn("w-full", "mt-6")}>
+
+                Sign in
+
+              </Button>
+
+  
+
+              {error && (
+
+                <p className={cn("text-red-500", "text-sm", "mt-2", "text-center")}>
+
+                  {error.message}
+
+                </p>
+
+              )}
+
+            </form>
+
+          </CardContent>
+
+  
+
+          <Separator />
+
+        </Card>
+
+      </div>
+
+    );
+
+  };
 
 SignInForm.displayName = "SignInForm";

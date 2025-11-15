@@ -4,39 +4,69 @@ import type { AuthProvider } from "@refinedev/core";
 import { supabaseBrowserClient } from "@utils/supabase/client";
 
 export const authProviderClient: AuthProvider = {
-  login: async ({ email, password }) => {
-    const { data, error } = await supabaseBrowserClient.auth.signInWithPassword(
-      {
-        email,
-        password,
+    login: async ({ email, password }) => {
+      const { data: signInData, error: signInError } =
+        await supabaseBrowserClient.auth.signInWithPassword({
+          email,
+          password,
+        });
+  
+      if (signInError) {
+        return {
+          success: false,
+          error: signInError,
+        };
       }
-    );
-
-    if (error) {
+  
+      if (signInData.user) {
+        // Query the profiles table to get the app_role
+        const { data: profileData, error: profileError } =
+          await supabaseBrowserClient
+            .from("profiles")
+            .select("app_role")
+            .eq("user_id", signInData.user.id)
+            .single();
+  
+        // Handle case where profile is not found or there's an error fetching it
+        if (profileError || !profileData) {
+          await supabaseBrowserClient.auth.signOut();
+          return {
+            success: false,
+            error: {
+              name: "ProfileError",
+              message:
+                "Seu perfil não foi encontrado ou não está configurado corretamente. Por favor, contate o suporte.",
+            },
+          };
+        }
+  
+        const userRole = profileData.app_role;
+  
+        if (userRole !== "admin" && userRole !== "master") {
+          await supabaseBrowserClient.auth.signOut();
+          return {
+            success: false,
+            error: {
+              name: "AuthorizationError",
+              message: "Você não tem permissão para acessar esta aplicação.",
+            },
+          };
+        }
+  
+        return {
+          success: true,
+          redirectTo: "/",
+        };
+      }
+  
       return {
         success: false,
-        error,
+        error: {
+          name: "LoginError",
+          message: "Invalid username or password",
+        },
       };
-    }
-
-    if (data?.session) {
-      await supabaseBrowserClient.auth.setSession(data.session);
-
-      return {
-        success: true,
-        redirectTo: "/",
-      };
-    }
-
-    // for third-party login
-    return {
-      success: false,
-      error: {
-        name: "LoginError",
-        message: "Invalid username or password",
-      },
-    };
-  },
+    },
   logout: async () => {
     const { error } = await supabaseBrowserClient.auth.signOut();
 
@@ -91,16 +121,6 @@ export const authProviderClient: AuthProvider = {
     const { data, error } = await supabaseBrowserClient.auth.getUser();
 
     if (error || !data?.user) {
-      return {
-        authenticated: false,
-        redirectTo: "/login",
-        logout: true,
-      };
-    }
-
-    const userRole = data.user.user_metadata?.app_role;
-
-    if (userRole !== "admin" && userRole !== "master") {
       return {
         authenticated: false,
         redirectTo: "/login",

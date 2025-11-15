@@ -32,9 +32,21 @@ export async function middleware(request: NextRequest) {
         return request.cookies.get(name)?.value;
       },
       set(name: string, value: string, options: CookieOptions) {
+        request.cookies.set({ name, value, ...options });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
         response.cookies.set({ name, value, ...options });
       },
       remove(name: string, options: CookieOptions) {
+        request.cookies.set({ name, value: "", ...options });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
         response.cookies.set({ name, value: "", ...options });
       },
     },
@@ -43,7 +55,17 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const userRole = user?.user_metadata?.app_role;
+
+  let userRole = null;
+  if (user) {
+    // Fetch the role from the profiles table
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("app_role")
+      .eq("user_id", user.id)
+      .single();
+    userRole = profile?.app_role;
+  }
 
   const { pathname } = request.nextUrl;
 
