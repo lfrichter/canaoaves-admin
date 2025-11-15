@@ -53,3 +53,7 @@ next-env.d.ts
 .ai/templates/plan.tpl.md
 .ai/templates/prd.tpl.md
 .ai/templates/technical_context_template.md
+.mcp/config.yaml
+.mcp/context/project.md
+.mcp/rules/core.md
+mcp-inject.sh

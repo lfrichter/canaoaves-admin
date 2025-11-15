@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
     "build": "refine build",
-    "start": "refine start",
+    "start": "next start -p 3001",
     "lint": "next lint",
     "refine": "refine"
   },

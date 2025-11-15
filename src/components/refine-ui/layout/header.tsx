@@ -109,40 +109,7 @@ function MobileHeader() {
         })}
       />
 
-      <div
-        className={cn(
-          "whitespace-nowrap",
-          "flex",
-          "flex-row",
-          "h-full",
-          "items-center",
-          "justify-start",
-          "gap-2",
-          "transition-discrete",
-          "duration-200",
-          {
-            "pl-3": !open,
-            "pl-5": open,
-          }
-        )}
-      >
-        {/* Re-using a simplified logo for mobile */}
-        <img src="https://api.builder.io/api/v1/image/assets/TEMP/1f88cd11f8a5df44a75646386760f0de82578a46?width=170" alt="Logo" className="h-8 w-8" />
-        <h2
-          className={cn(
-            "text-sm",
-            "font-bold",
-            "transition-opacity",
-            "duration-200",
-            {
-              "opacity-0": !open,
-              "opacity-100": open,
-            }
-          )}
-        >
-          {title.text}
-        </h2>
-      </div>
+      <Logo showText={open} />
 
       <ThemeToggle className={cn("h-8", "w-8")} />
     </header>
