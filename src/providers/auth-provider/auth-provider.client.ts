@@ -137,17 +137,25 @@ export const authProviderClient: AuthProvider = {
     return userData?.user?.user_metadata?.app_role ?? null;
   },
   getIdentity: async () => {
-    const { data: userData } = await supabaseBrowserClient.auth.getUser();
+    const { data, error } = await supabaseBrowserClient.auth.getUser();
 
-    if (userData?.user) {
-      return {
-        ...userData.user,
-        name: userData.user.email,
-        app_role: userData.user.user_metadata?.app_role,
-      };
+    if (error || !data?.user) {
+      return null;
     }
 
-    return null;
+    const { user } = data;
+
+    const { data: profile } = await supabaseBrowserClient
+      .from("profiles")
+      .select("app_role")
+      .eq("user_id", user.id)
+      .single();
+
+    return {
+      ...user,
+      name: user.email,
+      app_role: profile?.app_role,
+    };
   },
   onError: async (error) => {
     if (error?.code === "PGRST301" || error?.code === 401) {

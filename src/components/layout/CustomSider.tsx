@@ -1,5 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { useGetIdentity, useMenu } from "@refinedev/core";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { Logo } from "./Logo";
 import {
   Sidebar,
   SidebarContent,
@@ -9,30 +14,35 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useGetIdentity, useMenu } from "@refinedev/core";
-import Link from "next/link";
-import React from "react";
-import { Logo } from "./Logo";
 
 export const CustomSider = () => {
+  const [isMounted, setIsMounted] = useState(false);
   const { data: user } = useGetIdentity<{
-    id: string;
-    user_metadata: {
-      app_role: "admin" | "master";
-    };
+    app_role: "admin" | "master";
   }>();
   const { menuItems, selectedKey } = useMenu();
   const { open } = useSidebar();
 
-  const userRole = user?.user_metadata?.app_role;
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const userRole = user?.app_role;
 
   const filteredMenuItems =
     userRole === "admin"
       ? menuItems.filter((item) => item.key === "dashboard")
       : menuItems;
 
+  const borderColorClass =
+    isMounted && userRole === "master"
+      ? "border-r-4 border-yellow-500"
+      : isMounted && userRole === "admin"
+      ? "border-r-4 border-gray-400"
+      : "";
+
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className={cn(borderColorClass)}>
       <SidebarHeader>
         <Logo showText={open} />
       </SidebarHeader>
