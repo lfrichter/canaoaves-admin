@@ -78,10 +78,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    if (userRole === "admin" && !adminRoutes.includes(pathname)) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
     if (userRole !== "admin" && userRole !== "master") {
       await supabase.auth.signOut();
       const redirectUrl = new URL("/login", request.url);

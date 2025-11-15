@@ -29,11 +29,6 @@ export const CustomSider = () => {
 
   const userRole = user?.app_role;
 
-  const filteredMenuItems =
-    userRole === "admin"
-      ? menuItems.filter((item) => item.key === "dashboard")
-      : menuItems;
-
   const borderColorClass =
     isMounted && userRole === "master"
       ? "border-r-4 border-yellow-500"
@@ -48,7 +43,7 @@ export const CustomSider = () => {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {filteredMenuItems.map((item) => (
+          {menuItems.map((item) => (
             <SidebarMenuItem key={item.key}>
               <Link href={item.route || "/"}>
                 <SidebarMenuButton isActive={selectedKey === item.key}>
