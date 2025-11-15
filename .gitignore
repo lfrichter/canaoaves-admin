@@ -29,6 +29,7 @@ yarn-error.log*
 .env*.local
 .env
 GEMINI.md
+GEMINI.md
 
 # vercel
 .vercel
