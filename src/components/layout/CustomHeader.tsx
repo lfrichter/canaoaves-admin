@@ -92,7 +92,7 @@ const DesktopCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        { !open && <Logo /> }
+        {!open && <Logo />} {/* Conditionally render Logo */}
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />

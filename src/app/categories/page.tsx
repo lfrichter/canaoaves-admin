@@ -32,9 +32,9 @@ export default function CategoryList() {
           const id = row.original.id;
           return (
             <div className="flex gap-2">
-              <ShowButton recordItemId={id} />
-              <EditButton recordItemId={id} />
-              <DeleteButton recordItemId={id} />
+              <ShowButton resource="categories" recordItemId={id} />
+              <EditButton resource="categories" recordItemId={id} />
+              <DeleteButton resource="categories" recordItemId={id} />
             </div>
           );
         },

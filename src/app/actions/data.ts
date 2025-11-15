@@ -3,6 +3,7 @@
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 export async function getList(resource: string, params: any) {
+  console.log("Server Action getList params:", params);
   const supabase = createSupabaseServiceRoleClient();
   const {
     current = 1,

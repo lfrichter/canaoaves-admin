@@ -1,6 +1,8 @@
+import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
 import { RefineContext } from "./_refine_context";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Refine",
@@ -16,10 +18,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <body>
         <Suspense>
-          <RefineContext>{children}</RefineContext>
+          <ThemeProvider>
+            <RefineContext>{children}</RefineContext>
+          </ThemeProvider>
         </Suspense>
       </body>
     </html>

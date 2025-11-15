@@ -11,6 +11,7 @@ import {
 
 export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters }) => {
+    console.log("dataProvider getList pagination:", pagination);
     const response = await getList(resource, {
       current: (pagination as any)?.current,
       pageSize: (pagination as any)?.pageSize,

@@ -1,60 +1,146 @@
 "use client";
 
-import { Refine } from "@refinedev/core";
-import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import { CustomHeader } from "@/components/layout/CustomHeader";
+import { CustomLayout } from "@/components/layout/CustomLayout";
+import { CustomSider } from "@/components/layout/CustomSider";
+import { Toaster } from "@/components/ui/sonner";
+import { authProviderClient } from "@/providers/auth-provider/auth-provider.client";
+import { dataProvider } from "@/providers/data-provider";
+import { DevtoolsProvider } from "@/providers/devtools";
+import { Refine, RefineProps } from "@refinedev/core";
+import routerProvider from "@refinedev/nextjs-router";
+import {
+  BarChart2,
+  File,
+  FileText,
+  Home,
+  Store,
+  User,
+  LayoutDashboard, // Added
+  Users, // Added
+  Briefcase, // Added
+  Shapes, // Added
+  Sparkles, // Added
+  Percent, // Added
+  Landmark, // Added
+  ShieldAlert, // Added
+  Map, // Added
+  Image, // Added
+  MapPin, // Added
+  ClipboardList, // Added
+} from "lucide-react";
 import React from "react";
 
-import routerProvider from "@refinedev/nextjs-router/app";
-
-import "@/app/globals.css";
-import { Toaster } from "@/components/refine-ui/notification/toaster";
-import { useNotificationProvider } from "@/components/refine-ui/notification/use-notification-provider";
-import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
-import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
-import { dataProvider } from "@providers/data-provider";
-import { Layout } from "@/components/refine-ui/layout/layout";
-
-type RefineContextProps = {
+export function RefineContext({
+  children,
+  ...props
+}: {
   children: React.ReactNode;
-};
-
-export const RefineContext = ({ children }: RefineContextProps) => {
-  const notificationProvider = useNotificationProvider();
-
+} & RefineProps) {
   return (
-    <RefineKbarProvider>
-      <ThemeProvider>
-        <Refine
-          authProvider={authProviderClient}
-          dataProvider={dataProvider}
-          notificationProvider={notificationProvider}
-          routerProvider={routerProvider}
-          resources={[
-            { name: "dashboard", list: "/", meta: { label: "Dashboard" } },
-            { name: "profiles", list: "/profiles", meta: { label: "Perfis" } },
-            { name: "services", list: "/services", meta: { label: "Serviços" } },
-            { name: "categories", list: "/categories", meta: { label: "Categorias" } },
-            { name: "amenities", list: "/amenities", meta: { label: "Comodidades" } },
-            { name: "service_offerings", list: "/service-offerings", meta: { label: "Ofertas de Serviço" } },
-            { name: "service_ownership_claims", list: "/service-ownership-claims", meta: { label: "Reivindicações" } },
-            { name: "reports", list: "/reports", meta: { label: "Denúncias" } },
-            { name: "city_descriptions", list: "/city-descriptions", meta: { label: "Descrições de Cidades" } },
-            { name: "city_images", list: "/city-images", meta: { label: "Imagens de Cidades" } },
-            { name: "state_descriptions", list: "/state-descriptions", meta: { label: "Descrições de Estados" } },
-            { name: "static_content", list: "/static-content", meta: { label: "Conteúdo Estático" } },
-          ]}
-          options={{
-            syncWithLocation: true,
-            warnWhenUnsavedChanges: true,
-          }}
-        >
-          <Layout>
-            {children}
-          </Layout>
-          <Toaster />
-          <RefineKbar />
-        </Refine>
-      </ThemeProvider>
-    </RefineKbarProvider>
+    <DevtoolsProvider>
+      <Refine
+        routerProvider={routerProvider}
+        dataProvider={dataProvider}
+        authProvider={authProviderClient}
+        resources={[
+          {
+            name: "dashboard",
+            list: "/dashboard",
+            meta: { label: "Dashboard", icon: <LayoutDashboard size={16} /> }, // Updated
+          },
+          {
+            name: "profiles",
+            list: "/profiles",
+            show: "/profiles/:id",
+            edit: "/profiles/:id/edit",
+            meta: { label: "Perfis", icon: <Users size={16} /> }, // Updated
+          },
+          {
+            name: "services",
+            list: "/services",
+            create: "/services/create",
+            show: "/services/:id",
+            edit: "/services/:id/edit",
+            meta: { label: "Serviços", icon: <Briefcase size={16} /> }, // Updated
+          },
+          {
+            name: "categories",
+            list: "/categories",
+            create: "/categories/create",
+            show: "/categories/:id",
+            edit: "/categories/:id/edit",
+            meta: { label: "Categorias", icon: <Shapes size={16} /> }, // Updated
+          },
+          {
+            name: "amenities",
+            list: "/amenities",
+            create: "/amenities/create",
+            show: "/amenities/:id",
+            edit: "/amenities/:id/edit",
+            meta: { label: "Comodidades", icon: <Sparkles size={16} /> }, // Updated
+          },
+          {
+            name: "service-offerings",
+            list: "/service-offerings",
+            create: "/service-offerings/create",
+            show: "/service-offerings/:id",
+            edit: "/service-offerings/:id/edit",
+            meta: { label: "Ofertas de Serviço", icon: <Percent size={16} /> }, // Updated
+          },
+          {
+            name: "service-ownership-claims",
+            list: "/service-ownership-claims",
+            meta: { label: "Reivindicações", icon: <Landmark size={16} /> }, // Updated
+          },
+          {
+            name: "reports",
+            list: "/reports",
+            meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> }, // Updated
+          },
+          {
+            name: "city-descriptions",
+            list: "/city-descriptions",
+            meta: {
+              label: "Descrições de Cidades",
+              icon: <FileText size={16} />,
+            }, // Updated
+          },
+          {
+            name: "city-images",
+            list: "/city-images",
+            meta: { label: "Imagens de Cidades", icon: <Image size={16} /> }, // Updated
+          },
+          {
+            name: "state-descriptions",
+            list: "/state-descriptions",
+            meta: {
+              label: "Descrições de Estados",
+              icon: <MapPin size={16} />,
+            }, // Updated
+          },
+          {
+            name: "static-content",
+            list: "/static-content",
+            edit: "/static-content/:id/edit",
+            meta: {
+              label: "Conteúdo Estático",
+              icon: <ClipboardList size={16} />,
+            }, // Updated
+          },
+        ]}
+        options={{
+          syncWithLocation: true,
+          warnWhenUnsavedChanges: true,
+        }}
+        {...props}
+      >
+        <CustomLayout Header={CustomHeader} Sider={CustomSider}>
+          {children}
+        </CustomLayout>
+      </Refine>
+      <Toaster />
+    </DevtoolsProvider>
   );
-};
+}
+

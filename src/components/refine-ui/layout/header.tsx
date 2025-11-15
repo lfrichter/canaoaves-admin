@@ -1,6 +1,6 @@
 "use client";
 
-import { Logo } from "@/components/logo";
+import { Logo } from "@/components/layout/Logo";
 import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
 import {
