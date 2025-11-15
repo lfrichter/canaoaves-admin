@@ -2,26 +2,22 @@
 
 import {
   Sidebar,
-  SidebarHeader,
   SidebarContent,
+  SidebarHeader,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger, // Import SidebarTrigger
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useMenu } from "@refinedev/core";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import React from "react";
 
 export const CustomSider = () => {
   const { menuItems, selectedKey } = useMenu();
-  console.log("CustomSider menuItems:", menuItems); // Added console.log
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon"> {/* Ensure collapsible="icon" */}
       <SidebarHeader>
         <Logo /> {/* Logo first */}
-        <SidebarTrigger /> {/* Then SidebarTrigger */}
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
