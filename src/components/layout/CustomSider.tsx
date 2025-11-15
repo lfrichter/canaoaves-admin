@@ -3,21 +3,25 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarHeader, // Import SidebarHeader
+  useSidebar, // Import useSidebar to get the open state
 } from "@/components/ui/sidebar";
 import { useMenu } from "@refinedev/core";
 import Link from "next/link";
-import { Logo } from "./Logo";
+import React from "react";
+import { Logo } from "./Logo"; // Import Logo
 
 export const CustomSider = () => {
   const { menuItems, selectedKey } = useMenu();
+  const { open } = useSidebar(); // Get the open state from useSidebar
+
   return (
-    <Sidebar collapsible="icon"> {/* Ensure collapsible="icon" */}
-      <SidebarHeader>
-        <Logo /> {/* Logo first */}
+    <Sidebar collapsible="icon">
+      <SidebarHeader> {/* Re-introduce SidebarHeader */}
+        <Logo showText={open} /> {/* Pass open state to showText prop */}
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>

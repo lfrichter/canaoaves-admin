@@ -92,8 +92,8 @@ const DesktopCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        <SidebarTrigger /> {/* Moved SidebarTrigger here */}
-        {!open && <Logo />} {/* Conditionally render Logo */}
+        <SidebarTrigger /> {/* SidebarTrigger remains */}
+        {/* Logo removed */}
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />
@@ -114,8 +114,8 @@ const MobileCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        {/* SidebarTrigger removed from here */}
-        <Logo />
+        {/* SidebarTrigger removed */}
+        {/* Logo removed */}
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />
