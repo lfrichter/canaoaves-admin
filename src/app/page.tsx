@@ -1,17 +1,17 @@
+import { RefreshButton } from "@/app/_components/refresh-button";
+import { getDashboardStats } from "@/app/actions/dashboard";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getDashboardStats } from "@/app/actions/dashboard";
-import { RefreshButton } from "@/app/_components/refresh-button";
 import {
-  FileText,
-  ShieldAlert,
   Building2,
+  Globe,
   ImageIcon,
-  Map,
+  MapPin,
+  ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
 
@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     {
       title: "Reivindicações Pendentes",
       value: stats.pendingClaims,
-      icon: <FileText className="h-6 w-6 text-muted-foreground" />,
+      icon: <Building2 className="h-6 w-6 text-muted-foreground" />,
       href: "/service-ownership-claims",
     },
     {
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
     {
       title: "Descrições de Cidades",
       value: stats.pendingCityDescriptions,
-      icon: <Building2 className="h-6 w-6 text-muted-foreground" />,
+      icon: <MapPin className="h-6 w-6 text-muted-foreground" />,
       href: "/city-descriptions",
     },
     {
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     {
       title: "Descrições de Estados",
       value: stats.pendingStateDescriptions,
-      icon: <Map className="h-6 w-6 text-muted-foreground" />,
+      icon: <Globe className="h-6 w-6 text-muted-foreground" />,
       href: "/state-descriptions",
     },
   ];
