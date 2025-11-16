@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { type BaseKey, useCreateButton } from "@refinedev/core";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 type CreateButtonProps = {
@@ -29,7 +30,8 @@ export const CreateButton = React.forwardRef<
   React.ComponentRef<typeof Button>,
   CreateButtonProps
 >(({ resource, accessControl, meta, children, onClick, ...rest }, ref) => {
-  const { hidden, disabled, LinkComponent, to, label } = useCreateButton({
+  const router = useRouter();
+  const { hidden, disabled, to, label } = useCreateButton({
     resource,
     accessControl,
     meta,
@@ -41,28 +43,28 @@ export const CreateButton = React.forwardRef<
   if (isHidden) return null;
 
   return (
-    <Button {...rest} ref={ref} disabled={isDisabled} asChild>
-      <LinkComponent
-        to={to}
-        replace={false}
-        onClick={(e: React.PointerEvent<HTMLButtonElement>) => {
-          if (isDisabled) {
-            e.preventDefault();
-            return;
-          }
-          if (onClick) {
-            e.preventDefault();
-            onClick(e);
-          }
-        }}
-      >
-        {children ?? (
-          <div className="flex items-center gap-2 font-semibold">
-            <Plus className="w-4 h-4" />
-            <span>{label ?? "Create"}</span>
-          </div>
-        )}
-      </LinkComponent>
+    <Button
+      {...rest}
+      ref={ref}
+      disabled={isDisabled}
+      onClick={(e) => {
+        if (isDisabled) {
+          e.preventDefault();
+          return;
+        }
+        if (onClick) {
+          onClick(e);
+        } else {
+          router.push(to);
+        }
+      }}
+    >
+      {children ?? (
+        <div className="flex items-center gap-2 font-semibold">
+          <Plus className="w-4 h-4" />
+          <span>{label ?? "Create"}</span>
+        </div>
+      )}
     </Button>
   );
 });

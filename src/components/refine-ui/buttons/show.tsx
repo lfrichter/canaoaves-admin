@@ -5,6 +5,9 @@ import { type BaseKey, useShowButton } from "@refinedev/core";
 import { Eye } from "lucide-react";
 import React from "react";
 
+// --- MUDANÇA 1: Importar o useRouter ---
+import { useRouter } from "next/navigation";
+
 type ShowButtonProps = {
   /**
    * Resource name for API data interactions. `identifier` of the resource can be used instead of the `name` of the resource.
@@ -38,7 +41,11 @@ export const ShowButton = React.forwardRef<
     { resource, recordItemId, accessControl, meta, children, onClick, ...rest },
     ref
   ) => {
-    const { hidden, disabled, LinkComponent, to, label } = useShowButton({
+    // --- MUDANÇA 2: Inicializar o router ---
+    const router = useRouter();
+
+    // --- MUDANÇA 3: Remover o 'LinkComponent' ---
+    const { hidden, disabled, to, label } = useShowButton({
       resource,
       id: recordItemId,
       accessControl,
@@ -50,29 +57,31 @@ export const ShowButton = React.forwardRef<
 
     if (isHidden) return null;
 
+    // --- MUDANÇA 4: Substituir <Button asChild> por <Button onClick> ---
     return (
-      <Button {...rest} ref={ref} disabled={isDisabled} asChild>
-        <LinkComponent
-          to={to}
-          replace={false}
-          onClick={(e: React.PointerEvent<HTMLButtonElement>) => {
-            if (isDisabled) {
-              e.preventDefault();
-              return;
-            }
-            if (onClick) {
-              e.preventDefault();
-              onClick(e);
-            }
-          }}
-        >
-          {children ?? (
-            <div className="flex items-center gap-2 font-semibold">
-              <Eye className="h-4 w-4" />
-              <span>{label}</span>
-            </div>
-          )}
-        </LinkComponent>
+      <Button
+        {...rest}
+        ref={ref}
+        disabled={isDisabled}
+        onClick={(e) => {
+          if (isDisabled) {
+            e.preventDefault();
+            return;
+          }
+          if (onClick) {
+            onClick(e);
+          } else {
+            // Força a navegação
+            router.push(to);
+          }
+        }}
+      >
+        {children ?? (
+          <div className="flex items-center gap-2 font-semibold">
+            <Eye className="h-4 w-4" />
+            <span>{label}</span>
+          </div>
+        )}
       </Button>
     );
   }
