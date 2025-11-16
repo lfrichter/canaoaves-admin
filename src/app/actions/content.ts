@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 const supabase = createSupabaseServiceRoleClient();
@@ -20,6 +21,7 @@ export async function handleContentApproval(
     throw error;
   }
 
+  revalidatePath("/");
   return data;
 }
 
@@ -30,6 +32,7 @@ export async function deleteContent(resource: string, id: string) {
     throw error;
   }
 
+  revalidatePath("/");
   return {
     data: { id },
   };

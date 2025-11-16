@@ -18,13 +18,11 @@ interface ICityImage {
 }
 
 export default function CityImageList() {
-  const tableRef = React.useRef<any>(null);
-
   const { mutate: approveMutate } = useMutation({
     mutationFn: (id: string) => handleContentApproval("city_images", id, true),
     onSuccess: () => {
       toast.success("Imagem de cidade aprovada com sucesso!");
-      tableRef.current?.refineCore.refetch();
+      refetch();
     },
     onError: (error: any) => {
       toast.error(`Erro ao aprovar imagem de cidade: ${error.message}`);
@@ -35,7 +33,7 @@ export default function CityImageList() {
     mutationFn: (id: string) => deleteContent("city_images", id),
     onSuccess: () => {
       toast.success("Imagem de cidade rejeitada (excluída) com sucesso!");
-      tableRef.current?.refineCore.refetch();
+      refetch();
     },
     onError: (error: any) => {
       toast.error(`Erro ao rejeitar imagem de cidade: ${error.message}`);
@@ -106,29 +104,27 @@ export default function CityImageList() {
     [handleApprove, handleReject]
   );
 
-  const table = useTable<ICityImage>({
+  const refineTableProps = useTable<ICityImage>({
     refineCoreProps: {
       resource: "city_images",
-      filters: {
-        permanent: [
-          {
-            field: "approved",
-            operator: "eq",
-            value: false,
-          },
-        ],
-      },
+      filters: [
+        {
+          field: "approved",
+          operator: "eq",
+          value: false,
+        },
+      ],
       syncWithLocation: true,
     },
     columns,
   });
 
-  tableRef.current = table;
+  const refetch = refineTableProps.refineCore.refetch;
 
   return (
     <ListView>
       <ListViewHeader title="Imagens de Cidades para Aprovação" />
-      <DataTable table={table} />
+      <DataTable table={refineTableProps} />
     </ListView>
   );
 }
