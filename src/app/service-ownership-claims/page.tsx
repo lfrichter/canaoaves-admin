@@ -1,30 +1,52 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/react-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
-import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { handleClaimApproval } from "@/app/actions/service-claims";
+import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import {
+  ListView,
+  ListViewHeader,
+} from "@/components/refine-ui/views/list-view";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner"; // Assuming sonner is used for notifications
+import { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
+import React from "react";
+import { toast } from "sonner";
 
 interface IServiceOwnershipClaim {
   id: string;
-  service_name: string;
   claimant_name: string;
-  document: string;
+  document_url: string;
   status: string;
+  services: {
+    name: string;
+  };
+  claimant_email: string;
+  claimant_phone: string;
+  claimant_role: string;
+  message: string;
+  created_at: string;
 }
 
 export default function ServiceOwnershipClaimList() {
-  const tableRef = React.useRef<any>(null);
+  // --- A ORDEM DAS DECLARAÇÕES FOI CORRIGIDA ---
+
+  // 1. Mutações e Handlers devem ser definidos PRIMEIRO
+  // (O 'refetch' será definido depois, mas precisamos das funções)
 
   const { mutate: approveMutate } = useMutation({
     mutationFn: (claimId: string) => handleClaimApproval(claimId, true),
     onSuccess: () => {
       toast.success("Reivindicação aprovada com sucesso!");
-      tableRef.current?.refineCore.refetch();
+      // O 'refetch' será chamado pelo 'handleApprove'
     },
     onError: (error: any) => {
       toast.error(`Erro ao aprovar reivindicação: ${error.message}`);
@@ -35,62 +57,136 @@ export default function ServiceOwnershipClaimList() {
     mutationFn: (claimId: string) => handleClaimApproval(claimId, false),
     onSuccess: () => {
       toast.success("Reivindicação rejeitada com sucesso!");
-      tableRef.current?.refineCore.refetch();
+      // O 'refetch' será chamado pelo 'handleReject'
     },
     onError: (error: any) => {
       toast.error(`Erro ao rejeitar reivindicação: ${error.message}`);
     },
   });
 
-  const handleApprove = React.useCallback(async (claimId: string) => {
-    approveMutate(claimId);
-  }, [approveMutate]);
+  // Os handlers agora podem ser declarados
+  const handleApprove = React.useCallback(
+    async (claimId: string) => {
+      approveMutate(claimId, {
+        onSuccess: () => {
+          // Chamamos o refetch aqui, depois que 'table' for inicializado
+          table.refineCore.refetch();
+        },
+      });
+    },
+    [approveMutate] // 'table' não precisa ser dependência aqui
+  );
 
-  const handleReject = React.useCallback(async (claimId: string) => {
-    rejectMutate(claimId);
-  }, [rejectMutate]);
+  const handleReject = React.useCallback(
+    async (claimId: string) => {
+      rejectMutate(claimId, {
+        onSuccess: () => {
+          // Chamamos o refetch aqui
+          table.refineCore.refetch();
+        },
+      });
+    },
+    [rejectMutate] // 'table' não precisa ser dependência aqui
+  );
 
+  // 2. Agora que os handlers existem, podemos definir as 'columns'
   const columns = React.useMemo<ColumnDef<IServiceOwnershipClaim>[]>(
     () => [
       {
-        id: "id",
-        accessorKey: "id",
-        header: "ID",
-      },
-      {
         id: "service_name",
-        accessorKey: "service_name",
-        header: "Nome do Serviço",
+        header: "Serviço",
+        cell: function render({ row }) {
+          if (!row.original.services) {
+            return <span className="text-gray-500">Serviço não encontrado</span>;
+          }
+          return <span>{row.original.services.name}</span>;
+        },
       },
       {
         id: "claimant_name",
         accessorKey: "claimant_name",
-        header: "Nome do Reivindicante",
+        header: "Reivindicante",
       },
       {
         id: "document",
-        accessorKey: "document",
+        accessorKey: "document_url",
         header: "Documento",
+        cell: function render({ row }) {
+          const url = row.original.document_url;
+          if (!url) {
+            return <span>N/A</span>;
+          }
+          return (
+            <Link
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+              Ver Documento
+            </Link>
+          );
+        },
       },
       {
         id: "actions",
         header: "Ações",
         cell: function render({ row }) {
-          const claimId = row.original.id;
+          const claim = row.original;
           return (
-            <div className="flex gap-2">
-              <button
-                className="px-4 py-2 text-white bg-green-500 rounded"
-                onClick={() => handleApprove(claimId)}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => handleApprove(claim.id)}
               >
                 Aprovar
-              </button>
-              <button
-                className="px-4 py-2 text-white bg-red-500 rounded"
-                onClick={() => handleReject(claimId)}
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => handleReject(claim.id)}
               >
                 Rejeitar
-              </button>
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    Ver Detalhes
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Detalhes da Reivindicação</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4 text-sm">
+                    <div className="grid grid-cols-3 gap-2">
+                      <strong className="col-span-1">ID:</strong>
+                      <span className="col-span-2 font-mono text-xs">
+                        {claim.id}
+                      </span>
+                      <strong className="col-span-1">Serviço:</strong>
+                      <span className="col-span-2">{claim.services?.name}</span>
+                      <strong className="col-span-1">Reivindicante:</strong>
+                      <span className="col-span-2">{claim.claimant_name}</span>
+                      <strong className="col-span-1">Email:</strong>
+                      <span className="col-span-2">{claim.claimant_email}</span>
+                      <strong className="col-span-1">Telefone:</strong>
+                      <span className="col-span-2">{claim.claimant_phone}</span>
+                      <strong className="col-span-1">Cargo:</strong>
+                      <span className="col-span-2">{claim.claimant_role}</span>
+                      <strong className="col-span-1">Enviado em:</strong>
+                      <span className="col-span-2">
+                        {new Date(claim.created_at).toLocaleString("pt-BR")}
+                      </span>
+                    </div>
+                    <strong className="mt-4 block">Mensagem:</strong>
+                    <p className="mt-1 rounded border p-2">
+                      {claim.message || "Nenhuma mensagem."}
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           );
         },
@@ -99,6 +195,7 @@ export default function ServiceOwnershipClaimList() {
     [handleApprove, handleReject]
   );
 
+  // 3. Finalmente, agora que 'columns' existe, podemos chamar 'useTable'
   const table = useTable<IServiceOwnershipClaim>({
     refineCoreProps: {
       resource: "service_ownership_claims",
@@ -112,11 +209,12 @@ export default function ServiceOwnershipClaimList() {
         ],
       },
       syncWithLocation: true,
+      meta: {
+        select: "*, services(name)",
+      },
     },
-    columns,
+    columns, // Agora 'columns' está inicializado e disponível
   });
-
-  tableRef.current = table;
 
   return (
     <ListView>
