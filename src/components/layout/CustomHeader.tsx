@@ -87,7 +87,7 @@ const DesktopCustomHeader = () => {
     >
       <div className="flex items-center gap-2">
         {userRole === "master" && <SidebarTrigger />}
-        {userRole === "admin" && <Logo showText={true} />}
+        <Logo showText={true} />
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />
@@ -112,11 +112,9 @@ const MobileCustomHeader = () => {
     >
       <div className="flex items-center gap-2">
         {userRole === "master" && <SidebarTrigger />}
-        {userRole === "admin" && <Logo showText={false} />}
+        <Logo showText={true} />
       </div>
       <div className="flex items-center gap-4">
-        <ThemeToggle />
-        <User />
         <LogoutButton />
       </div>
     </header>

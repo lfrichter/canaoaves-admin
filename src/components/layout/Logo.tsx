@@ -21,7 +21,7 @@ export const Logo: React.FC<LogoProps> = ({
   const showText = isLogin ? true : showTextProp;
 
   const logoSize = isLogin ? 80 : 30;
-  const logoSizeClass = isLogin ? 'w-[80px] h-[80px]' : 'w-[30px] h-[30px]';
+  const logoSizeClass = isLogin ? 'w-[80px] h-[80px]' : 'h-[30px] w-auto';
   const textSizeClass = isLogin ? 'text-lg' : 'text-xs';
 
   // --- 1. LÓGICA DO CONTAINER CORRIGIDA ---
