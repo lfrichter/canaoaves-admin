@@ -37,7 +37,7 @@ export const CustomSider = () => {
       : "";
 
   return (
-    <Sidebar collapsible="icon" className={cn(borderColorClass)}>
+    <Sidebar collapsible={userRole === "master" ? "icon" : undefined} className={cn(borderColorClass)}>
       <SidebarHeader>
         <Logo showText={open} />
       </SidebarHeader>
