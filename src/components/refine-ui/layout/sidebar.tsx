@@ -18,15 +18,13 @@ import {
   SidebarContent as ShadcnSidebarContent,
   SidebarHeader as ShadcnSidebarHeader,
   SidebarRail as ShadcnSidebarRail,
-  SidebarTrigger as ShadcnSidebarTrigger,
-  useSidebar as useShadcnSidebar,
+  useSidebar as useShadcnSidebar
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
   useLink,
   useMenu,
-  useRefineOptions,
-  type TreeMenuItem,
+  type TreeMenuItem
 } from "@refinedev/core";
 import { ChevronRight, ListIcon } from "lucide-react";
 
@@ -245,14 +243,6 @@ function SidebarHeader() {
         <Logo showText={open} />
       </div>
 
-      <ShadcnSidebarTrigger
-        className={cn("text-muted-foreground", "mr-1.5", {
-          "opacity-0": !open,
-          "opacity-100": open || isMobile,
-          "pointer-events-auto": open || isMobile,
-          "pointer-events-none": !open && !isMobile,
-        })}
-      />
     </ShadcnSidebarHeader>
   );
 }

@@ -1,8 +1,7 @@
-import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
-import { RefineContext } from "./_refine_context";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Refine",
@@ -21,11 +20,13 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <body>
         <Suspense>
-          <ThemeProvider>
-            <RefineContext>
-              {children}
-            </RefineContext>
-          </ThemeProvider>
+          <Providers>
+            {/* <ThemeProvider> */}
+              {/* <RefineContext> */}
+                {children}
+              {/* </RefineContext> */}
+            {/* </ThemeProvider> */}
+          </Providers>
         </Suspense>
       </body>
     </html>
