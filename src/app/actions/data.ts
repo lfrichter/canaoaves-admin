@@ -1,33 +1,56 @@
+// src/app/actions/data.ts
+
 "use server";
 
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 export async function getList(resource: string, params: any) {
-  // --- DEBUGGING ---
-  console.log(`[getList Action] CHAMADO para recurso: ${resource}`);
+  console.log("Server Action getList params:", params);
+  const supabase = createSupabaseServiceRoleClient();
 
-  let selectQuery = "*"; // Padrão
+  const {
+    current = 1,
+    pageSize = 10,
+    filters = [],
+    sorters = [],
+    meta,
+  } = params;
 
-  try {
-    const {
-      current = 1,
-      pageSize = 10,
-      filters = [],
-      sorters = [],
-      meta, // Nós esperamos por isso
-    } = params;
+  // --- MUDANÇA: Interceptar 'reports' e usar a nova função RPC ---
+  if (resource === "reports") {
+    console.log(
+      `[getList Action] Interceptando 'reports'. Chamando RPC 'get_pending_reports_with_details'.`
+    );
 
-    console.log(`[getList Action] Params processados. Meta recebido: ${JSON.stringify(meta)}`);
+    // O filtro 'status=pending' já está na função RPC,
+    // então só precisamos passar a paginação.
+    const { data, error } = await supabase.rpc(
+      "get_pending_reports_with_details",
+      {
+        p_page_size: pageSize,
+        p_current_page: current,
+      }
+    );
 
-    // Determina a query de select
-    if (meta && meta.select) {
-      selectQuery = meta.select;
-      console.log(`[getList Action] Usando meta.select: ${selectQuery}`);
-    } else {
-      console.log(`[getList Action] Nenhum meta.select encontrado, usando padrão: "*"`);
+    if (error) {
+      console.error(`[getList Action] RPC Error:`, error);
+      throw error;
     }
 
-    const supabase = createSupabaseServiceRoleClient();
+    // A RPC retorna os dados e a contagem total em cada linha
+    const total = data.length > 0 ? data[0].total_count : 0;
+
+    return {
+      data,
+      total: total,
+    };
+  }
+  // --- Fim da Interceptação ---
+
+  // Comportamento padrão para todos os outros recursos
+  try {
+    const selectQuery = meta?.select ? meta.select : "*";
+
     let query: any = supabase
       .from(resource)
       .select(selectQuery, { count: "exact" });
@@ -37,6 +60,7 @@ export async function getList(resource: string, params: any) {
       if (filter.operator === "eq") {
         query = query.eq(filter.field, filter.value);
       }
+      // Adicionar mais operadores de filtro se necessário
     });
 
     // Aplicar sorters
@@ -56,28 +80,26 @@ export async function getList(resource: string, params: any) {
       throw error;
     }
 
-    console.log(`[getList Action] Query bem-sucedida. Retornando ${data.length} registros, total ${count}.`);
+    console.log(
+      `[getList Action] Query bem-sucedida. Retornando ${data.length} registros, total ${count}.`
+    );
     return {
       data,
       total: count,
     };
-
   } catch (err: any) {
-    console.error(`[getList Action] CRASH CRÍTICO para recurso ${resource}:`, err.message);
-    // Retorna uma estrutura de erro que o Refine pode entender
+    console.error(
+      `[getList Action] CRASH CRÍTICO para recurso ${resource}:`,
+      err.message
+    );
     return Promise.reject(err);
   }
 }
 
-// ... (o resto do seu arquivo getOne, create, update, etc. fica aqui)
-
+// ... (o resto das suas Server Actions: getOne, create, update, etc.)
 export async function getOne(resource: string, id: string) {
   const supabase = createSupabaseServiceRoleClient();
-  const { data, error } = await supabase
-    .from(resource)
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from(resource).select("*").eq("id", id).single();
 
   if (error) {
     throw error;
@@ -90,11 +112,7 @@ export async function getOne(resource: string, id: string) {
 
 export async function create(resource: string, variables: any) {
   const supabase = createSupabaseServiceRoleClient();
-  const { data, error } = await supabase
-    .from(resource)
-    .insert(variables)
-    .select()
-    .single();
+  const { data, error } = await supabase.from(resource).insert(variables).select().single();
 
   if (error) {
     throw error;
@@ -107,12 +125,7 @@ export async function create(resource: string, variables: any) {
 
 export async function update(resource: string, id: string, variables: any) {
   const supabase = createSupabaseServiceRoleClient();
-  const { data, error } = await supabase
-    .from(resource)
-    .update(variables)
-    .eq("id", id)
-    .select()
-    .single();
+  const { data, error } = await supabase.from(resource).update(variables).eq("id", id).select().single();
 
   if (error) {
     throw error;

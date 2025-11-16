@@ -22,7 +22,8 @@ import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
 
-// --- MUDANÇA 1: Interface atualizada ---
+// --- MUDANÇA 1: Interface atualizada para RPC ---
+// (Agora é uma estrutura plana, sem objetos aninhados)
 interface IReport {
   id: string;
   target_id: string;
@@ -36,28 +37,18 @@ interface IReport {
   status: string;
   description: string;
   created_at: string;
-  // Perfil do *denunciante*
-  reporter: {
-    full_name: string;
-    public_name: string;
-    score: number;
-    categories: {
-      name: string;
-    };
-  } | null;
-  // Objeto aninhado para o *alvo* (se for um serviço)
-  target_service: {
-    slug: string;
-  } | null;
-  // Objeto aninhado para o *alvo* (se for um perfil)
-  target_profile: {
-    slug: string;
-  } | null;
+
+  // Dados do Denunciante (Reporter)
+  reporter_full_name: string | null;
+  reporter_public_name: string | null;
+  reporter_score: number | null;
+  reporter_category_name: string | null;
+
+  // Slug do Alvo (Target)
+  target_slug: string | null;
 }
 
-// --- MUDANÇA 2: Helper de Link atualizado ---
-
-// Traduz o 'reason'
+// Helper: Traduz o 'reason'
 function getReasonLabel(reason: IReport["reason"]): string {
   const labels = {
     incorrect_information: "Informação Incorreta",
@@ -69,51 +60,41 @@ function getReasonLabel(reason: IReport["reason"]): string {
   return labels[reason] || reason;
 }
 
-// Constrói o link para o *site público*
+// --- MUDANÇA 2: Helper de Link atualizado para 'target_slug' ---
 function getPublicTargetLink(
-  report: IReport // Agora recebe o objeto 'report' inteiro
+  report: IReport
 ): { href: string; label: string } | null {
   const baseUrl = "https://www.canaoaves.com.br";
-  const { target_type, target_id, target_service, target_profile } = report;
+  const { target_type, target_slug } = report;
 
   switch (target_type) {
     case "service":
-      // Usa o 'slug' do objeto aninhado 'target_service'
-      const serviceSlug = target_service?.slug;
-      if (serviceSlug) {
+      if (target_slug) {
         return {
-          href: `${baseUrl}/service/${serviceSlug}`,
-          label: "Ver Serviço (Slug)",
+          href: `${baseUrl}/service/${target_slug}`,
+          label: "Ver Serviço",
         };
       }
-      // Fallback para o ID (embora o 'slug' seja o ideal)
-      return {
-        href: `${baseUrl}/service/${target_id}`,
-        label: "Ver Serviço (ID)",
-      };
+      break; // Se não houver slug, não retorna link
 
     case "profile":
-      // Usa o 'slug' do objeto aninhado 'target_profile'
-      const profileSlug = target_profile?.slug;
-      if (profileSlug) {
+      if (target_slug) {
         return {
-          href: `${baseUrl}/profile/${profileSlug}`,
-          label: "Ver Perfil (Slug)",
+          href: `${baseUrl}/profile/${target_slug}`,
+          label: "Ver Perfil",
         };
       }
-      return {
-        href: `${baseUrl}/profile/${target_id}`,
-        label: "Ver Perfil (ID)",
-      };
+      break;
 
     case "comment":
     case "photo":
     default:
       return null;
   }
+  return null;
 }
 
-// Traduz o 'target_type'
+// Helper: Traduz o 'target_type'
 function getTypeLabel(target_type: IReport["target_type"]): string {
   const labels = {
     profile: "Perfil",
@@ -125,12 +106,8 @@ function getTypeLabel(target_type: IReport["target_type"]): string {
 }
 
 export default function ReportList() {
-  // --- ORDEM DE DECLARAÇÃO CORRIGIDA ---
-
-  // 1. Declarar 'table' com 'let'
   let table: any = null;
 
-  // 2. Definir Mutações
   const { mutate: resolveMutate } = useMutation({
     mutationFn: (reportId: string) => resolveReport(reportId),
     onSuccess: () => {
@@ -151,7 +128,6 @@ export default function ReportList() {
     },
   });
 
-  // 3. Definir Handlers
   const handleResolve = React.useCallback(
     async (reportId: string) => {
       resolveMutate(reportId, {
@@ -174,14 +150,12 @@ export default function ReportList() {
     [ignoreMutate]
   );
 
-  // 4. Definir Colunas
   const columns = React.useMemo<ColumnDef<IReport>[]>(
     () => [
       {
         id: "target",
         header: "Alvo Denunciado",
         cell: function render({ row }) {
-          // Passa o objeto 'report' inteiro para o helper
           const linkInfo = getPublicTargetLink(row.original);
 
           if (linkInfo) {
@@ -225,8 +199,7 @@ export default function ReportList() {
         header: "Ações",
         cell: function render({ row }) {
           const report = row.original;
-          const reporter = report.reporter;
-          const categoryName = reporter?.categories?.name || "Não informado";
+          const categoryName = report.reporter_category_name || "Não informado";
 
           return (
             <div className="flex flex-wrap gap-2">
@@ -260,15 +233,16 @@ export default function ReportList() {
                     <div className="grid grid-cols-3 gap-y-2 gap-x-4">
                       <strong className="col-span-1">Denunciado por:</strong>
                       <span className="col-span-2">
-                        {reporter?.public_name || "N/A"}
-                        {reporter?.full_name && ` - ${reporter.full_name}`}
+                        {report.reporter_public_name || "N/A"}
+                        {report.reporter_full_name &&
+                          ` - ${report.reporter_full_name}`}
                       </span>
 
                       <strong className="col-span-1">Tipo:</strong>
                       <span className="col-span-2">{categoryName}</span>
 
                       <strong className="col-span-1">Ranking:</strong>
-                      <span className="col-span-2">{reporter?.score || 0}</span>
+                      <span className="col-span-2">{report.reporter_score || 0}</span>
 
                       <strong className="col-span-1">Enviado em:</strong>
                       <span className="col-span-2">
@@ -277,12 +251,12 @@ export default function ReportList() {
                     </div>
 
                     <strong className="mt-4 block">Motivo da Denúncia:</strong>
-                    <p className="mt-1 rounded border bg-gray-50 p-3 font-medium">
+                    <p className="mt-1 rounded border p-3 font-medium">
                       {getReasonLabel(report.reason)}
                     </p>
 
                     <strong className="mt-4 block">Mensagem:</strong>
-                    <p className="mt-1 h-36 max-h-[40vh] overflow-y-auto rounded border bg-gray-50 p-3">
+                    <p className="mt-1 h-36 max-h-[40vh] overflow-y-auto rounded border p-3">
                       {report.description || "Nenhuma mensagem."}
                     </p>
                   </div>
@@ -296,8 +270,6 @@ export default function ReportList() {
     [handleResolve, handleIgnore]
   );
 
-  // 5. Definir 'table' (agora 'columns' está definido)
-  // Corrigido para não desestruturar (const table = ...)
   table = useTable<IReport>({
     refineCoreProps: {
       resource: "reports",
@@ -311,14 +283,9 @@ export default function ReportList() {
         ],
       },
       syncWithLocation: true,
-      // --- MUDANÇA 3: 'meta.select' atualizado ---
-      meta: {
-        select:
-          "*, " + // Campos da denúncia
-          "reporter:profiles!reports_reporter_id_fkey(full_name, public_name, score, categories(name)), " + // Perfil do denunciante
-          "target_service:services!target_id(slug), " + // Slug do serviço (alvo)
-          "target_profile:profiles!target_id(slug)", // Slug do perfil (alvo)
-      },
+      // --- MUDANÇA 3: Remover o 'meta.select' ---
+      // (A RPC agora cuida disso)
+      // meta: { ... }
     },
     columns,
   });
