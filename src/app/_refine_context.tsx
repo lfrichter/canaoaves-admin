@@ -3,28 +3,34 @@
 import { CustomHeader } from "@/components/layout/CustomHeader";
 import { CustomLayout } from "@/components/layout/CustomLayout";
 import { CustomSider } from "@/components/layout/CustomSider";
+import { useNotificationProvider } from "@/components/refine-ui/notification/use-notification-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { authProviderClient } from "@/providers/auth-provider/auth-provider.client";
 import { dataProvider } from "@/providers/data-provider";
-import { DevtoolsProvider } from "@/providers/devtools";
-import { Refine, RefineProps, useGetIdentity } from "@refinedev/core";
+import { Refine, useGetIdentity } from "@refinedev/core";
+import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import routerProvider from "@refinedev/nextjs-router";
 import {
-  LayoutDashboard,
-  Users,
   Briefcase,
-  Shapes,
-  Sparkles,
-  Percent,
-  Landmark,
-  ShieldAlert,
+  ClipboardList,
   FileText,
   Image,
+  Landmark,
+  LayoutDashboard,
   MapPin,
-  ClipboardList,
+  Percent,
+  Shapes,
+  ShieldAlert,
+  Sparkles,
+  Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React from "react";
+// import { Layout } from "@/components/refine-ui/layout/layout";
+
+type RefineContextProps = {
+  children: React.ReactNode;
+};
 
 const LayoutController = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -49,14 +55,12 @@ const LayoutController = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export function RefineContext({
-  children,
-  ...props
-}: {
-  children: React.ReactNode;
-} & RefineProps) {
+export const RefineContext = ({ children, ...props }: RefineContextProps) => {
+  const notificationProvider = useNotificationProvider()
+// export function RefineContext({children, ...props}: {children: React.ReactNode;} & RefineProps) {
   return (
-    <DevtoolsProvider>
+    <RefineKbarProvider>
+    {/* <DevtoolsProvider> */}
       <Refine
         routerProvider={routerProvider}
         dataProvider={dataProvider}
@@ -153,9 +157,12 @@ export function RefineContext({
         }}
         {...props}
       >
-        <LayoutController>{children}</LayoutController>
+        {children}
+
+        <Toaster />
+        <RefineKbar />
       </Refine>
-      <Toaster />
-    </DevtoolsProvider>
+    {/* </DevtoolsProvider> */}
+    </RefineKbarProvider>
   );
 }

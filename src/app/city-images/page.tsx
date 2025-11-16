@@ -1,20 +1,27 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/react-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { deleteContent, handleContentApproval } from "@/app/actions/content";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import {
+  ListView,
+  ListViewHeader,
+} from "@/components/refine-ui/views/list-view";
+import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { handleContentApproval, deleteContent } from "@/app/actions/content";
+import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
+import React from "react";
+import { toast } from "sonner";
 
+// MUDANÇA 1: Atualiza a Interface para esperar o objeto 'cities'
 interface ICityImage {
   id: string;
-  city_name: string;
   image_url: string;
   approved: boolean;
+  cities: {
+    name: string;
+    state: string;
+  };
 }
 
 export default function CityImageList() {
@@ -40,13 +47,19 @@ export default function CityImageList() {
     },
   });
 
-  const handleApprove = React.useCallback(async (id: string) => {
-    approveMutate(id);
-  }, [approveMutate]);
+  const handleApprove = React.useCallback(
+    async (id: string) => {
+      approveMutate(id);
+    },
+    [approveMutate]
+  );
 
-  const handleReject = React.useCallback(async (id: string) => {
-    rejectMutate(id);
-  }, [rejectMutate]);
+  const handleReject = React.useCallback(
+    async (id: string) => {
+      rejectMutate(id);
+    },
+    [rejectMutate]
+  );
 
   const columns = React.useMemo<ColumnDef<ICityImage>[]>(
     () => [
@@ -55,10 +68,26 @@ export default function CityImageList() {
         accessorKey: "id",
         header: "ID",
       },
+      // MUDANÇA 2: Coluna de Localização que lê os dados aninhados
       {
-        id: "city_name",
-        accessorKey: "city_name",
-        header: "Nome da Cidade",
+        id: "localizacao",
+        header: "Localização",
+        cell: function render({ row }) {
+          // 'cities' vem do meta.select
+          const city = row.original.cities;
+
+          // Se 'cities' for null (porque city_id era null),
+          // mostramos "Pendente" em vez de "Carregando...".
+          if (!city) {
+            return <span className="text-gray-500">Pendente</span>;
+          }
+
+          const cityName = city.name;
+          const stateName = city.state;
+          const location = stateName ? `${cityName}, ${stateName}` : cityName;
+
+          return <span>{location}</span>;
+        },
       },
       {
         id: "image_url",
@@ -107,14 +136,20 @@ export default function CityImageList() {
   const refineTableProps = useTable<ICityImage>({
     refineCoreProps: {
       resource: "city_images",
-      filters: [
-        {
-          field: "approved",
-          operator: "eq",
-          value: false,
-        },
-      ],
+      // MUDANÇA 3: Filtro 'permanent' para *sempre* mostrar 'approved = false'
+      filters: {
+        permanent: [
+          {
+            field: "approved",
+            operator: "eq",
+            value: false,
+          },
+        ],
+      },
       syncWithLocation: true,
+      meta: {
+        select: "*, cities(name, state)",
+      },
     },
     columns,
   });

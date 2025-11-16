@@ -1,23 +1,33 @@
 "use client";
 
-import type { DataProvider, BaseRecord, BaseKey } from "@refinedev/core";
 import {
+  create,
+  deleteOne,
   getList,
   getOne,
-  create,
   update,
-  deleteOne,
 } from "@/app/actions/data";
+import type { BaseKey, DataProvider } from "@refinedev/core";
 
 export const dataProvider: DataProvider = {
-  getList: async ({ resource, pagination, filters, sorters }) => {
+  getList: async ({ resource, pagination, filters, sorters, meta }) => {
     console.log("dataProvider getList pagination:", pagination);
-    const response = await getList(resource, {
+
+    const params: any = {
       current: (pagination as any)?.current,
       pageSize: (pagination as any)?.pageSize,
       filters,
       sorters,
-    });
+    };
+
+    if (meta?.select) {
+      params.meta = {
+        select: meta.select,
+      };
+    }
+
+    const response = await getList(resource, params);
+
     return {
       data: response.data,
       total: response.total,

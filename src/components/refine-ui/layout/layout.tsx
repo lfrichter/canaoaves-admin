@@ -1,7 +1,6 @@
 "use client";
 
 import { CustomHeader } from "@/components/layout/CustomHeader";
-import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { PropsWithChildren } from "react";
@@ -9,7 +8,7 @@ import { Sidebar } from "./sidebar";
 
 export function Layout({ children }: PropsWithChildren) {
   return (
-    <ThemeProvider>
+    // <ThemeProvider>
       <SidebarProvider>
         <Sidebar />
         <SidebarInset>
@@ -32,7 +31,7 @@ export function Layout({ children }: PropsWithChildren) {
           </main>
         </SidebarInset>
       </SidebarProvider>
-    </ThemeProvider>
+    // </ThemeProvider>
   );
 }
 

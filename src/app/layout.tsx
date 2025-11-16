@@ -22,7 +22,9 @@ export default async function RootLayout({
       <body>
         <Suspense>
           <ThemeProvider>
-            <RefineContext>{children}</RefineContext>
+            <RefineContext>
+              {children}
+            </RefineContext>
           </ThemeProvider>
         </Suspense>
       </body>
