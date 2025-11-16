@@ -6,6 +6,14 @@ import {
   ListView,
   ListViewHeader,
 } from "@/components/refine-ui/views/list-view";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
@@ -13,23 +21,38 @@ import Image from "next/image";
 import React from "react";
 import { toast } from "sonner";
 
-// MUDANÇA 1: Atualiza a Interface para esperar o objeto 'cities'
 interface ICityImage {
   id: string;
   image_url: string;
   approved: boolean;
+  created_at: string;
   cities: {
     name: string;
     state: string;
   };
+  profiles: {
+    full_name: string;
+    public_name: string;
+    score: number;
+    categories: {
+      name: string;
+    };
+  };
 }
 
 export default function CityImageList() {
+  // --- ORDEM DE DECLARAÇÃO CORRIGIDA ---
+
+  // 1. Declarar 'table' com 'let' para que possa ser referenciado
+  //    pelos handlers antes da inicialização completa.
+  let table: any = null;
+
+  // 2. Definir as mutações
   const { mutate: approveMutate } = useMutation({
     mutationFn: (id: string) => handleContentApproval("city_images", id, true),
     onSuccess: () => {
       toast.success("Imagem de cidade aprovada com sucesso!");
-      refetch();
+      // o refetch será chamado pelo handler
     },
     onError: (error: any) => {
       toast.error(`Erro ao aprovar imagem de cidade: ${error.message}`);
@@ -40,91 +63,145 @@ export default function CityImageList() {
     mutationFn: (id: string) => deleteContent("city_images", id),
     onSuccess: () => {
       toast.success("Imagem de cidade rejeitada (excluída) com sucesso!");
-      refetch();
+      // o refetch será chamado pelo handler
     },
     onError: (error: any) => {
       toast.error(`Erro ao rejeitar imagem de cidade: ${error.message}`);
     },
   });
 
+  // 3. Definir os Handlers
   const handleApprove = React.useCallback(
     async (id: string) => {
-      approveMutate(id);
+      approveMutate(id, {
+        onSuccess: () => {
+          // Agora 'table' está acessível no closure
+          table?.refineCore.refetch();
+        },
+      });
     },
-    [approveMutate]
+    [approveMutate] // 'table' não é uma dependência
   );
 
   const handleReject = React.useCallback(
     async (id: string) => {
-      rejectMutate(id);
+      rejectMutate(id, {
+        onSuccess: () => {
+          table?.refineCore.refetch();
+        },
+      });
     },
-    [rejectMutate]
+    [rejectMutate] // 'table' não é uma dependência
   );
 
+  // 4. Definir as Colunas (que dependem dos handlers)
   const columns = React.useMemo<ColumnDef<ICityImage>[]>(
     () => [
-      {
-        id: "id",
-        accessorKey: "id",
-        header: "ID",
-      },
-      // MUDANÇA 2: Coluna de Localização que lê os dados aninhados
       {
         id: "localizacao",
         header: "Localização",
         cell: function render({ row }) {
-          // 'cities' vem do meta.select
           const city = row.original.cities;
-
-          // Se 'cities' for null (porque city_id era null),
-          // mostramos "Pendente" em vez de "Carregando...".
           if (!city) {
             return <span className="text-gray-500">Pendente</span>;
           }
-
-          const cityName = city.name;
-          const stateName = city.state;
-          const location = stateName ? `${cityName}, ${stateName}` : cityName;
-
+          const location = city.state ? `${city.name}, ${city.state}` : city.name;
           return <span>{location}</span>;
         },
       },
       {
-        id: "image_url",
-        accessorKey: "image_url",
+        id: "imagem",
         header: "Imagem",
         cell: function render({ row }) {
-          const imageUrl = row.original.image_url;
           return (
             <Image
-              src={imageUrl}
-              alt="City Image"
+              src={row.original.image_url}
+              alt="City Image Preview"
               width={100}
               height={100}
-              style={{ objectFit: "cover" }}
+              className="h-16 w-16 rounded object-cover"
             />
           );
+        },
+      },
+      {
+        id: "usuario",
+        header: "Usuário",
+        cell: function render({ row }) {
+          const profile = row.original.profiles;
+          if (!profile) {
+            return <span className="text-gray-500">...</span>;
+          }
+          return <span>{profile.public_name || profile.full_name}</span>;
         },
       },
       {
         id: "actions",
         header: "Ações",
         cell: function render({ row }) {
-          const id = row.original.id;
+          const image = row.original;
+          const profile = image.profiles;
+          const categoryName = profile?.categories?.name || "Não informado";
+
           return (
-            <div className="flex gap-2">
-              <button
-                className="px-4 py-2 text-white bg-green-500 rounded"
-                onClick={() => handleApprove(id)}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => handleApprove(image.id)}
               >
                 Aprovar
-              </button>
-              <button
-                className="px-4 py-2 text-white bg-red-500 rounded"
-                onClick={() => handleReject(id)}
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => handleReject(image.id)}
               >
                 Rejeitar
-              </button>
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    Ver Detalhes
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xl">
+                  <DialogHeader>
+                    <DialogTitle>Detalhes da Imagem</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    <Image
+                      src={image.image_url}
+                      alt="City Image"
+                      width={800}
+                      height={600}
+                      className="w-full rounded-md object-contain"
+                    />
+                  </div>
+                  <div className="py-4 text-sm">
+                    <div className="grid grid-cols-3 gap-2">
+                      <strong className="col-span-1">Enviado por:</strong>
+                      <span className="col-span-2">
+                        {profile?.public_name ||
+                          profile?.full_name ||
+                          "Usuário não encontrado"}
+                      </span>
+                      <strong className="col-span-1">Tipo:</strong>
+                      <span className="col-span-2">{categoryName}</span>
+                      <strong className="col-span-1">Ranking:</strong>
+                      <span className="col-span-2">{profile?.score || 0}</span>
+                      <strong className="col-span-1">Enviado em:</strong>
+                      <span className="col-span-2">
+                        {new Date(image.created_at).toLocaleString("pt-BR")}
+                      </span>
+                      <strong className="col-span-1">ID Imagem:</strong>
+                      <span className="col-span-2 font-mono text-xs">
+                        {image.id}
+                      </span>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           );
         },
@@ -133,10 +210,10 @@ export default function CityImageList() {
     [handleApprove, handleReject]
   );
 
-  const refineTableProps = useTable<ICityImage>({
+  // 5. Finalmente, definir 'table' (que depende de 'columns')
+  table = useTable<ICityImage>({
     refineCoreProps: {
       resource: "city_images",
-      // MUDANÇA 3: Filtro 'permanent' para *sempre* mostrar 'approved = false'
       filters: {
         permanent: [
           {
@@ -148,18 +225,17 @@ export default function CityImageList() {
       },
       syncWithLocation: true,
       meta: {
-        select: "*, cities(name, state)",
+        select:
+          "*, cities(name, state), profiles(full_name, public_name, score, categories(name))",
       },
     },
-    columns,
+    columns, // Agora 'columns' está definida
   });
-
-  const refetch = refineTableProps.refineCore.refetch;
 
   return (
     <ListView>
       <ListViewHeader title="Imagens de Cidades para Aprovação" />
-      <DataTable table={refineTableProps} />
+      <DataTable table={table} />
     </ListView>
   );
 }

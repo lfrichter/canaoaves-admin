@@ -15,10 +15,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// --- MUDANÇA AQUI ---
+// Força o Next.js a nunca cachear esta página.
+// Ela será re-renderizada no servidor a cada visita.
+export const revalidate = 0;
+// --- FIM DA MUDANÇA ---
+
 export default async function DashboardPage() {
   const stats = await getDashboardStats();
 
   const statItems = [
+    // ... (resto do seu código)
     {
       title: "Reivindicações Pendentes",
       value: stats.pendingClaims,
