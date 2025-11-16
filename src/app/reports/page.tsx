@@ -18,12 +18,12 @@ import {
 import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image"; // Importar Image
 import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
 
-// --- MUDANÇA 1: Interface atualizada para RPC ---
-// (Agora é uma estrutura plana, sem objetos aninhados)
+// --- Interface Atualizada (Plana, vinda da RPC) ---
 interface IReport {
   id: string;
   target_id: string;
@@ -37,15 +37,16 @@ interface IReport {
   status: string;
   description: string;
   created_at: string;
-
-  // Dados do Denunciante (Reporter)
+  // Campos do Denunciante (Reporter)
   reporter_full_name: string | null;
   reporter_public_name: string | null;
   reporter_score: number | null;
   reporter_category_name: string | null;
-
-  // Slug do Alvo (Target)
   target_slug: string | null;
+  // Campos de Contato
+  reporter_phone: string | null;
+  reporter_avatar_url: string | null;
+  reporter_email: string | null;
 }
 
 // Helper: Traduz o 'reason'
@@ -60,7 +61,7 @@ function getReasonLabel(reason: IReport["reason"]): string {
   return labels[reason] || reason;
 }
 
-// --- MUDANÇA 2: Helper de Link atualizado para 'target_slug' ---
+// Helper: Constrói o link para o *site público*
 function getPublicTargetLink(
   report: IReport
 ): { href: string; label: string } | null {
@@ -75,8 +76,7 @@ function getPublicTargetLink(
           label: "Ver Serviço",
         };
       }
-      break; // Se não houver slug, não retorna link
-
+      break;
     case "profile":
       if (target_slug) {
         return {
@@ -85,9 +85,6 @@ function getPublicTargetLink(
         };
       }
       break;
-
-    case "comment":
-    case "photo":
     default:
       return null;
   }
@@ -200,6 +197,7 @@ export default function ReportList() {
         cell: function render({ row }) {
           const report = row.original;
           const categoryName = report.reporter_category_name || "Não informado";
+          const avatarUrl = report.reporter_avatar_url;
 
           return (
             <div className="flex flex-wrap gap-2">
@@ -230,19 +228,37 @@ export default function ReportList() {
                   </DialogHeader>
 
                   <div className="py-4 text-sm">
+                    {/* --- Avatar e Nome --- */}
+                    <div className="flex items-center gap-3 mb-4">
+                      {avatarUrl ? (
+                        <Image
+                          src={avatarUrl}
+                          alt={report.reporter_public_name || "Avatar"}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200" />
+                      )}
+                      <div>
+                        <strong className="block">
+                          {report.reporter_public_name || "N/A"}
+                          {report.reporter_full_name &&
+                            ` - ${report.reporter_full_name}`}
+                        </strong>
+                        <span className="text-xs text-muted-foreground">
+                          {categoryName} (Ranking: {report.reporter_score || 0})
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-y-2 gap-x-4">
-                      <strong className="col-span-1">Denunciado por:</strong>
-                      <span className="col-span-2">
-                        {report.reporter_public_name || "N/A"}
-                        {report.reporter_full_name &&
-                          ` - ${report.reporter_full_name}`}
-                      </span>
+                      <strong className="col-span-1">Email:</strong>
+                      <span className="col-span-2">{report.reporter_email || "N/A"}</span>
 
-                      <strong className="col-span-1">Tipo:</strong>
-                      <span className="col-span-2">{categoryName}</span>
-
-                      <strong className="col-span-1">Ranking:</strong>
-                      <span className="col-span-2">{report.reporter_score || 0}</span>
+                      <strong className="col-span-1">Telefone:</strong>
+                      <span className="col-span-2">{report.reporter_phone || "N/A"}</span>
 
                       <strong className="col-span-1">Enviado em:</strong>
                       <span className="col-span-2">
@@ -283,9 +299,8 @@ export default function ReportList() {
         ],
       },
       syncWithLocation: true,
-      // --- MUDANÇA 3: Remover o 'meta.select' ---
-      // (A RPC agora cuida disso)
-      // meta: { ... }
+      // 'meta' é removido pois a Server Action 'getList'
+      // está interceptando 'reports' e chamando a RPC.
     },
     columns,
   });

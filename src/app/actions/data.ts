@@ -1,5 +1,3 @@
-// src/app/actions/data.ts
-
 "use server";
 
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
@@ -16,54 +14,60 @@ export async function getList(resource: string, params: any) {
     meta,
   } = params;
 
-  // --- MUDANÇA: Interceptar 'reports' e usar a nova função RPC ---
+  // Interceptação 'reports' (Existente)
   if (resource === "reports") {
-    console.log(
-      `[getList Action] Interceptando 'reports'. Chamando RPC 'get_pending_reports_with_details'.`
-    );
+    console.log("[getList Action] Interceptando 'reports'. Chamando RPC 'get_pending_reports_with_details'.");
+    const { data, error } = await supabase.rpc("get_pending_reports_with_details", { p_page_size: pageSize, p_current_page: current });
+    if (error) { console.error(`[getList Action] RPC Error:`, error); throw error; }
+    const total = data.length > 0 ? data[0].total_count : 0;
+    return { data, total: total };
+  }
 
-    // O filtro 'status=pending' já está na função RPC,
-    // então só precisamos passar a paginação.
+  // Interceptação 'city_descriptions' (Existente)
+  if (resource === "city_descriptions") {
+    console.log("[getList Action] Interceptando 'city_descriptions'. Chamando RPC 'get_pending_city_descriptions'.");
+    const { data, error } = await supabase.rpc("get_pending_city_descriptions", { p_page_size: pageSize, p_current_page: current });
+    if (error) { console.error(`[getList Action] RPC Error:`, error); throw error; }
+    const total = data.length > 0 ? data[0].total_count : 0;
+    return { data, total: total };
+  }
+
+  // Interceptação 'city_images' (Existente)
+  if (resource === "city_images") {
+    console.log("[getList Action] Interceptando 'city_images'. Chamando RPC 'get_pending_city_images'.");
+    const { data, error } = await supabase.rpc("get_pending_city_images", { p_page_size: pageSize, p_current_page: current });
+    if (error) { console.error(`[getList Action] RPC Error:`, error); throw error; }
+    const total = data.length > 0 ? data[0].total_count : 0;
+    return { data, total: total };
+  }
+
+  // --- MUDANÇA: ADICIONAR INTERCEPTAÇÃO PARA 'state_descriptions' ---
+  if (resource === "state_descriptions") {
+    console.log("[getList Action] Interceptando 'state_descriptions'. Chamando RPC 'get_pending_state_descriptions'.");
+
     const { data, error } = await supabase.rpc(
-      "get_pending_reports_with_details",
+      "get_pending_state_descriptions",
       {
         p_page_size: pageSize,
         p_current_page: current,
       }
     );
-
-    if (error) {
-      console.error(`[getList Action] RPC Error:`, error);
-      throw error;
-    }
-
-    // A RPC retorna os dados e a contagem total em cada linha
+    if (error) { console.error(`[getList Action] RPC Error:`, error); throw error; }
     const total = data.length > 0 ? data[0].total_count : 0;
-
-    return {
-      data,
-      total: total,
-    };
+    return { data, total: total };
   }
-  // --- Fim da Interceptação ---
+  // --- Fim da nova interceptação ---
 
   // Comportamento padrão para todos os outros recursos
   try {
     const selectQuery = meta?.select ? meta.select : "*";
-
     let query: any = supabase
       .from(resource)
       .select(selectQuery, { count: "exact" });
 
-    // Aplicar filtros
     filters.forEach((filter: any) => {
-      if (filter.operator === "eq") {
-        query = query.eq(filter.field, filter.value);
-      }
-      // Adicionar mais operadores de filtro se necessário
+      if (filter.operator === "eq") { query = query.eq(filter.field, filter.value); }
     });
-
-    // Aplicar sorters
     sorters.forEach((sorter: any) => {
       query = query.order(sorter.field, { ascending: sorter.order === "asc" });
     });
@@ -72,26 +76,13 @@ export async function getList(resource: string, params: any) {
     const end = start + pageSize - 1;
     query = query.range(start, end);
 
-    console.log(`[getList Action] Executando query para ${resource}...`);
     const { data, error, count } = await query;
 
-    if (error) {
-      console.error(`[getList Action] Erro do Supabase:`, error);
-      throw error;
-    }
+    if (error) { throw error; }
+    return { data, total: count };
 
-    console.log(
-      `[getList Action] Query bem-sucedida. Retornando ${data.length} registros, total ${count}.`
-    );
-    return {
-      data,
-      total: count,
-    };
   } catch (err: any) {
-    console.error(
-      `[getList Action] CRASH CRÍTICO para recurso ${resource}:`,
-      err.message
-    );
+    console.error(`[getList Action] CRASH CRÍTICO para recurso ${resource}:`, err.message);
     return Promise.reject(err);
   }
 }
@@ -100,51 +91,24 @@ export async function getList(resource: string, params: any) {
 export async function getOne(resource: string, id: string) {
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).select("*").eq("id", id).single();
-
-  if (error) {
-    throw error;
-  }
-
-  return {
-    data,
-  };
+  if (error) { throw error; }
+  return { data };
 }
-
 export async function create(resource: string, variables: any) {
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).insert(variables).select().single();
-
-  if (error) {
-    throw error;
-  }
-
-  return {
-    data,
-  };
+  if (error) { throw error; }
+  return { data };
 }
-
 export async function update(resource: string, id: string, variables: any) {
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).update(variables).eq("id", id).select().single();
-
-  if (error) {
-    throw error;
-  }
-
-  return {
-    data,
-  };
+  if (error) { throw error; }
+  return { data };
 }
-
 export async function deleteOne(resource: string, id: string) {
   const supabase = createSupabaseServiceRoleClient();
   const { error } = await supabase.from(resource).delete().eq("id", id);
-
-  if (error) {
-    throw error;
-  }
-
-  return {
-    data: { id },
-  };
+  if (error) { throw error; }
+  return { data: { id } };
 }

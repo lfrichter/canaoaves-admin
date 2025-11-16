@@ -21,38 +21,32 @@ import Image from "next/image";
 import React from "react";
 import { toast } from "sonner";
 
+// --- MUDANÇA 1: Interface atualizada para RPC (plana) ---
 interface ICityImage {
   id: string;
   image_url: string;
   approved: boolean;
   created_at: string;
-  cities: {
-    name: string;
-    state: string;
-  };
-  profiles: {
-    full_name: string;
-    public_name: string;
-    score: number;
-    categories: {
-      name: string;
-    };
-  };
+  // Dados da cidade
+  city_name: string | null;
+  city_state: string | null;
+  // Dados do Perfil (Submitter)
+  profile_full_name: string | null;
+  profile_public_name: string | null;
+  profile_score: number | null;
+  profile_category_name: string | null;
+  profile_phone: string | null;
+  profile_avatar_url: string | null;
+  user_email: string | null;
 }
 
 export default function CityImageList() {
-  // --- ORDEM DE DECLARAÇÃO CORRIGIDA ---
-
-  // 1. Declarar 'table' com 'let' para que possa ser referenciado
-  //    pelos handlers antes da inicialização completa.
   let table: any = null;
 
-  // 2. Definir as mutações
   const { mutate: approveMutate } = useMutation({
     mutationFn: (id: string) => handleContentApproval("city_images", id, true),
     onSuccess: () => {
       toast.success("Imagem de cidade aprovada com sucesso!");
-      // o refetch será chamado pelo handler
     },
     onError: (error: any) => {
       toast.error(`Erro ao aprovar imagem de cidade: ${error.message}`);
@@ -63,49 +57,46 @@ export default function CityImageList() {
     mutationFn: (id: string) => deleteContent("city_images", id),
     onSuccess: () => {
       toast.success("Imagem de cidade rejeitada (excluída) com sucesso!");
-      // o refetch será chamado pelo handler
     },
     onError: (error: any) => {
       toast.error(`Erro ao rejeitar imagem de cidade: ${error.message}`);
     },
   });
 
-  // 3. Definir os Handlers
   const handleApprove = React.useCallback(
     async (id: string) => {
       approveMutate(id, {
         onSuccess: () => {
-          // Agora 'table' está acessível no closure
-          table?.refineCore.refetch();
+          table?.refineCore.tableQuery.refetch();
         },
       });
     },
-    [approveMutate] // 'table' não é uma dependência
+    [approveMutate]
   );
 
   const handleReject = React.useCallback(
     async (id: string) => {
       rejectMutate(id, {
         onSuccess: () => {
-          table?.refineCore.refetch();
+          table?.refineCore.tableQuery.refetch();
         },
       });
     },
-    [rejectMutate] // 'table' não é uma dependência
+    [rejectMutate]
   );
 
-  // 4. Definir as Colunas (que dependem dos handlers)
+  // --- MUDANÇA 2: Colunas atualizadas para RPC ---
   const columns = React.useMemo<ColumnDef<ICityImage>[]>(
     () => [
       {
         id: "localizacao",
         header: "Localização",
         cell: function render({ row }) {
-          const city = row.original.cities;
-          if (!city) {
+          const { city_name, city_state } = row.original;
+          if (!city_name) {
             return <span className="text-gray-500">Pendente</span>;
           }
-          const location = city.state ? `${city.name}, ${city.state}` : city.name;
+          const location = city_state ? `${city_name}, ${city_state}` : city_name;
           return <span>{location}</span>;
         },
       },
@@ -128,11 +119,11 @@ export default function CityImageList() {
         id: "usuario",
         header: "Usuário",
         cell: function render({ row }) {
-          const profile = row.original.profiles;
-          if (!profile) {
+          const { profile_public_name, profile_full_name } = row.original;
+          if (!profile_public_name && !profile_full_name) {
             return <span className="text-gray-500">...</span>;
           }
-          return <span>{profile.public_name || profile.full_name}</span>;
+          return <span>{profile_public_name || profile_full_name}</span>;
         },
       },
       {
@@ -140,8 +131,8 @@ export default function CityImageList() {
         header: "Ações",
         cell: function render({ row }) {
           const image = row.original;
-          const profile = image.profiles;
-          const categoryName = profile?.categories?.name || "Não informado";
+          const categoryName = image.profile_category_name || "Não informado";
+          const avatarUrl = image.profile_avatar_url;
 
           return (
             <div className="flex flex-wrap gap-2">
@@ -159,6 +150,7 @@ export default function CityImageList() {
               >
                 Rejeitar
               </Button>
+
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
@@ -169,6 +161,7 @@ export default function CityImageList() {
                   <DialogHeader>
                     <DialogTitle>Detalhes da Imagem</DialogTitle>
                   </DialogHeader>
+
                   <div className="mt-4">
                     <Image
                       src={image.image_url}
@@ -178,22 +171,48 @@ export default function CityImageList() {
                       className="w-full rounded-md object-contain"
                     />
                   </div>
+
                   <div className="py-4 text-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      {avatarUrl ? (
+                        <Image
+                          src={avatarUrl}
+                          alt={image.profile_public_name || "Avatar"}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200" />
+                      )}
+                      <div>
+                        <strong className="block">
+                          {image.profile_public_name ||
+                            image.profile_full_name ||
+                            "Usuário não encontrado"}
+                        </strong>
+                        <span className="text-xs text-muted-foreground">
+                          {categoryName} (Ranking: {image.profile_score || 0})
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-2">
-                      <strong className="col-span-1">Enviado por:</strong>
+                      <strong className="col-span-1">Email:</strong>
                       <span className="col-span-2">
-                        {profile?.public_name ||
-                          profile?.full_name ||
-                          "Usuário não encontrado"}
+                        {image.user_email || "N/A"}
                       </span>
-                      <strong className="col-span-1">Tipo:</strong>
-                      <span className="col-span-2">{categoryName}</span>
-                      <strong className="col-span-1">Ranking:</strong>
-                      <span className="col-span-2">{profile?.score || 0}</span>
+
+                      <strong className="col-span-1">Telefone:</strong>
+                      <span className="col-span-2">
+                        {image.profile_phone || "N/A"}
+                      </span>
+
                       <strong className="col-span-1">Enviado em:</strong>
                       <span className="col-span-2">
                         {new Date(image.created_at).toLocaleString("pt-BR")}
                       </span>
+
                       <strong className="col-span-1">ID Imagem:</strong>
                       <span className="col-span-2 font-mono text-xs">
                         {image.id}
@@ -210,7 +229,6 @@ export default function CityImageList() {
     [handleApprove, handleReject]
   );
 
-  // 5. Finalmente, definir 'table' (que depende de 'columns')
   table = useTable<ICityImage>({
     refineCoreProps: {
       resource: "city_images",
@@ -224,12 +242,10 @@ export default function CityImageList() {
         ],
       },
       syncWithLocation: true,
-      meta: {
-        select:
-          "*, cities(name, state), profiles(full_name, public_name, score, categories(name))",
-      },
+      // --- MUDANÇA 3: Remover o 'meta.select' quebrado ---
+      // meta: { ... }
     },
-    columns, // Agora 'columns' está definida
+    columns,
   });
 
   return (

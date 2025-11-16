@@ -6,13 +6,6 @@ import {
   ListView,
   ListViewHeader,
 } from "@/components/refine-ui/views/list-view";
-import { useTable } from "@refinedev/react-table";
-import { useMutation } from "@tanstack/react-query";
-import { ColumnDef } from "@tanstack/react-table";
-import React from "react";
-import { toast } from "sonner";
-
-// --- MUDANÇA 1: Importar componentes do Modal ---
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,35 +14,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useTable } from "@refinedev/react-table";
+import { useMutation } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
+import React from "react";
+import { toast } from "sonner";
 
-// --- MUDANÇA 2: Interface atualizada ---
+// --- MUDANÇA 1: Interface atualizada para RPC (plana) ---
 interface ICityDescription {
   id: string;
   description: string;
   approved: boolean;
   created_at: string;
-  // Objetos aninhados
-  cities: {
-    name: string;
-    state: string;
-  };
-  profiles: {
-    full_name: string;
-    public_name: string;
-    score: number;
-    categories: {
-      name: string;
-    };
-  };
+  // Dados da cidade
+  city_name: string | null;
+  city_state: string | null;
+  // Dados do Perfil (Submitter)
+  profile_full_name: string | null;
+  profile_public_name: string | null;
+  profile_score: number | null;
+  profile_category_name: string | null;
+  profile_phone: string | null;
+  profile_avatar_url: string | null;
+  user_email: string | null;
 }
 
 export default function CityDescriptionList() {
-  // --- MUDANÇA 3: Corrigir ordem de declaração ---
-
-  // 1. Declarar 'table' com 'let'
   let table: any = null;
 
-  // 2. Definir Mutações
   const { mutate: approveMutate } = useMutation({
     mutationFn: (id: string) =>
       handleContentApproval("city_descriptions", id, true),
@@ -71,12 +64,11 @@ export default function CityDescriptionList() {
     },
   });
 
-  // 3. Definir Handlers
   const handleApprove = React.useCallback(
     async (id: string) => {
       approveMutate(id, {
         onSuccess: () => {
-          table?.refineCore.refetch(); // Chamar refetch no sucesso
+          table?.refineCore.tableQuery.refetch();
         },
       });
     },
@@ -87,26 +79,25 @@ export default function CityDescriptionList() {
     async (id: string) => {
       rejectMutate(id, {
         onSuccess: () => {
-          table?.refineCore.refetch(); // Chamar refetch no sucesso
+          table?.refineCore.tableQuery.refetch();
         },
       });
     },
     [rejectMutate]
   );
 
-  // 4. Definir Colunas
+  // --- MUDANÇA 2: Colunas atualizadas para RPC ---
   const columns = React.useMemo<ColumnDef<ICityDescription>[]>(
     () => [
       {
         id: "city_name",
         header: "Nome da Cidade",
-        // Usar 'cell' para ler o dado aninhado
         cell: function render({ row }) {
-          const city = row.original.cities;
-          if (!city) {
+          const { city_name, city_state } = row.original;
+          if (!city_name) {
             return <span className="text-gray-500">Pendente...</span>;
           }
-          const location = city.state ? `${city.name}, ${city.state}` : city.name;
+          const location = city_state ? `${city_name}, ${city_state}` : city_name;
           return <span>{location}</span>;
         },
       },
@@ -114,7 +105,6 @@ export default function CityDescriptionList() {
         id: "description",
         accessorKey: "description",
         header: "Descrição",
-        // Truncar a descrição para caber na tabela
         cell: function render({ row }) {
           const desc = row.original.description;
           return (
@@ -128,11 +118,11 @@ export default function CityDescriptionList() {
         id: "usuario",
         header: "Usuário",
         cell: function render({ row }) {
-          const profile = row.original.profiles;
-          if (!profile) {
+          const { profile_public_name, profile_full_name } = row.original;
+          if (!profile_public_name && !profile_full_name) {
             return <span className="text-gray-500">...</span>;
           }
-          return <span>{profile.public_name || profile.full_name}</span>;
+          return <span>{profile_public_name || profile_full_name}</span>;
         },
       },
       {
@@ -140,9 +130,11 @@ export default function CityDescriptionList() {
         header: "Ações",
         cell: function render({ row }) {
           const desc = row.original;
-          const profile = desc.profiles;
-          const categoryName = profile?.categories?.name || "Não informado";
-          const cityName = desc.cities ? `${desc.cities.name}, ${desc.cities.state}` : "N/A";
+          const categoryName = desc.profile_category_name || "Não informado";
+          const cityName = desc.city_name
+            ? `${desc.city_name}, ${desc.city_state}`
+            : "N/A";
+          const avatarUrl = desc.profile_avatar_url;
 
           return (
             <div className="flex flex-wrap gap-2">
@@ -161,7 +153,6 @@ export default function CityDescriptionList() {
                 Rejeitar
               </Button>
 
-              {/* Botão do Modal */}
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
@@ -174,18 +165,41 @@ export default function CityDescriptionList() {
                   </DialogHeader>
 
                   <div className="py-4 text-sm">
+                    {/* Avatar e Nome */}
+                    <div className="flex items-center gap-3 mb-4">
+                      {avatarUrl ? (
+                        <Image
+                          src={avatarUrl}
+                          alt={desc.profile_public_name || "Avatar"}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200" />
+                      )}
+                      <div>
+                        <strong className="block">
+                          {desc.profile_public_name ||
+                            desc.profile_full_name ||
+                            "Usuário não encontrado"}
+                        </strong>
+                        <span className="text-xs text-muted-foreground">
+                          {categoryName} (Ranking: {desc.profile_score || 0})
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-y-2 gap-x-4">
-                      <strong className="col-span-1">Enviado por:</strong>
+                      <strong className="col-span-1">Email:</strong>
                       <span className="col-span-2">
-                        {profile?.public_name || "N/A"}
-                        {profile?.full_name && ` - ${profile.full_name}`}
+                        {desc.user_email || "N/A"}
                       </span>
 
-                      <strong className="col-span-1">Tipo:</strong>
-                      <span className="col-span-2">{categoryName}</span>
-
-                      <strong className="col-span-1">Ranking:</strong>
-                      <span className="col-span-2">{profile?.score || 0}</span>
+                      <strong className="col-span-1">Telefone:</strong>
+                      <span className="col-span-2">
+                        {desc.profile_phone || "N/A"}
+                      </span>
 
                       <strong className="col-span-1">Enviado em:</strong>
                       <span className="col-span-2">
@@ -211,7 +225,6 @@ export default function CityDescriptionList() {
     [handleApprove, handleReject]
   );
 
-  // 5. Definir 'table' (agora 'columns' está definido)
   table = useTable<ICityDescription>({
     refineCoreProps: {
       resource: "city_descriptions",
@@ -225,11 +238,9 @@ export default function CityDescriptionList() {
         ],
       },
       syncWithLocation: true,
-      // --- MUDANÇA 5: Adicionar o meta.select ---
-      meta: {
-        select:
-          "*, cities(name, state), profiles(full_name, public_name, score, categories(name))",
-      },
+      // --- MUDANÇA 3: Remover o 'meta.select' ---
+      // (Agora é tratado pela RPC)
+      // meta: { ... }
     },
     columns,
   });

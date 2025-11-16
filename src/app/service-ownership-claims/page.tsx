@@ -17,6 +17,7 @@ import {
 import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
@@ -28,25 +29,27 @@ interface IServiceOwnershipClaim {
   status: string;
   services: {
     name: string;
+    slug: string;
   };
   claimant_email: string;
   claimant_phone: string;
   claimant_role: string;
   message: string;
   created_at: string;
+  profiles: {
+    avatar_url: string | null;
+  } | null;
 }
 
 export default function ServiceOwnershipClaimList() {
-  // --- A ORDEM DAS DECLARAÇÕES FOI CORRIGIDA ---
-
-  // 1. Mutações e Handlers devem ser definidos PRIMEIRO
-  // (O 'refetch' será definido depois, mas precisamos das funções)
+  const tableRef = React.useRef<any>(null);
 
   const { mutate: approveMutate } = useMutation({
     mutationFn: (claimId: string) => handleClaimApproval(claimId, true),
     onSuccess: () => {
       toast.success("Reivindicação aprovada com sucesso!");
-      // O 'refetch' será chamado pelo 'handleApprove'
+      // --- MUDANÇA AQUI ---
+      tableRef.current?.refineCore.tableQuery.refetch(); // Corrigido
     },
     onError: (error: any) => {
       toast.error(`Erro ao aprovar reivindicação: ${error.message}`);
@@ -57,49 +60,46 @@ export default function ServiceOwnershipClaimList() {
     mutationFn: (claimId: string) => handleClaimApproval(claimId, false),
     onSuccess: () => {
       toast.success("Reivindicação rejeitada com sucesso!");
-      // O 'refetch' será chamado pelo 'handleReject'
+      // --- MUDANÇA AQUI ---
+      tableRef.current?.refineCore.tableQuery.refetch(); // Corrigido
     },
     onError: (error: any) => {
       toast.error(`Erro ao rejeitar reivindicação: ${error.message}`);
     },
   });
 
-  // Os handlers agora podem ser declarados
   const handleApprove = React.useCallback(
     async (claimId: string) => {
-      approveMutate(claimId, {
-        onSuccess: () => {
-          // Chamamos o refetch aqui, depois que 'table' for inicializado
-          table.refineCore.refetch();
-        },
-      });
+      approveMutate(claimId);
     },
-    [approveMutate] // 'table' não precisa ser dependência aqui
+    [approveMutate]
   );
 
   const handleReject = React.useCallback(
     async (claimId: string) => {
-      rejectMutate(claimId, {
-        onSuccess: () => {
-          // Chamamos o refetch aqui
-          table.refineCore.refetch();
-        },
-      });
+      rejectMutate(claimId);
     },
-    [rejectMutate] // 'table' não precisa ser dependência aqui
+    [rejectMutate]
   );
 
-  // 2. Agora que os handlers existem, podemos definir as 'columns'
   const columns = React.useMemo<ColumnDef<IServiceOwnershipClaim>[]>(
     () => [
       {
         id: "service_name",
-        header: "Serviço",
+        header: "Nome do Serviço",
         cell: function render({ row }) {
-          if (!row.original.services) {
+          const service = row.original.services;
+          if (!service) {
             return <span className="text-gray-500">Serviço não encontrado</span>;
           }
-          return <span>{row.original.services.name}</span>;
+          const href = `https://www.canaoaves.com.br/service/${service.slug}`;
+          return (
+            <Button asChild variant="link" className="p-0 text-left h-auto">
+              <Link href={href} target="_blank" rel="noopener noreferrer">
+                {service.name}
+              </Link>
+            </Button>
+          );
         },
       },
       {
@@ -113,9 +113,7 @@ export default function ServiceOwnershipClaimList() {
         header: "Documento",
         cell: function render({ row }) {
           const url = row.original.document_url;
-          if (!url) {
-            return <span>N/A</span>;
-          }
+          if (!url) return <span>N/A</span>;
           return (
             <Link
               href={url}
@@ -133,6 +131,8 @@ export default function ServiceOwnershipClaimList() {
         header: "Ações",
         cell: function render({ row }) {
           const claim = row.original;
+          const avatarUrl = claim.profiles?.avatar_url;
+
           return (
             <div className="flex flex-wrap gap-2">
               <Button
@@ -160,21 +160,32 @@ export default function ServiceOwnershipClaimList() {
                     <DialogTitle>Detalhes da Reivindicação</DialogTitle>
                   </DialogHeader>
                   <div className="py-4 text-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      {avatarUrl ? (
+                        <Image
+                          src={avatarUrl}
+                          alt={claim.claimant_name}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200" />
+                      )}
+                      <div>
+                        <strong className="block">{claim.claimant_name}</strong>
+                        <span className="text-xs text-muted-foreground">
+                          {claim.claimant_role}
+                        </span>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <strong className="col-span-1">ID:</strong>
-                      <span className="col-span-2 font-mono text-xs">
-                        {claim.id}
-                      </span>
-                      <strong className="col-span-1">Serviço:</strong>
-                      <span className="col-span-2">{claim.services?.name}</span>
-                      <strong className="col-span-1">Reivindicante:</strong>
-                      <span className="col-span-2">{claim.claimant_name}</span>
                       <strong className="col-span-1">Email:</strong>
                       <span className="col-span-2">{claim.claimant_email}</span>
                       <strong className="col-span-1">Telefone:</strong>
                       <span className="col-span-2">{claim.claimant_phone}</span>
-                      <strong className="col-span-1">Cargo:</strong>
-                      <span className="col-span-2">{claim.claimant_role}</span>
+                      <strong className="col-span-1">Serviço:</strong>
+                      <span className="col-span-2">{claim.services?.name}</span>
                       <strong className="col-span-1">Enviado em:</strong>
                       <span className="col-span-2">
                         {new Date(claim.created_at).toLocaleString("pt-BR")}
@@ -195,7 +206,6 @@ export default function ServiceOwnershipClaimList() {
     [handleApprove, handleReject]
   );
 
-  // 3. Finalmente, agora que 'columns' existe, podemos chamar 'useTable'
   const table = useTable<IServiceOwnershipClaim>({
     refineCoreProps: {
       resource: "service_ownership_claims",
@@ -210,11 +220,14 @@ export default function ServiceOwnershipClaimList() {
       },
       syncWithLocation: true,
       meta: {
-        select: "*, services(name)",
+        select:
+          "*, services(name, slug), profiles:profiles!service_ownership_claims_claimant_user_id_fkey(avatar_url)",
       },
     },
-    columns, // Agora 'columns' está inicializado e disponível
+    columns,
   });
+
+  tableRef.current = table;
 
   return (
     <ListView>
