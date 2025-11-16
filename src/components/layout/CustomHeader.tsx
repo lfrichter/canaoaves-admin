@@ -1,14 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/layout/Logo";
-import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -19,10 +12,9 @@ import {
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
-  useActiveAuthProvider,
   useGetIdentity,
   useLogout,
-  useMenu,
+  useMenu
 } from "@refinedev/core";
 import { LogOutIcon } from "lucide-react";
 import Link from "next/link";
@@ -52,7 +44,7 @@ const User = () => {
   const { data: user } = useGetIdentity<{ name: string; email: string }>();
   return (
     <div className="flex items-center gap-2">
-      <UserAvatar />
+      {/* <UserAvatar /> */}
       <span className="text-sm font-medium">{user?.name ?? user?.email}</span>
     </div>
   );
@@ -82,6 +74,8 @@ export const CustomHeader = () => {
 // Desktop Header
 const DesktopCustomHeader = () => {
   const { open } = useSidebar();
+  const { data: user } = useGetIdentity<{ app_role: "admin" | "master" }>();
+  const userRole = user?.app_role;
 
   return (
     <header
@@ -92,8 +86,8 @@ const DesktopCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        <SidebarTrigger /> {/* SidebarTrigger remains */}
-        {/* Logo removed */}
+        {userRole === "master" && <SidebarTrigger />}
+        {userRole === "admin" && <Logo showText={true} />}
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />
@@ -106,6 +100,9 @@ const DesktopCustomHeader = () => {
 
 // Mobile Header
 const MobileCustomHeader = () => {
+  const { data: user } = useGetIdentity<{ app_role: "admin" | "master" }>();
+  const userRole = user?.app_role;
+
   return (
     <header
       className={cn(
@@ -114,8 +111,8 @@ const MobileCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        {/* SidebarTrigger removed */}
-        {/* Logo removed */}
+        {userRole === "master" && <SidebarTrigger />}
+        {userRole === "admin" && <Logo showText={false} />}
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />

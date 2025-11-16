@@ -25,7 +25,7 @@ export const Logo: React.FC<LogoProps> = ({ className = "", showText = true }) =
       </Link>
       <span
         className={cn(
-          "text-xs text-gray-600 font-bold transition-opacity duration-200",
+          "text-xs text-gray-200 font-bold transition-opacity duration-200",
           {
             "opacity-100": showText,
             "opacity-0": !showText,
