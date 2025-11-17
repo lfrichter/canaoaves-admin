@@ -58,3 +58,4 @@ next-env.d.ts
 .mcp/context/project.md
 .mcp/rules/core.md
 mcp-inject.sh
+!docs/implementation/PaginationFix.md
