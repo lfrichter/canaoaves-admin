@@ -5,48 +5,62 @@ import type { AuthProvider } from "@refinedev/core";
 import { supabaseBrowserClient } from "@utils/supabase/client";
 
 export const authProviderClient: AuthProvider = {
-    login: async ({ email, password }) => {
-      const { data: signInData, error: signInError } =
-        await supabaseBrowserClient.auth.signInWithPassword({
-          email,
-          password,
-        });
-  
-      if (signInError) {
-        return {
-          success: false,
-          error: signInError,
-        };
-      }
-  
-      if (signInData.user) {
-        try {
-          await updateAuthMetadata(signInData.user.id);
-        } catch (error: any) {
-          await supabaseBrowserClient.auth.signOut();
-          return {
-            success: false,
-            error: {
-              name: "MetadataError",
-              message: error.message || "Could not sync user role.",
-            },
-          };
-        }
-  
-        return {
-          success: true,
-          redirectTo: "/",
-        };
-      }
-  
+  login: async ({ email, password }) => {
+    const { data: signInData, error: signInError } =
+      await supabaseBrowserClient.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (signInError) {
       return {
         success: false,
-        error: {
-          name: "LoginError",
-          message: "Invalid username or password",
-        },
+        error: signInError,
       };
-    },
+    }
+
+    if (signInData.user) {
+      try {
+        // 1. Espera a Server Action sincronizar a 'app_role'
+        await updateAuthMetadata(signInData.user.id);
+
+        // --- A CORREÇÃO ESTÁ AQUI ---
+        // 2. Força o cliente a recarregar a sessão (e o cookie)
+        //    que agora contém o novo 'user_metadata.app_role'.
+        await supabaseBrowserClient.auth.refreshSession();
+        // --- FIM DA CORREÇÃO ---
+
+      } catch (error: any) {
+        // Se a sincronização falhar, desloga o usuário
+        await supabaseBrowserClient.auth.signOut();
+        return {
+          success: false,
+          error: {
+            name: "MetadataError",
+            message: error.message || "Could not sync user role.",
+          },
+        };
+      }
+
+      // 3. Agora, redireciona para o dashboard.
+      // O middleware irá ler o cookie atualizado e permitir o acesso.
+      return {
+        success: true,
+        redirectTo: "/",
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        name: "LoginError",
+        message: "Invalid username or password",
+      },
+    };
+  },
+
+  // ... (o resto do seu provider: logout, register, check, etc.)
+
   logout: async () => {
     const { error } = await supabaseBrowserClient.auth.signOut();
 
@@ -79,10 +93,9 @@ export const authProviderClient: AuthProvider = {
       if (data.user) {
         try {
           await updateAuthMetadata(data.user.id);
+          // Adicionamos o refresh aqui também por segurança
+          await supabaseBrowserClient.auth.refreshSession();
         } catch (error: any) {
-          // If metadata sync fails, it's not critical for the registration itself.
-          // The user can still log in, and the metadata will be synced then.
-          // We can log this error for debugging purposes.
           console.error("Metadata sync failed during registration:", error);
         }
         return {
