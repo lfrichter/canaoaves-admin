@@ -24,12 +24,19 @@ Ele é projetado para ser uma aplicação *server-side* (usando Server Actions d
 
 ## ✨ Principais Funcionalidades
 
-O escopo do projeto inclui:
-
   * **🔐 Gestão de Autenticação:**
 
       * Login exclusivo para administradores (`app_role: 'admin'`).
       * Bloqueio automático de usuários que não possuem a role de admin.
+
+### Atribuição de Role no Registro (`handle_new_user`)
+
+A aplicação gerencia a criação de perfis de usuário através de um *trigger* do Supabase (`public.handle_new_user`) que é acionado quando um novo usuário é criado na tabela `auth.users`.
+
+*   **Lógica:** O *trigger* insere uma nova linha na tabela `public.profiles`, copiando os metadados (`full_name`, `profile_type`, etc.) fornecidos no momento do cadastro.
+*   **Atribuição de Role:** A função **não** atribui uma `app_role` programaticamente. A *role* do novo usuário é definida pelo valor `DEFAULT` da coluna `app_role` na tabela `profiles`.
+*   **Valor Padrão:** O valor padrão atual é `'user'`.
+*   **Segurança:** Este comportamento é seguro, pois garante que novos usuários não recebam privilégios de `admin` ou `master` no registro. O acesso deles ao painel de administração é subsequentemente bloqueado pelo `middleware.ts`.
 
   * **🛠️ Filas de Moderação:**
 

@@ -1,8 +1,17 @@
 "use server";
 
+import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
+import { validateResource } from "@utils/validation/server";
 
 export async function getList(resource: string, params: any) {
+  await verifyUserRole(["admin", "master"]);
+  validateResource(resource);
+  // TODO: Add more specific validation for params
+  if (typeof params !== "object" || params === null) {
+    throw new Error("Invalid params provided.");
+  }
+
   console.log("Server Action getList params:", params);
   const supabase = createSupabaseServiceRoleClient();
 
@@ -89,24 +98,47 @@ export async function getList(resource: string, params: any) {
 
 // ... (o resto das suas Server Actions: getOne, create, update, etc.)
 export async function getOne(resource: string, id: string) {
+  await verifyUserRole(["admin", "master"]);
+  validateResource(resource);
+  if (typeof id !== "string") {
+    throw new Error("Invalid ID provided.");
+  }
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).select("*").eq("id", id).single();
   if (error) { throw error; }
   return { data };
 }
 export async function create(resource: string, variables: any) {
+  await verifyUserRole(["admin", "master"]);
+  validateResource(resource);
+  if (typeof variables !== "object" || variables === null) {
+    throw new Error("Invalid variables provided.");
+  }
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).insert(variables).select().single();
   if (error) { throw error; }
   return { data };
 }
 export async function update(resource: string, id: string, variables: any) {
+  await verifyUserRole(["admin", "master"]);
+  validateResource(resource);
+  if (typeof id !== "string") {
+    throw new Error("Invalid ID provided.");
+  }
+  if (typeof variables !== "object" || variables === null) {
+    throw new Error("Invalid variables provided.");
+  }
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).update(variables).eq("id", id).select().single();
   if (error) { throw error; }
   return { data };
 }
 export async function deleteOne(resource: string, id: string) {
+  await verifyUserRole(["admin", "master"]);
+  validateResource(resource);
+  if (typeof id !== "string") {
+    throw new Error("Invalid ID provided.");
+  }
   const supabase = createSupabaseServiceRoleClient();
   const { error } = await supabase.from(resource).delete().eq("id", id);
   if (error) { throw error; }

@@ -1,5 +1,6 @@
 "use client";
 
+import { updateAuthMetadata } from "@/app/actions/auth";
 import type { AuthProvider } from "@refinedev/core";
 import { supabaseBrowserClient } from "@utils/supabase/client";
 
@@ -19,36 +20,15 @@ export const authProviderClient: AuthProvider = {
       }
   
       if (signInData.user) {
-        // Query the profiles table to get the app_role
-        const { data: profileData, error: profileError } =
-          await supabaseBrowserClient
-            .from("profiles")
-            .select("app_role")
-            .eq("user_id", signInData.user.id)
-            .single();
-  
-        // Handle case where profile is not found or there's an error fetching it
-        if (profileError || !profileData) {
+        try {
+          await updateAuthMetadata(signInData.user.id);
+        } catch (error: any) {
           await supabaseBrowserClient.auth.signOut();
           return {
             success: false,
             error: {
-              name: "ProfileError",
-              message:
-                "Seu perfil não foi encontrado ou não está configurado corretamente. Por favor, contate o suporte.",
-            },
-          };
-        }
-  
-        const userRole = profileData.app_role;
-  
-        if (userRole !== "admin" && userRole !== "master") {
-          await supabaseBrowserClient.auth.signOut();
-          return {
-            success: false,
-            error: {
-              name: "AuthorizationError",
-              message: "Você não tem permissão para acessar esta aplicação.",
+              name: "MetadataError",
+              message: error.message || "Could not sync user role.",
             },
           };
         }
@@ -96,7 +76,15 @@ export const authProviderClient: AuthProvider = {
         };
       }
 
-      if (data) {
+      if (data.user) {
+        try {
+          await updateAuthMetadata(data.user.id);
+        } catch (error: any) {
+          // If metadata sync fails, it's not critical for the registration itself.
+          // The user can still log in, and the metadata will be synced then.
+          // We can log this error for debugging purposes.
+          console.error("Metadata sync failed during registration:", error);
+        }
         return {
           success: true,
           redirectTo: "/",
@@ -145,16 +133,10 @@ export const authProviderClient: AuthProvider = {
 
     const { user } = data;
 
-    const { data: profile } = await supabaseBrowserClient
-      .from("profiles")
-      .select("app_role")
-      .eq("user_id", user.id)
-      .single();
-
     return {
       ...user,
       name: user.email,
-      app_role: profile?.app_role,
+      app_role: user.user_metadata?.app_role,
     };
   },
   onError: async (error) => {

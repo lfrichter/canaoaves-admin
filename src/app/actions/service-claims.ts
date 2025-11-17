@@ -1,11 +1,19 @@
 "use server";
 
+import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 // Não precisamos de uma instância 'supabase' global,
 // é melhor criá-la dentro da função para garantir o contexto.
 
 export async function handleClaimApproval(claimId: string, approved: boolean) {
+  await verifyUserRole(["admin", "master"]);
+  if (typeof claimId !== "string") {
+    throw new Error("Invalid claim ID provided.");
+  }
+  if (typeof approved !== "boolean") {
+    throw new Error("Invalid 'approved' value provided.");
+  }
   const supabase = createSupabaseServiceRoleClient();
 
   // --- MUDANÇA PRINCIPAL ---

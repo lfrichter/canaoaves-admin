@@ -1,10 +1,14 @@
 "use server";
 
+import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
-const supabase = createSupabaseServiceRoleClient();
-
 export async function resolveReport(reportId: string) {
+  await verifyUserRole(["admin", "master"]);
+  if (typeof reportId !== "string") {
+    throw new Error("Invalid report ID provided.");
+  }
+  const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase
     .from("reports")
     .update({ status: "resolved" })
@@ -20,6 +24,11 @@ export async function resolveReport(reportId: string) {
 }
 
 export async function ignoreReport(reportId: string) {
+  await verifyUserRole(["admin", "master"]);
+  if (typeof reportId !== "string") {
+    throw new Error("Invalid report ID provided.");
+  }
+  const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase
     .from("reports")
     .update({ status: "ignored" })

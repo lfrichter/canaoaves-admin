@@ -58,13 +58,7 @@ export async function middleware(request: NextRequest) {
 
   let userRole = null;
   if (user) {
-    // Fetch the role from the profiles table
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("app_role")
-      .eq("user_id", user.id)
-      .single();
-    userRole = profile?.app_role;
+    userRole = user.user_metadata?.app_role;
   }
 
   const { pathname } = request.nextUrl;

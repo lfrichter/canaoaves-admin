@@ -1,5 +1,6 @@
 "use server";
 
+import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 // O Type (camelCase) está correto e é o que a sua página page.tsx espera.
@@ -12,6 +13,7 @@ type DashboardStats = {
 };
 
 export async function getDashboardStats(): Promise<DashboardStats> {
+  await verifyUserRole(["admin", "master"]);
   const supabase = createSupabaseServiceRoleClient();
 
   try {
