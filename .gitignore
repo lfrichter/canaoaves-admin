@@ -37,7 +37,6 @@ GEMINI.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-/docs
 .ai/commands/update-meta-spec.md
 .ai/commands/Engineer/plan.md
 .ai/commands/Product/spec.md
@@ -58,4 +57,3 @@ next-env.d.ts
 .mcp/context/project.md
 .mcp/rules/core.md
 mcp-inject.sh
-!docs/implementation/PaginationFix.md
