@@ -1,16 +1,16 @@
-"use server";
+// "use server"; // <-- REMOVA ESTA LINHA
 
 const ALLOWED_RESOURCES = [
   "profiles",
   "services",
   "categories",
   "amenities",
-  "service-offerings",
-  "service-ownership-claims",
+  "service_offerings",
+  "service_ownership_claims",
   "reports",
-  "city-descriptions",
-  "city-images",
-  "state-descriptions",
+  "city_descriptions",
+  "city_images",
+  "state_descriptions",
   "static-content",
 ];
 

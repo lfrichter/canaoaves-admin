@@ -108,12 +108,28 @@ export async function getOne(resource: string, id: string) {
   if (error) { throw error; }
   return { data };
 }
+
+// ---
+// FUNÇÕES DE ESCRITA (PERIGOSAS - Requerem lógica granular)
+// ---
+
 export async function create(resource: string, variables: any) {
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
   if (typeof variables !== "object" || variables === null) {
     throw new Error("Invalid variables provided.");
   }
+
+  // --- LÓGICA DE SEGURANÇA GRANULAR ---
+  // Apenas 'master' pode criar novos perfis.
+  if (resource === "profiles") {
+    await verifyUserRole(["master"]);
+  } else {
+    // Admins podem criar outros recursos (ex: categorias, serviços)
+    await verifyUserRole(["admin", "master"]);
+  }
+  // --- FIM DA LÓGICA DE SEGURANÇA ---
+
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).insert(variables).select().single();
   if (error) { throw error; }
@@ -128,6 +144,17 @@ export async function update(resource: string, id: string, variables: any) {
   if (typeof variables !== "object" || variables === null) {
     throw new Error("Invalid variables provided.");
   }
+
+  // --- LÓGICA DE SEGURANÇA GRANULAR ---
+  // Apenas 'master' pode atualizar perfis (prevenindo escalonamento de privilégio).
+  if (resource === "profiles") {
+    await verifyUserRole(["master"]);
+  } else {
+    // Admins podem atualizar outros recursos
+    await verifyUserRole(["admin", "master"]);
+  }
+  // --- FIM DA LÓGICA DE SEGURANÇA ---
+
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase.from(resource).update(variables).eq("id", id).select().single();
   if (error) { throw error; }
@@ -139,6 +166,13 @@ export async function deleteOne(resource: string, id: string) {
   if (typeof id !== "string") {
     throw new Error("Invalid ID provided.");
   }
+
+  // --- LÓGICA DE SEGURANÇA GRANULAR ---
+  // Apenas 'master' pode deletar (é uma ação destrutiva).
+  // Isto é especialmente crítico para 'profiles'.
+  await verifyUserRole(["master"]);
+  // --- FIM DA LÓGICA DE SEGURANÇA ---
+
   const supabase = createSupabaseServiceRoleClient();
   const { error } = await supabase.from(resource).delete().eq("id", id);
   if (error) { throw error; }

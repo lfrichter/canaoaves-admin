@@ -1,11 +1,11 @@
 "use server";
 
+import { type User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@utils/supabase/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
-import { type User } from "@supabase/supabase-js";
 
 export async function verifyUserRole(allowedRoles: string[]): Promise<User> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
     error: authError,
@@ -20,7 +20,7 @@ export async function verifyUserRole(allowedRoles: string[]): Promise<User> {
   const { data: profile, error: profileError } = await serviceRoleSupabase
     .from("profiles")
     .select("app_role")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
 
   if (profileError || !profile) {

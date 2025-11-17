@@ -13,7 +13,7 @@ export async function updateAuthMetadata(userId: string) {
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("app_role")
-    .eq("id", userId)
+    .eq("user_id", userId)
     .single();
 
   if (profileError || !profile) {
