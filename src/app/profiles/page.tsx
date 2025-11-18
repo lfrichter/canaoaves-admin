@@ -28,6 +28,11 @@ export default function ProfileList({ searchParams }: { searchParams?: { [key: s
         header: "Email",
       },
       {
+        id: "full_name",
+        accessorKey: "full_name",
+        header: "Nome completo",
+      },
+      {
         id: "app_role",
         accessorKey: "app_role",
         header: "Role",
