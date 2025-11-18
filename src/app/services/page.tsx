@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/react-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
-import { EditButton, ShowButton, DeleteButton } from "@/components/refine-ui/buttons";
+import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { useServerTable } from "@/hooks/useServerTable";
+import { ColumnDef } from "@tanstack/react-table";
+import React from "react";
 
 interface IService {
   id: string;
@@ -13,7 +13,8 @@ interface IService {
   description: string;
 }
 
-export default function ServiceList() {
+export default function ServiceList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
+
   const columns = React.useMemo<ColumnDef<IService>[]>(
     () => [
       {
@@ -49,12 +50,10 @@ export default function ServiceList() {
     []
   );
 
-  const table = useTable<IService>({
-    refineCoreProps: {
-      resource: "services",
-      syncWithLocation: true,
-    },
-    columns,
+  const table = useServerTable<IAmenity>({
+    resource: "services",
+    columns: columns,
+    searchParams: searchParams,
   });
 
   return (

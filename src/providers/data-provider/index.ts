@@ -13,9 +13,12 @@ export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters, meta }) => {
     console.log("dataProvider getList pagination:", pagination);
 
+    const current = meta?.pagination?.current || pagination?.current || 1;
+    const pageSize = meta?.pagination?.pageSize || pagination?.pageSize || 10;
+
     const params: any = {
-      current: pagination?.current,
-      pageSize: pagination?.pageSize,
+      current: Number(current),   // Garante que é número
+      pageSize: Number(pageSize), // Garante que é número
       filters,
       sorters,
     };

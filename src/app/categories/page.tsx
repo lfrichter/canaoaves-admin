@@ -3,9 +3,8 @@
 import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
-import { useTable } from "@refinedev/react-table";
+import { useServerTable } from "@/hooks/useServerTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { useSearchParams } from "next/navigation";
 import React from "react";
 
 interface ICategory {
@@ -13,13 +12,7 @@ interface ICategory {
   name: string;
 }
 
-export default function CategoryList({ searchParams }: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-
-  useSearchParams();
-  const currentPage = Number(searchParams?.currentPage) || 1;
-  const pageSize = Number(searchParams?.pageSize) || 10; // Ou seu default
+export default function CategoryList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
 
   const columns = React.useMemo<ColumnDef<ICategory>[]>(
     () => [
@@ -51,21 +44,10 @@ export default function CategoryList({ searchParams }: {
     []
   );
 
-  const table = useTable<ICategory>({
-    refineCoreProps: {
-      resource: "categories",
-      syncWithLocation: true,
-      pagination: {
-        current: currentPage,
-        pageSize: pageSize,
-      },
-
-      // Garantir que a queryKey também seja reativa
-      queryOptions: {
-        queryKey: ["categories", "list", { currentPage, pageSize }],
-      },
-    },
-    columns,
+  const table = useServerTable<IAmenity>({
+    resource: "categories",
+    columns: columns,
+    searchParams: searchParams,
   });
 
   return (

@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/react-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
-import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { EditButton, ShowButton } from "@/components/refine-ui/buttons";
+import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { useServerTable } from "@/hooks/useServerTable";
+import { ColumnDef } from "@tanstack/react-table";
+import React from "react";
 
 interface IProfile {
   id: string;
@@ -13,7 +13,8 @@ interface IProfile {
   app_role: string;
 }
 
-export default function ProfileList() {
+export default function ProfileList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
+
   const columns = React.useMemo<ColumnDef<IProfile>[]>(
     () => [
       {
@@ -48,12 +49,11 @@ export default function ProfileList() {
     []
   );
 
-  const table = useTable<IProfile>({
-    refineCoreProps: {
-      resource: "profiles",
-      syncWithLocation: true,
-    },
-    columns,
+
+  const table = useServerTable<IAmenity>({
+    resource: "profiles",
+    columns: columns,
+    searchParams: searchParams,
   });
 
   return (

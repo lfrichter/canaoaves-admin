@@ -1,18 +1,19 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/react-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
-import { EditButton, ShowButton, DeleteButton } from "@/components/refine-ui/buttons";
+import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { useServerTable } from "@/hooks/useServerTable";
+import { ColumnDef } from "@tanstack/react-table";
+import React from "react";
 
 interface IAmenity {
   id: string;
   name: string;
 }
 
-export default function AmenityList() {
+export default function AmenityList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
+
   const columns = React.useMemo<ColumnDef<IAmenity>[]>(
     () => [
       {
@@ -43,12 +44,10 @@ export default function AmenityList() {
     []
   );
 
-  const table = useTable<IAmenity>({
-    refineCoreProps: {
-      resource: "amenities",
-      syncWithLocation: true,
-    },
-    columns,
+  const table = useServerTable<IAmenity>({
+    resource: "amenities",
+    columns: columns,
+    searchParams: searchParams,
   });
 
   return (
