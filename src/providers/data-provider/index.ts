@@ -14,8 +14,8 @@ export const dataProvider: DataProvider = {
     console.log("dataProvider getList pagination:", pagination);
 
     const params: any = {
-      current: (pagination as any)?.current,
-      pageSize: (pagination as any)?.pageSize,
+      current: pagination?.current,
+      pageSize: pagination?.pageSize,
       filters,
       sorters,
     };

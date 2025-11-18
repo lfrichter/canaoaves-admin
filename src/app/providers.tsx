@@ -63,9 +63,9 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "categories",
               list: "/categories",
-              create: "/categories/create", // <-- ADICIONADO
-              edit: "/categories/:id/edit", // <-- ADICIONADO
-              show: "/categories/:id", // <-- ADICIONADO
+              create: "/categories/create", // TODO Adicionar nas outras o mesmo formato feito aqui
+              edit: "/categories/:id/edit",
+              show: "/categories/:id",
               meta: { label: "Categorias", icon: <Shapes size={16} /> },
             },
             {

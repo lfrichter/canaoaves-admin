@@ -33,6 +33,7 @@ GEMINI.md
 
 # vercel
 .vercel
+docs
 
 # typescript
 *.tsbuildinfo

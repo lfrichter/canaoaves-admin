@@ -1,18 +1,26 @@
 "use client";
 
-import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { useTable } from "@refinedev/react-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
-import { EditButton, ShowButton, DeleteButton } from "@/components/refine-ui/buttons";
+import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { useTable } from "@refinedev/react-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useSearchParams } from "next/navigation";
+import React from "react";
 
 interface ICategory {
   id: string;
   name: string;
 }
 
-export default function CategoryList() {
+export default function CategoryList({ searchParams }: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
+
+  useSearchParams();
+  const currentPage = Number(searchParams?.currentPage) || 1;
+  const pageSize = Number(searchParams?.pageSize) || 10; // Ou seu default
+
   const columns = React.useMemo<ColumnDef<ICategory>[]>(
     () => [
       {
@@ -47,6 +55,15 @@ export default function CategoryList() {
     refineCoreProps: {
       resource: "categories",
       syncWithLocation: true,
+      pagination: {
+        current: currentPage,
+        pageSize: pageSize,
+      },
+
+      // Garantir que a queryKey também seja reativa
+      queryOptions: {
+        queryKey: ["categories", "list", { currentPage, pageSize }],
+      },
     },
     columns,
   });
