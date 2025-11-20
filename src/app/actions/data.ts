@@ -15,16 +15,11 @@ export async function getList(resource: string, params: any) {
     console.log("Server Action getList params:", params);
     const supabase = createSupabaseServiceRoleClient();
 
-    const {
-      current: rawCurrent = 1,
-      pageSize: rawPageSize = 10, // Renomeamos para "raw" (bruto)
-      filters = [],
-      sorters = [],
-      meta = {},
-    } = params;
-
-    const current = Number(rawCurrent) || 1;
-    const pageSize = Number(rawPageSize) || 10;
+    const current = Number(params.current || 1);
+    const pageSize = Number(params.pageSize || 10);
+    const filters = params.filters || [];
+    const sorters = params.sorters || [];
+    const meta = params.meta || {};
 
     // Interceptação 'reports' (Existente)
     if (resource === "reports") {
@@ -77,33 +72,92 @@ export async function getList(resource: string, params: any) {
       return { data, total: total };
     }
 
-    // --- MUDANÇA: ADICIONAR INTERCEPTAÇÃO PARA 'state_descriptions' ---
-    if (resource === "state_descriptions") {
-      console.log(
-        "[getList Action] Interceptando 'state_descriptions'. Chamando RPC 'get_pending_state_descriptions'."
-      );
 
-      const { data, error } = await supabase.rpc(
+
+// --- MUDANÇA: ADICIONAR INTERCEPTAÇÃO PARA 'state_descriptions' ---
+
+if (resource === "state_descriptions") {
+
+    console.log(
+        "[getList Action] Interceptando 'state_descriptions'. Chamando RPC 'get_pending_state_descriptions'."
+    );
+
+    const { data, error } = await supabase.rpc(
         "get_pending_state_descriptions",
         {
-          p_page_size: pageSize,
-          p_current_page: current,
+            p_page_size: pageSize,
+            p_current_page: current,
         }
-      );
-      if (error) {
+    );
+
+    if (error) {
         console.error(`[getList Action] RPC Error:`, error);
         throw error;
-      }
-      const total = data.length > 0 ? data[0].total_count : 0;
-      return { data, total: total };
     }
-    // --- Fim da nova interceptação ---
 
-    // Comportamento padrão para todos os outros recursos
-    const selectQuery = meta?.select ? meta.select : "*";
-    let query: any = supabase
-      .from(resource)
-      .select(selectQuery, { count: "exact" });
+    const total = data.length > 0 ? data[0].total_count : 0;
+
+    return { data, total: total };
+
+}
+
+
+
+if (resource === "profiles") {
+    console.log(
+        "[getList Action] Interceptando 'profiles'. Chamando RPC 'get_profiles_with_users'."
+    );
+    // TODO: Create the following RPC function in Supabase
+    /*
+        CREATE OR REPLACE FUNCTION get_profiles_with_users(p_page_size integer, p_current_page integer)
+        RETURNS TABLE(id uuid, full_name text, app_role text, email text, total_count bigint) AS $
+        BEGIN
+            RETURN QUERY
+            SELECT
+                p.id,
+                p.full_name,
+                p.app_role,
+                u.email::text,
+                (SELECT count(*) FROM profiles p_inner JOIN auth.users u_inner ON p_inner.id = u_inner.id WHERE u_inner.deleted_at IS NULL) as total_count
+            FROM
+                profiles p
+            JOIN
+                auth.users u ON p.id = u.id
+            WHERE
+                u.deleted_at IS NULL
+            ORDER BY
+                p.created_at
+            LIMIT
+                p_page_size
+            OFFSET
+                (p_current_page - 1) * p_page_size;
+        END;
+        $ LANGUAGE plpgsql;
+    */
+    const { data, error } = await supabase.rpc(
+        "get_profiles_with_users",
+        { p_page_size: pageSize, p_current_page: current }
+    );
+    if (error) {
+        console.error(`[getList Action] RPC Error:`, error);
+        throw error;
+    }
+    const total = data.length > 0 ? data[0].total_count : 0;
+    return { data, total: total };
+}
+// --- Fim da nova interceptação ---
+
+
+
+// Comportamento padrão para todos os outros recursos
+
+const selectQuery = meta?.select ? meta.select : "*";
+
+let query: any = supabase
+
+    .from(resource)
+
+    .select(selectQuery, { count: "exact" });
 
     filters.forEach((filter: any) => {
       if (filter.operator === "eq") {
