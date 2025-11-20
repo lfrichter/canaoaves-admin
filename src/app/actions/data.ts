@@ -113,10 +113,10 @@ if (resource === "profiles") {
         "[getList Action] Interceptando 'profiles'. Chamando RPC 'get_profiles_with_users'."
     );
 
-    const { data, error } = await supabase.rpc(
-        "get_profiles_with_users",
-        { p_page_size: pageSize, p_current_page: current }
-    );
+    const { data, error } = await supabase.rpc("get_profiles_with_users", {
+      p_page_size: pageSize,
+      p_current_page: current
+    });
     if (error) {
         console.error(`[getList Action] RPC Error:`, error);
         throw error;
@@ -168,15 +168,52 @@ let query: any = supabase
 export async function getOne(resource: string, id: string) {
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
+
   if (typeof id !== "string") {
     throw new Error("Invalid ID provided.");
   }
-  const supabase = createSupabaseServiceRoleClient();
-  const { data, error } = await supabase.from(resource).select("*").eq("id", id).single();
-  if (error) { throw error; }
-  return { data };
-}
 
+  const supabase = createSupabaseServiceRoleClient();
+
+  // --- INTERCEPTAÇÃO PARA PERFIS ---
+  if (resource === "profiles") {
+    console.log(`[getOne] 🟢 INTERCEPTANDO PERFIL: ID ${id}`);
+
+    const { data, error } = await supabase.rpc("get_profile_by_id", { p_id: id });
+
+    if (error) {
+      console.error("[getOne] 🔴 ERRO NO RPC:", error);
+      throw error;
+    }
+
+    // --- A MÁGICA ESTÁ AQUI ---
+    // Se o objeto 'user' existir, movemos o email para a raiz.
+    // Isso facilita a leitura pelo formulário no frontend.
+    if (data && data.user && data.user.email) {
+        data.email = data.user.email;
+        console.log(`[getOne] 📧 E-mail extraído e injetado na raiz: ${data.email}`);
+    } else {
+        console.log(`[getOne] ⚠️ Objeto 'user' ou 'email' não encontrado no retorno do RPC.`);
+    }
+
+    return { data };
+  }
+  // --- FIM DA INTERCEPTAÇÃO ---
+
+  const { data, error } = await supabase
+    .from(resource)
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    data,
+  };
+}
 // ---
 // FUNÇÕES DE ESCRITA (PERIGOSAS - Requerem lógica granular)
 // ---
