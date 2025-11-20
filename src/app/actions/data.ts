@@ -15,11 +15,16 @@ export async function getList(resource: string, params: any) {
     console.log("Server Action getList params:", params);
     const supabase = createSupabaseServiceRoleClient();
 
-    const current = Number(params.current || 1);
-    const pageSize = Number(params.pageSize || 10);
-    const filters = params.filters || [];
-    const sorters = params.sorters || [];
-    const meta = params.meta || {};
+    const {
+      current: rawCurrent = 1,
+      pageSize: rawPageSize = 10, // Renomeamos para "raw" (bruto)
+      filters = [],
+      sorters = [],
+      meta = {},
+    } = params;
+
+    const current = Number(rawCurrent) || 1;
+    const pageSize = Number(rawPageSize) || 10;
 
     // Interceptação 'reports' (Existente)
     if (resource === "reports") {
