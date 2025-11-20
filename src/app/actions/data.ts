@@ -112,33 +112,7 @@ if (resource === "profiles") {
     console.log(
         "[getList Action] Interceptando 'profiles'. Chamando RPC 'get_profiles_with_users'."
     );
-    // TODO: Create the following RPC function in Supabase
-    /*
-        CREATE OR REPLACE FUNCTION get_profiles_with_users(p_page_size integer, p_current_page integer)
-        RETURNS TABLE(id uuid, full_name text, app_role text, email text, total_count bigint) AS $
-        BEGIN
-            RETURN QUERY
-            SELECT
-                p.id,
-                p.full_name,
-                p.app_role,
-                u.email::text,
-                (SELECT count(*) FROM profiles p_inner JOIN auth.users u_inner ON p_inner.id = u_inner.id WHERE u_inner.deleted_at IS NULL) as total_count
-            FROM
-                profiles p
-            JOIN
-                auth.users u ON p.id = u.id
-            WHERE
-                u.deleted_at IS NULL
-            ORDER BY
-                p.created_at
-            LIMIT
-                p_page_size
-            OFFSET
-                (p_current_page - 1) * p_page_size;
-        END;
-        $ LANGUAGE plpgsql;
-    */
+
     const { data, error } = await supabase.rpc(
         "get_profiles_with_users",
         { p_page_size: pageSize, p_current_page: current }

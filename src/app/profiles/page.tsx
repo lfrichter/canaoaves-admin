@@ -7,15 +7,17 @@ import { useServerTable } from "@/hooks/useServerTable";
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-interface IProfile {
-  id: string;
-  email: string;
+interface IProfileList {
+  id: string; // ID da tabela profiles (PK)
+  full_name: string;
   app_role: string;
+  email: string; // Vindo do auth.users
+  total_count: number;
 }
 
 export default function ProfileList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
 
-  const columns = React.useMemo<ColumnDef<IProfile>[]>(
+  const columns = React.useMemo<ColumnDef<IProfileList>[]>(
     () => [
       {
         id: "id",
@@ -54,11 +56,11 @@ export default function ProfileList({ searchParams }: { searchParams?: { [key: s
     []
   );
 
-
-  const table = useServerTable<IAmenity>({
+  const table = useServerTable<IProfileList>({
     resource: "profiles",
     columns: columns,
     searchParams: searchParams,
+    initialPageSize: 20,
   });
 
   return (

@@ -53,17 +53,23 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "profiles",
               list: "/profiles",
+              create: "/profiles/create",
+              edit: "/profiles/:id/edit",
+              show: "/profiles/:id",
               meta: { label: "Perfis", icon: <Users size={16} /> },
             },
             {
               name: "services",
               list: "/services",
+              create: "/services/create",
+              edit: "/services/:id/edit",
+              show: "/services/:id",
               meta: { label: "Serviços", icon: <Briefcase size={16} /> },
             },
             {
               name: "categories",
               list: "/categories",
-              create: "/categories/create", // TODO Adicionar nas outras o mesmo formato feito aqui
+              create: "/categories/create",
               edit: "/categories/:id/edit",
               show: "/categories/:id",
               meta: { label: "Categorias", icon: <Shapes size={16} /> },
@@ -71,26 +77,35 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "amenities",
               list: "/amenities",
+              create: "/amenities/create",
+              edit: "/amenities/:id/edit",
+              show: "/amenities/:id",
               meta: { label: "Comodidades", icon: <Sparkles size={16} /> },
             },
             {
               name: "service_offerings",
               list: "/service-offerings",
+              create: "/service-offerings/create",
+              edit: "/service-offerings/:id/edit",
+              show: "/service-offerings/:id",
               meta: { label: "Ofertas de Serviço", icon: <Percent size={16} /> },
             },
             {
               name: "service_ownership_claims",
               list: "/service-ownership-claims",
+              show: "/service-ownership-claims/:id",
               meta: { label: "Reivindicações", icon: <Landmark size={16} /> },
             },
             {
               name: "reports",
               list: "/reports",
+              show: "/reports/:id",
               meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
             },
             {
               name: "city_descriptions",
               list: "/city-descriptions",
+              show: "/city-descriptions/:id",
               meta: {
                 label: "Descrições de Cidades",
                 icon: <FileText size={16} />,
@@ -104,6 +119,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "state_descriptions",
               list: "/state-descriptions",
+              show: "/state-descriptions/:id",
               meta: {
                 label: "Descrições de Estados",
                 icon: <MapPin size={16} />,
@@ -112,6 +128,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "static_content",
               list: "/static-content",
+              edit: "/static-content/:id/edit",
               meta: {
                 label: "Conteúdo Estático",
                 icon: <ClipboardList size={16} />,
