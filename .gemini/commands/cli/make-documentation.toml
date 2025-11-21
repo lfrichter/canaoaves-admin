@@ -1,0 +1,4 @@
+name = "make-documentation"
+description = "Aciona o Subagente Documentador para criar documentação técnica padronizada."
+
+prompt = "@{.gemini/commands/Engineer/documentation.md}"

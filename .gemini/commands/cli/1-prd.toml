@@ -1,0 +1,10 @@
+# Caminho sugerido: .gemini/commands/cli/1-prd.toml
+
+name = "1-prd"
+description = "Orquestra múltiplos agentes para criar o Documento de Requisitos de Produto (PRD) inicial."
+
+# Usamos @{...} para injetar o conteúdo completo do prompt de orquestração.
+# O caminho deve ser ajustado para o local real do seu arquivo.
+prompt = "@{.gemini/commands/feature-lifecycle/1-prd-prompt.md}"
+
+

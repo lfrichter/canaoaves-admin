@@ -1,0 +1,5 @@
+name = "3-tasks"
+description = "Decomposes a feature (slug) into atomic tasks based on PRD and Tech Spec."
+
+# Injeta o prompt de orquestração que carrega o agente e os contextos necessários
+prompt = "@{.gemini/commands/feature-lifecycle/3-tasks-prompt.md}"

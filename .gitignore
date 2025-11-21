@@ -58,3 +58,19 @@ next-env.d.ts
 .mcp/context/project.md
 .mcp/rules/core.md
 mcp-inject.sh
+
+# 1. Versione a estrutura (Permitido)
+!/.gemini/
+!/.gemini/commands/
+!/.gemini/roles/
+!/.gemini/rules/
+!/.gemini/context/
+!/.gemini/setup/
+!/.gemini/templates/
+
+# 2. Ignore o estado volátil e logs (Ignorado)
+.gemini/memory/current_plan.md  <-- Discutível: Se quiser colaboração, versione. Se for pessoal, ignore.
+.gemini/logs/
+.gemini/cache/
+.gemini/temp/
+.gemini/help/

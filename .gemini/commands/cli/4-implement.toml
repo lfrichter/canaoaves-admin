@@ -1,0 +1,5 @@
+name = "4-implement"
+description = "Coordinates the React Coder agent to implement the next pending task."
+
+# Argumentos esperados: O slug da feature (ex: login-social)
+prompt = "@{.gemini/commands/feature-lifecycle/4-implement-prompt.md}"

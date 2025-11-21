@@ -1,0 +1,10 @@
+# Caminho sugerido: .gemini/commands/cli/2-techspec.toml
+
+name = "2-techspec"
+description = "Gera o Tech Spec a partir de um PRD (Input) usando o Especialista Técnico."
+
+# O prompt aponta para o arquivo orquestrador.
+# A variável {input} será passada para dentro desse arquivo (se o CLI suportar)
+# ou anexada ao final. A forma mais segura é o arquivo MD lidar com o input.
+prompt = "@{.gemini/commands/feature-lifecycle/2-techspec-prompt.md}"
+
