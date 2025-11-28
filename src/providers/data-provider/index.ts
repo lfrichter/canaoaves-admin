@@ -13,7 +13,7 @@ export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters, meta }) => {
     console.log("dataProvider getList pagination:", pagination);
 
-    const current = meta?.pagination?.current || pagination?.current || 1;
+    const current = meta?.pagination?.currentPage || pagination?.currentPage || 1;
     const pageSize = meta?.pagination?.pageSize || pagination?.pageSize || 10;
 
     const params: any = {
@@ -21,15 +21,11 @@ export const dataProvider: DataProvider = {
       pageSize: Number(pageSize), // Garante que é número
       filters,
       sorters,
+      meta,
     };
 
-    if (meta?.select) {
-      params.meta = {
-        select: meta.select,
-      };
-    }
-
-    const response = await getList(resource, params);
+    const plainParams = JSON.parse(JSON.stringify(params));
+    const response = await getList(resource, plainParams);
 
     return {
       data: response.data,
@@ -41,21 +37,21 @@ export const dataProvider: DataProvider = {
     const response = await getOne(resource, id as string);
     return {
       data: response.data,
-    };
+    } as any;
   },
 
   create: async ({ resource, variables }) => {
     const response = await create(resource, variables);
     return {
       data: response.data,
-    };
+    } as any;
   },
 
   update: async ({ resource, id, variables }) => {
     const response = await update(resource, id as string, variables);
     return {
       data: response.data,
-    };
+    } as any;
   },
 
   deleteOne: async ({ resource, id }) => {

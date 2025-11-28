@@ -4,18 +4,17 @@ import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/but
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
+import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
+import { Service } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-interface IService {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export default function ServiceList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
-
-  const columns = React.useMemo<ColumnDef<IService>[]>(
+export default function ServiceList({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | undefined };
+}) {
+  const columns = React.useMemo<ColumnDef<Service>[]>(
     () => [
       {
         id: "id",
@@ -50,15 +49,18 @@ export default function ServiceList({ searchParams }: { searchParams?: { [key: s
     []
   );
 
-  const table = useServerTable<IAmenity>({
+  const table = useServerTable<Service>({
     resource: "services",
     columns: columns,
-    searchParams: searchParams,
+    searchParams: searchParams || {},
   });
 
   return (
     <ListView>
-      <ListViewHeader title="Serviços" canCreate />
+      <div className="flex justify-between items-center mb-4">
+        <ListViewHeader title="Serviços" canCreate />
+        <TableSearchInput />
+      </div>
       <DataTable table={table} />
     </ListView>
   );
