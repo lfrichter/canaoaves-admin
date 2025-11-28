@@ -139,14 +139,28 @@ export async function getOne(resource: string, id: string) {
   return { data };
 }
 
-// create, update, deleteOne CONTINUAM IGUAIS (escrevendo na tabela 'profiles')
+// =========================================================
+// CREATE
+// =========================================================
 export async function create(resource: string, variables: any) {
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
-  if (resource === "profiles") await verifyUserRole(["master"]);
+
+  if (resource === "profiles") {
+    await verifyUserRole(["master"]);
+
+    // [SANITIZAÇÃO] Remove campos que vêm da View (auth.users) mas não existem na Tabela (profiles)
+    delete variables.email;
+    delete variables.email_confirmed_at;
+    delete variables.user_deleted_at;
+    delete variables.banned_until;
+
+    // Opcional: remover timestamps se o banco gera automaticamente (boa prática)
+    // delete variables.created_at;
+    // delete variables.updated_at;
+  }
 
   const supabase = createSupabaseServiceRoleClient();
-  // ESCRITA: Sempre na tabela original (resource), nunca na view
   const { data, error } = await supabase
     .from(resource as TableName)
     .insert(variables)
@@ -157,10 +171,27 @@ export async function create(resource: string, variables: any) {
   return { data };
 }
 
+// =========================================================
+// UPDATE
+// =========================================================
 export async function update(resource: string, id: string, variables: any) {
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
-  if (resource === "profiles") await verifyUserRole(["master"]);
+
+  if (resource === "profiles") {
+    await verifyUserRole(["master"]);
+
+    // [SANITIZAÇÃO] Remove campos que vêm da View (auth.users) mas não existem na Tabela (profiles)
+    // Se não removermos, o Supabase dá erro PGRST204 pois tenta atualizar colunas inexistentes.
+    delete variables.email;
+    delete variables.email_confirmed_at;
+    delete variables.user_deleted_at;
+    delete variables.banned_until;
+
+    // Opcional: remover timestamps para evitar conflitos
+    // delete variables.created_at;
+    // delete variables.updated_at;
+  }
 
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase
