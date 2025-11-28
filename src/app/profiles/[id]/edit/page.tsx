@@ -93,25 +93,21 @@ export default function ProfileEdit({ params }: { params: { id: string } }) {
     }
   }, [formData, reset]);
 
-  const { options: categoryOptions, isLoading: isCategoryLoading } =
-    useSelect<Category>({
-      resource: "categories",
-      optionLabel: "name",
-      optionValue: "id",
-      pagination: {
-        pageSize: 100,
+  const { options: categoryOptions } = useSelect<Category>({
+    resource: "categories",
+    optionLabel: "name",
+    optionValue: "id",
+    pagination: {
+      pageSize: 100,
+    },
+    filters: [
+      {
+        field: "type",
+        operator: "eq",
+        value: watchedProfileType || "pessoa",
       },
-      filters: [
-        {
-          field: "type",
-          operator: "eq",
-          value: watchedProfileType || "pessoa",
-        },
-      ],
-      queryOptions: {
-        enabled: true,
-      },
-    });
+    ],
+  });
 
   const roleOptions = [
     { label: "Admin (Moderador)", value: "admin" },
@@ -273,7 +269,7 @@ export default function ProfileEdit({ params }: { params: { id: string } }) {
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage>{errors.app_role?.message}</FormMessage>
+                        <FormMessage>{String(errors.app_role?.message || "")}</FormMessage>
                       </FormItem>
                     )}
                   />
@@ -340,13 +336,7 @@ export default function ProfileEdit({ params }: { params: { id: string } }) {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue
-                                placeholder={
-                                  isCategoryLoading
-                                    ? "Carregando..."
-                                    : "Selecione a categoria"
-                                }
-                              />
+                              <SelectValue placeholder="Selecione a categoria" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

@@ -12,6 +12,8 @@ export type Service = Database["public"]["Tables"]["services"]["Row"];
 export type Category = Database["public"]["Tables"]["categories"]["Row"];
 export type City = Database["public"]["Tables"]["cities"]["Row"];
 export type Amenity = Database["public"]["Tables"]["amenities"]["Row"];
+export type ServiceOffering =
+  Database["public"]["Tables"]["service_offerings"]["Row"];
 export type TableName = keyof Database["public"]["Tables"];
 
 // Enums

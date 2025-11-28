@@ -33,26 +33,22 @@ export function useServerTable<TData extends object>({
   const searchQuery = searchParams?.q ?? "";
   const initialFilters: CrudFilters = searchQuery
     ? [
-      {
-        field: searchField,
-        operator: "contains",
-        value: searchQuery,
-      },
-    ]
+        {
+          field: searchField,
+          operator: "contains",
+          value: searchQuery,
+        },
+      ]
     : [];
 
   // A lógica de uso do useTable encapsulada
   const table = useTable<TData>({
     refineCoreProps: {
       resource: resource,
-      syncWithLocation: false,
+      syncWithLocation: true, // Deixa o Refine gerenciar a URL
 
-      // 1. Configuração para a UI: Sincroniza a interface
-      pagination: {
-        mode: "server",
-        current: currentPage,
-        pageSize: pageSize,
-      },
+      // O bloco de paginação foi removido daqui para corrigir o erro de build.
+      // Com syncWithLocation: true, o useTable irá ler 'current' e 'pageSize' da URL.
 
       filters: {
         mode: "server",
@@ -70,7 +66,11 @@ export function useServerTable<TData extends object>({
 
       // 3. Força o Refetch: Garante que a busca seja refeita quando a URL muda
       queryOptions: {
-        queryKey: [resource, "list", { currentPage, pageSize, searchQuery, filters: initialFilters },],
+        queryKey: [
+          resource,
+          "list",
+          { currentPage, pageSize, searchQuery, filters: initialFilters },
+        ],
       },
     },
     columns,

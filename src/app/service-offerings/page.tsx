@@ -1,20 +1,27 @@
 "use client";
 
-import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
+import {
+  DeleteButton,
+  EditButton,
+  ShowButton,
+} from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
-import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import {
+  ListView,
+  ListViewHeader,
+} from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
+import { ServiceOffering } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
+import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import React from "react";
 
-interface IServiceOffering {
-  id: string;
-  name: string;
-}
-
-export default function ServiceOfferingList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
-
-  const columns = React.useMemo<ColumnDef<IServiceOffering>[]>(
+export default function ServiceOfferingList({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | undefined };
+}) {
+  const columns = React.useMemo<ColumnDef<ServiceOffering>[]>(
     () => [
       {
         id: "id",
@@ -44,10 +51,10 @@ export default function ServiceOfferingList({ searchParams }: { searchParams?: {
     []
   );
 
-  const table = useServerTable<IAmenity>({
+  const table = useServerTable<ServiceOffering>({
     resource: "service_offerings",
     columns: columns,
-    searchParams: searchParams,
+    searchParams: searchParams || {},
   });
 
   return (

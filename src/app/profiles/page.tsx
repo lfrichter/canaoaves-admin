@@ -2,6 +2,7 @@
 
 import { EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
 import { ProfileWithUser } from "@/types/app";
@@ -55,13 +56,16 @@ export default function ProfileList({
   const table = useServerTable<ProfileWithUser>({
     resource: "profiles",
     columns: columns,
-    searchParams: searchParams,
+    searchParams: searchParams || {},
     initialPageSize: 20,
+    searchField: "full_name",
   });
 
   return (
     <ListView>
-      <ListViewHeader title="Perfis" />
+      <ListViewHeader title="Perfis">
+        <TableSearchInput />
+      </ListViewHeader>
       <DataTable table={table} />
     </ListView>
   );

@@ -59,17 +59,23 @@ next-env.d.ts
 .mcp/rules/core.md
 mcp-inject.sh
 
-# 1. Versione a estrutura (Permitido)
-!/.gemini/
-!/.gemini/commands/
-!/.gemini/roles/
-!/.gemini/rules/
-!/.gemini/context/
-!/.gemini/setup/
-!/.gemini/templates/
+.gemini/
 
-# 2. Ignore o estado volátil e logs (Ignorado)
-.gemini/memory/current_plan.md  <-- Discutível: Se quiser colaboração, versione. Se for pessoal, ignore.
+# --- Whitelist (Permissões Explícitas) ---
+
+# O segredo é usar "/**" para garantir que subpastas profundas sejam incluídas
+!.gemini/commands/**
+!.gemini/roles/**
+!.gemini/rules/**
+!.gemini/context/**
+!.gemini/setup/**
+!.gemini/templates/**
+
+# Opcional: Manter a raiz da pasta visível (necessário em algumas versões do git)
+!.gemini/
+
+# --- Ignore Específico (Arquivos dentro das pastas permitidas que não devem subir) ---
+.gemini/memory/current_plan.md
 .gemini/logs/
 .gemini/cache/
 .gemini/temp/

@@ -28,13 +28,14 @@ export default function ProfileShow() {
 
   // 2. Busca o nome da Categoria (baseado no ID do perfil)
   // O 'enabled' garante que só buscamos se o perfil já tiver carregado e tiver uma categoria
-  const { data: categoryData, isLoading: isLoadingCategory } = useOne<Category>({
+  const { query: categoryQuery } = useOne<Category>({
     resource: "categories",
     id: record?.category_id || "",
     queryOptions: {
       enabled: !!record?.category_id,
     },
   });
+  const { data: categoryData, isLoading: isLoadingCategory } = categoryQuery;
   const categoryName = categoryData?.data?.name;
 
   if (isLoading) {
