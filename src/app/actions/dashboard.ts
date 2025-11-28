@@ -12,14 +12,20 @@ type DashboardStats = {
   pendingStateDescriptions: number;
 };
 
+// Interface para o retorno da RPC (snake_case)
+interface AdminDashboardStats {
+  pending_claims: number;
+  pending_reports: number;
+  pending_city_descriptions: number;
+  pending_city_images: number;
+  pending_state_descriptions: number;
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
   await verifyUserRole(["admin", "master"]);
   const supabase = createSupabaseServiceRoleClient();
 
   try {
-    // --- MUDANÇA PRINCIPAL ---
-    // Trocamos as 5 chamadas de 'Promise.all' pela nossa nova função RPC.
-    // Isso é muito mais rápido, pois faz tudo em uma única consulta no banco.
     const { data, error } = await supabase.rpc("get_admin_dashboard_stats");
 
     if (error) {
@@ -27,15 +33,32 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       throw error;
     }
 
-    // A função 'get_admin_dashboard_stats' retorna um JSON
-    // com chaves em snake_case (padrão do Postgres).
-    // Nós as mapeamos para o tipo camelCase que a página espera.
+    if (!data) {
+      console.warn("No data returned from get_admin_dashboard_stats RPC call.");
+      return {
+        pendingClaims: 0,
+        pendingReports: 0,
+        pendingCityDescriptions: 0,
+        pendingCityImages: 0,
+        pendingStateDescriptions: 0,
+      };
+    }
+
+    // O tipo de retorno da RPC é 'Json', então precisamos fazer o cast para o formato esperado.
+    const stats = data as unknown as {
+      pending_claims: number;
+      pending_reports: number;
+      pending_city_descriptions: number;
+      pending_city_images: number;
+      pending_state_descriptions: number;
+    };
+
     return {
-      pendingClaims: data.pending_claims ?? 0,
-      pendingReports: data.pending_reports ?? 0,
-      pendingCityDescriptions: data.pending_city_descriptions ?? 0,
-      pendingCityImages: data.pending_city_images ?? 0,
-      pendingStateDescriptions: data.pending_state_descriptions ?? 0,
+      pendingClaims: stats.pending_claims ?? 0,
+      pendingReports: stats.pending_reports ?? 0,
+      pendingCityDescriptions: stats.pending_city_descriptions ?? 0,
+      pendingCityImages: stats.pending_city_images ?? 0,
+      pendingStateDescriptions: stats.pending_state_descriptions ?? 0,
     };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);

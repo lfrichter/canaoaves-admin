@@ -31,7 +31,7 @@ export async function ignoreReport(reportId: string) {
   const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase
     .from("reports")
-    .update({ status: "ignored" })
+    .update({ status: "dismissed" })
     .eq("id", reportId)
     .select()
     .single();

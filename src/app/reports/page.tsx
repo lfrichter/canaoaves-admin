@@ -23,17 +23,18 @@ import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
 
+import {
+  ReportReason,
+  ReportStatus,
+  ReportTargetType,
+} from "@/types/app";
+
 // --- Interface Atualizada (Plana, vinda da RPC) ---
 interface IReport {
   id: string;
   target_id: string;
-  target_type: "profile" | "service" | "comment" | "photo";
-  reason:
-  | "incorrect_information"
-  | "inappropriate_content"
-  | "spam"
-  | "fraud"
-  | "other";
+  target_type: ReportTargetType;
+  reason: ReportReason;
   status: string;
   description: string;
   created_at: string;
@@ -50,7 +51,7 @@ interface IReport {
 }
 
 // Helper: Traduz o 'reason'
-function getReasonLabel(reason: IReport["reason"]): string {
+function getReasonLabel(reason: ReportReason): string {
   const labels = {
     incorrect_information: "Informação Incorreta",
     inappropriate_content: "Conteúdo Inapropriado",
@@ -92,7 +93,7 @@ function getPublicTargetLink(
 }
 
 // Helper: Traduz o 'target_type'
-function getTypeLabel(target_type: IReport["target_type"]): string {
+function getTypeLabel(target_type: ReportTargetType): string {
   const labels = {
     profile: "Perfil",
     service: "Serviço",
@@ -294,7 +295,7 @@ export default function ReportList() {
           {
             field: "status",
             operator: "eq",
-            value: "pending",
+            value: "pending" as ReportStatus,
           },
         ],
       },

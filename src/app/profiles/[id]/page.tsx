@@ -12,12 +12,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Category, Profile } from "@/types/app";
 
 export default function ProfileShow() {
   const router = useRouter();
 
   // 1. Busca os dados do Perfil
-  const { query } = useShow({
+  const { query } = useShow<Profile>({
     meta: {
       select: "*", // Garante que trazemos todos os campos
     },
@@ -27,7 +28,7 @@ export default function ProfileShow() {
 
   // 2. Busca o nome da Categoria (baseado no ID do perfil)
   // O 'enabled' garante que só buscamos se o perfil já tiver carregado e tiver uma categoria
-  const { data: categoryData, isLoading: isLoadingCategory } = useOne({
+  const { data: categoryData, isLoading: isLoadingCategory } = useOne<Category>({
     resource: "categories",
     id: record?.category_id || "",
     queryOptions: {

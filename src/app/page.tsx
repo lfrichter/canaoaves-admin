@@ -1,5 +1,5 @@
 import { RefreshButton } from "@/app/_components/refresh-button";
-import { getDashboardStats } from "@/app/actions/dashboard";
+import { getDashboardStats } from "./actions/dashboard";
 import {
   Card,
   CardContent,

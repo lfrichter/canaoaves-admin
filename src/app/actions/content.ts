@@ -4,9 +4,10 @@ import { verifyUserRole } from "@utils/auth/server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 import { validateContentResource } from "@utils/validation/server";
+import { TableName } from "../../types/app";
 
 export async function handleContentApproval(
-  resource: string,
+  resource: TableName,
   id: string,
   approved: boolean
 ) {
@@ -35,7 +36,7 @@ export async function handleContentApproval(
   return data;
 }
 
-export async function deleteContent(resource: string, id: string) {
+export async function deleteContent(resource: TableName, id: string) {
   await verifyUserRole(["admin", "master"]);
   validateContentResource(resource);
   if (typeof id !== "string") {

@@ -4,20 +4,16 @@ import { EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
+import { ProfileWithUser } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-interface IProfileList {
-  id: string; // ID da tabela profiles (PK)
-  full_name: string;
-  app_role: string;
-  email: string; // Vindo do auth.users
-  total_count: number;
-}
-
-export default function ProfileList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
-
-  const columns = React.useMemo<ColumnDef<IProfileList>[]>(
+export default function ProfileList({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | undefined };
+}) {
+  const columns = React.useMemo<ColumnDef<ProfileWithUser>[]>(
     () => [
       {
         id: "id",
@@ -56,7 +52,7 @@ export default function ProfileList({ searchParams }: { searchParams?: { [key: s
     []
   );
 
-  const table = useServerTable<IProfileList>({
+  const table = useServerTable<ProfileWithUser>({
     resource: "profiles",
     columns: columns,
     searchParams: searchParams,

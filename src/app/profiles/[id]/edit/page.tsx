@@ -1,6 +1,6 @@
 "use client";
 
-import { useSelect } from "@refinedev/core";
+import { useOne, useSelect } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import { ArrowLeft, SaveIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,24 +30,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Category, Profile } from "@/types/app";
+
+type FormValues = Profile & { email?: string };
 
 export default function ProfileEdit({ params }: { params: { id: string } }) {
   const router = useRouter();
 
-  const form = useForm({
+  const { query } = useOne<Profile>({
+    resource: "profiles",
+    id: params.id,
+    meta: {
+      select: "*, user:users(email)",
+    },
+  });
+
+  const { data: profileData, isLoading } = query;
+
+  const form = useForm<FormValues>({
     refineCoreProps: {
       resource: "profiles",
       action: "edit",
       id: params.id,
-      meta: {
-        // Se o seu backend suportar, isso garante que o email venha junto
-        select: "*, user:users(email)",
-      },
     },
   });
 
   const {
-    refineCore: { queryResult, formLoading },
+    refineCore: { formLoading },
     saveButtonProps,
     register,
     control,
@@ -57,7 +66,7 @@ export default function ProfileEdit({ params }: { params: { id: string } }) {
     watch,
   } = form;
 
-  const formData = queryResult?.data?.data;
+  const formData = profileData?.data;
 
   // Observa TODO o formulário para o debug
   const formValues = watch();
@@ -78,29 +87,31 @@ export default function ProfileEdit({ params }: { params: { id: string } }) {
         // Campos Read-Only
         user_id: formData.user_id || "",
         registration_number: formData.registration_number || "",
-        // --- NOVO: Mapeamento de E-mail ---
-        // Tenta pegar do nível raiz ou do objeto user aninhado (padrão Supabase)
-        email: formData.email || formData.user?.email || "",
+        // Mapeamento de E-mail
+        email: (formData as any).user?.email || "",
       });
     }
   }, [formData, reset]);
 
-  const { options: categoryOptions, queryResult: categoryQueryResult } = useSelect({
-    resource: "categories",
-    optionLabel: "name",
-    optionValue: "id",
-    pagination: {
-      pageSize: 100,
-    },
-    filters: [
-      {
-        field: "type",
-        operator: "eq",
-        value: watchedProfileType || "pessoa",
+  const { options: categoryOptions, isLoading: isCategoryLoading } =
+    useSelect<Category>({
+      resource: "categories",
+      optionLabel: "name",
+      optionValue: "id",
+      pagination: {
+        pageSize: 100,
       },
-    ],
-    enabled: true,
-  });
+      filters: [
+        {
+          field: "type",
+          operator: "eq",
+          value: watchedProfileType || "pessoa",
+        },
+      ],
+      queryOptions: {
+        enabled: true,
+      },
+    });
 
   const roleOptions = [
     { label: "Admin (Moderador)", value: "admin" },
@@ -329,7 +340,13 @@ export default function ProfileEdit({ params }: { params: { id: string } }) {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={categoryQueryResult?.isLoading ? "Carregando..." : "Selecione a categoria"} />
+                              <SelectValue
+                                placeholder={
+                                  isCategoryLoading
+                                    ? "Carregando..."
+                                    : "Selecione a categoria"
+                                }
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

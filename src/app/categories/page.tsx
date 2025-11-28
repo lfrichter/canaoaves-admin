@@ -4,17 +4,16 @@ import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/but
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
+import { Category } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-interface ICategory {
-  id: string;
-  name: string;
-}
-
-export default function CategoryList({ searchParams }: { searchParams?: { [key: string]: string | undefined } }) {
-
-  const columns = React.useMemo<ColumnDef<ICategory>[]>(
+export default function CategoryList({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | undefined };
+}) {
+  const columns = React.useMemo<ColumnDef<Category>[]>(
     () => [
       {
         id: "id",
@@ -44,10 +43,10 @@ export default function CategoryList({ searchParams }: { searchParams?: { [key: 
     []
   );
 
-  const table = useServerTable<IAmenity>({
+  const table = useServerTable<Category>({
     resource: "categories",
     columns: columns,
-    searchParams: searchParams,
+    searchParams: searchParams || {},
   });
 
   return (

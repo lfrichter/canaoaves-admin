@@ -3,6 +3,7 @@
 import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 import { validateResource } from "@utils/validation/server";
+import { TableName } from "../../types/app";
 
 export async function getList(resource: string, params: any) {
   try {
@@ -77,66 +78,54 @@ export async function getList(resource: string, params: any) {
       return { data, total: total };
     }
 
-
-
-// --- MUDANÇA: ADICIONAR INTERCEPTAÇÃO PARA 'state_descriptions' ---
-
-if (resource === "state_descriptions") {
-
-    console.log(
+    // --- MUDANÇA: ADICIONAR INTERCEPTAÇÃO PARA 'state_descriptions' ---
+    if (resource === "state_descriptions") {
+      console.log(
         "[getList Action] Interceptando 'state_descriptions'. Chamando RPC 'get_pending_state_descriptions'."
-    );
+      );
 
-    const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.rpc(
         "get_pending_state_descriptions",
         {
-            p_page_size: pageSize,
-            p_current_page: current,
+          p_page_size: pageSize,
+          p_current_page: current,
         }
-    );
+      );
 
-    if (error) {
+      if (error) {
         console.error(`[getList Action] RPC Error:`, error);
         throw error;
+      }
+
+      const total = data.length > 0 ? data[0].total_count : 0;
+
+      return { data, total: total };
     }
 
-    const total = data.length > 0 ? data[0].total_count : 0;
-
-    return { data, total: total };
-
-}
-
-
-
-if (resource === "profiles") {
-    console.log(
+    if (resource === "profiles") {
+      console.log(
         "[getList Action] Interceptando 'profiles'. Chamando RPC 'get_profiles_with_users'."
-    );
+      );
 
-    const { data, error } = await supabase.rpc("get_profiles_with_users", {
-      p_page_size: pageSize,
-      p_current_page: current
-    });
-    if (error) {
+      const { data, error } = await supabase.rpc("get_profiles_with_users", {
+        p_page_size: pageSize,
+        p_current_page: current,
+      });
+      if (error) {
         console.error(`[getList Action] RPC Error:`, error);
         throw error;
+      }
+      const total = data.length > 0 ? data[0].total_count : 0;
+      return { data, total: total };
     }
-    const total = data.length > 0 ? data[0].total_count : 0;
-    return { data, total: total };
-}
-// --- Fim da nova interceptação ---
+    // --- Fim da nova interceptação ---
 
+    // Comportamento padrão para todos os outros recursos
+    const selectQuery = meta?.select ? meta.select : "*";
 
-
-// Comportamento padrão para todos os outros recursos
-
-const selectQuery = meta?.select ? meta.select : "*";
-
-let query: any = supabase
-
-    .from(resource)
-
-    .select(selectQuery, { count: "exact" });
+    let query: any = supabase
+      .from(resource as TableName)
+      .select(selectQuery, { count: "exact" });
 
     filters.forEach((filter: any) => {
       if (filter.operator === "eq") {
@@ -189,11 +178,17 @@ export async function getOne(resource: string, id: string) {
     // --- A MÁGICA ESTÁ AQUI ---
     // Se o objeto 'user' existir, movemos o email para a raiz.
     // Isso facilita a leitura pelo formulário no frontend.
-    if (data && data.user && data.user.email) {
-        data.email = data.user.email;
-        console.log(`[getOne] 📧 E-mail extraído e injetado na raiz: ${data.email}`);
+    if (data && (data as any).user && (data as any).user.email) {
+      (data as any).email = (data as any).user.email;
+      console.log(
+        `[getOne] 📧 E-mail extraído e injetado na raiz: ${
+          (data as any).email
+        }`
+      );
     } else {
-        console.log(`[getOne] ⚠️ Objeto 'user' ou 'email' não encontrado no retorno do RPC.`);
+      console.log(
+        `[getOne] ⚠️ Objeto 'user' ou 'email' não encontrado no retorno do RPC.`
+      );
     }
 
     return { data };
@@ -201,7 +196,7 @@ export async function getOne(resource: string, id: string) {
   // --- FIM DA INTERCEPTAÇÃO ---
 
   const { data, error } = await supabase
-    .from(resource)
+    .from(resource as TableName)
     .select("*")
     .eq("id", id)
     .single();
@@ -236,8 +231,14 @@ export async function create(resource: string, variables: any) {
   // --- FIM DA LÓGICA DE SEGURANÇA ---
 
   const supabase = createSupabaseServiceRoleClient();
-  const { data, error } = await supabase.from(resource).insert(variables).select().single();
-  if (error) { throw error; }
+  const { data, error } = await supabase
+    .from(resource as TableName)
+    .insert(variables)
+    .select()
+    .single();
+  if (error) {
+    throw error;
+  }
   return { data };
 }
 export async function update(resource: string, id: string, variables: any) {
@@ -261,8 +262,15 @@ export async function update(resource: string, id: string, variables: any) {
   // --- FIM DA LÓGICA DE SEGURANÇA ---
 
   const supabase = createSupabaseServiceRoleClient();
-  const { data, error } = await supabase.from(resource).update(variables).eq("id", id).select().single();
-  if (error) { throw error; }
+  const { data, error } = await supabase
+    .from(resource as TableName)
+    .update(variables)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) {
+    throw error;
+  }
   return { data };
 }
 export async function deleteOne(resource: string, id: string) {
@@ -279,7 +287,13 @@ export async function deleteOne(resource: string, id: string) {
   // --- FIM DA LÓGICA DE SEGURANÇA ---
 
   const supabase = createSupabaseServiceRoleClient();
-  const { error } = await supabase.from(resource).delete().eq("id", id);
-  if (error) { throw error; }
+  const { error } = await supabase
+    .from(resource as TableName)
+    .delete()
+    .eq("id", id);
+  if (error) {
+    throw error;
+  }
   return { data: { id } };
 }
+
