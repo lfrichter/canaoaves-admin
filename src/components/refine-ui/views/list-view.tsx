@@ -14,7 +14,9 @@ type ListViewProps = PropsWithChildren<{
 
 export function ListView({ children, className }: ListViewProps) {
   return (
-    <div className={cn("flex flex-col", "gap-4", "p-4 md:p-6 lg:p-8", className)}>{children}</div>
+    <div className={cn("flex flex-col", "gap-4", "p-4 md:p-6 lg:p-8", className)}>
+      {children}
+    </div>
   );
 }
 
@@ -27,6 +29,7 @@ type ListHeaderProps = PropsWithChildren<{
 }>;
 
 export const ListViewHeader = ({
+  children, // [NOVO] Aceita componentes extras (ex: SearchInput)
   canCreate,
   resource: resourceFromProps,
   title: titleFromProps,
@@ -50,20 +53,35 @@ export const ListViewHeader = ({
     );
 
   return (
-    <div className={cn("flex flex-col", "gap-4", wrapperClassName)}>
+    <div className={cn("flex flex-col w-full", "gap-4", wrapperClassName)}>
+      {/* Linha do Breadcrumb */}
       <div className="flex items-center relative gap-2">
         <div className="bg-background z-[2] pr-4">
           <Breadcrumb />
         </div>
         <Separator className={cn("absolute", "left-0", "right-0", "z-[1]")} />
       </div>
-      <div className={cn("flex", "justify-between", "gap-4", headerClassName)}>
-        <h2 className="text-2xl font-bold">{title}</h2>
-        {isCreateButtonVisible && (
-          <div className="flex items-center gap-2">
-            <CreateButton resource={resourceName} />
-          </div>
+
+      {/* Cabeçalho Responsivo */}
+      <div
+        className={cn(
+          "flex flex-col w-full gap-4 md:flex-row md:items-center md:justify-between",
+          headerClassName
         )}
+      >
+        <h2 className="text-2xl font-bold">{title}</h2>
+
+        {/* Container de Ações (Search + Create) */}
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto items-stretch sm:items-center">
+          {/* Renderiza o SearchInput ou outros filtros aqui */}
+          {children}
+
+          {isCreateButtonVisible && (
+            <div className="flex-shrink-0">
+              <CreateButton resource={resourceName} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

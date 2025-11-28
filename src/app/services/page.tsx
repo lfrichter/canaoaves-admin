@@ -2,9 +2,9 @@
 
 import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
-import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { Service } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
@@ -58,8 +58,9 @@ export default function ServiceList({
   return (
     <ListView>
       <div className="flex justify-between items-center mb-4">
-        <ListViewHeader title="Serviços" canCreate />
-        <TableSearchInput />
+        <ListViewHeader title="Serviços" canCreate>
+          <TableSearchInput />
+        </ListViewHeader>
       </div>
       <DataTable table={table} />
     </ListView>
