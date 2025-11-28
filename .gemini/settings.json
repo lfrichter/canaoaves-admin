@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "postgres": { // can execute: query // require: Node (@modelcontextprotocol/server-postgres
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:${DB_PASSWORD}@ugbcqdrslppxgfqollvu.supabase.co:5432/postgres?sslmode=require"
+      ]
+    },
+    "supabase": {
+      "httpUrl": "https://mcp.supabase.com/mcp?read_only=false&project_ref=ugbcqdrslppxgfqollvu&features=database,docs,debugging,development",
+      "headers": {
+        "Authorization": "Bearer ${DB_ACCESS_TOKEN}"
+      }
+    }
+
+
+    // "postgres": { // can execute: list-tables, describe-table // require Python (crystaldba)
+    //   "command": "/opt/homebrew/bin/uv",
+    //   "args": [
+    //     "run",
+    //     "--with", "postgres-mcp",
+    //     "--with", "psycopg2-binary",
+    //     "postgres-mcp",
+    //     "--access-mode=unrestricted"
+    //   ],
+    //   "env": {
+    //      "DATABASE_URI": "postgresql://postgres:${DB_PASSWORD}@ugbcqdrslppxgfqollvu.supabase.co:5432/postgres"
+    //   }
+    // }
+  }
+}

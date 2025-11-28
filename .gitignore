@@ -74,3 +74,4 @@ mcp-inject.sh
 .gemini/cache/
 .gemini/temp/
 .gemini/help/
+.envrc
