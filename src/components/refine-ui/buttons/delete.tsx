@@ -30,6 +30,10 @@ type DeleteButtonProps = {
     hideIfUnauthorized?: boolean;
   };
   /**
+   * Callback executed when the mutation is successful
+   */
+  onSuccess?: () => void; // [1] Adicionada a tipagem do onSuccess
+  /**
    * `meta` property is used when creating the URL for the related action and path.
    */
   meta?: Record<string, unknown>;
@@ -38,7 +42,9 @@ type DeleteButtonProps = {
 export const DeleteButton = React.forwardRef<
   React.ComponentRef<typeof Button>,
   DeleteButtonProps
->(({ resource, recordItemId, accessControl, meta, children, ...rest }, ref) => {
+>(({ resource, recordItemId, accessControl, meta, onSuccess, children, ...rest }, ref) => {
+  // [2] Extraímos 'onSuccess' das props acima para não ir para o ...rest
+
   const {
     hidden,
     disabled,
@@ -53,7 +59,10 @@ export const DeleteButton = React.forwardRef<
     id: recordItemId,
     accessControl,
     meta,
+    // [3] Passamos o onSuccess para o hook do Refine gerenciar
+    onSuccess,
   });
+
   const [open, setOpen] = React.useState(false);
 
   const isDisabled = disabled || rest.disabled || loading;
@@ -71,7 +80,7 @@ export const DeleteButton = React.forwardRef<
         <span>
           <Button
             variant="destructive"
-            {...rest}
+            {...rest} // Agora 'rest' não contém mais 'onSuccess', resolvendo o warning
             ref={ref}
             disabled={isDisabled}
           >
@@ -97,9 +106,8 @@ export const DeleteButton = React.forwardRef<
               size="sm"
               disabled={loading}
               onClick={() => {
-                if (typeof onConfirm === "function") {
-                  onConfirm();
-                }
+                // A função onConfirm do useDeleteButton já engloba a chamada do onSuccess que passamos no hook
+                onConfirm();
                 setOpen(false);
               }}
             >

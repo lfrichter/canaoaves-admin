@@ -6,7 +6,9 @@ import { TableSearchInput } from "@/components/refine-ui/data-table/table-search
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { useServerTable } from "@/hooks/useServerTable";
 import { Service } from "@/types/app";
+import { useInvalidate } from "@refinedev/core";
 import { ColumnDef } from "@tanstack/react-table";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 
 export default function ServiceList({
@@ -14,6 +16,9 @@ export default function ServiceList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const invalidate = useInvalidate();
   const columns = React.useMemo<ColumnDef<Service>[]>(
     () => [
       {
@@ -40,13 +45,27 @@ export default function ServiceList({
             <div className="flex gap-2">
               <ShowButton recordItemId={id} />
               <EditButton recordItemId={id} />
-              <DeleteButton recordItemId={id} />
+              <DeleteButton
+                recordItemId={id}
+                onSuccess={() => {
+                  invalidate({
+                    resource: "services",
+                    invalidates: ["list"]
+                  });
+
+                  // Remove query params (?q=xxx) voltando para a rota limpa
+                  // router.replace(pathname);
+
+                  // Força o Next.js a buscar os dados atualizados no servidor
+                  // router.refresh();
+                }}
+              />
             </div>
           );
         },
       },
     ],
-    []
+    [invalidate, router, pathname]
   );
 
   const table = useServerTable<Service>({
