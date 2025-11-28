@@ -48,16 +48,15 @@ export default function ServiceList({
               <DeleteButton
                 recordItemId={id}
                 onSuccess={() => {
+                  // 1. Limpa a busca da URL (Remove ?q=...)
+                  router.replace(pathname);
+
+                  // 2. Força o Refine a buscar os dados novos (Atualiza a tabela visualmente)
+                  // O invalidate é crucial porque o useServerTable usa cache no navegador
                   invalidate({
                     resource: "services",
                     invalidates: ["list"]
                   });
-
-                  // Remove query params (?q=xxx) voltando para a rota limpa
-                  // router.replace(pathname);
-
-                  // Força o Next.js a buscar os dados atualizados no servidor
-                  // router.refresh();
                 }}
               />
             </div>

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { CrudFilter } from "@refinedev/core";
 import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
@@ -168,6 +169,9 @@ export async function create(resource: string, variables: any) {
     .single();
 
   if (error) throw error;
+  
+  revalidatePath(`/${resource}`);
+  
   return { data };
 }
 
@@ -202,6 +206,9 @@ export async function update(resource: string, id: string, variables: any) {
     .single();
 
   if (error) throw error;
+
+  revalidatePath(`/${resource}`);
+
   return { data };
 }
 
@@ -217,5 +224,8 @@ export async function deleteOne(resource: string, id: string) {
     .eq("id", id);
 
   if (error) throw error;
+
+  revalidatePath(`/${resource}`);
+
   return { data: { id } };
 }
