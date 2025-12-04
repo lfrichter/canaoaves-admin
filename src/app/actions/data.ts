@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { CrudFilter } from "@refinedev/core";
 import { verifyUserRole } from "@utils/auth/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 import { validateResource } from "@utils/validation/server";
+import { revalidatePath } from "next/cache";
 import { TableName } from "../../types/app";
 
 export async function getList(resource: string, params: any) {
@@ -169,9 +169,9 @@ export async function create(resource: string, variables: any) {
     .single();
 
   if (error) throw error;
-  
+
   revalidatePath(`/${resource}`);
-  
+
   return { data };
 }
 
@@ -212,20 +212,163 @@ export async function update(resource: string, id: string, variables: any) {
   return { data };
 }
 
+// =========================================================
+// DELETE (Com lógica de Soft Delete para Perfis)
+// =========================================================
 export async function deleteOne(resource: string, id: string) {
+  // 1. Verificação de Segurança
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
-  await verifyUserRole(["master"]);
+
+  // Para deletar usuários/perfis, exigimos role Master por segurança
+  if (resource === "profiles") {
+    await verifyUserRole(["master"]);
+  }
 
   const supabase = createSupabaseServiceRoleClient();
-  const { error } = await supabase
-    .from(resource as TableName)
-    .delete()
-    .eq("id", id);
 
-  if (error) throw error;
+  try {
+    // ---------------------------------------------------------
+    // CASO ESPECIAL: PROFILES (Soft Delete + Banimento)
+    // ---------------------------------------------------------
+    if (resource === "profiles") {
+      // 1. Buscamos o user_id (que está na tabela profiles) baseado no ID do registro
+      const { data: profile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("id", id)
+        .single();
 
-  revalidatePath(`/${resource}`);
+      if (fetchError || !profile) {
+        throw new Error("Perfil não encontrado para exclusão.");
+      }
 
-  return { data: { id } };
+      // 2. Soft Delete no Perfil (marca deleted_at)
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (updateError) throw updateError;
+
+      // 3. Banir o usuário no Supabase Auth (Camada de Identidade)
+      // Isso impede que ele faça login novamente, mesmo que o registro exista.
+      const { error: banError } = await supabase.auth.admin.updateUserById(
+        profile.user_id,
+        { ban_duration: "876000h" } // Banido por ~100 anos
+      );
+
+      if (banError) {
+        console.error("Erro ao banir usuário no Auth:", banError);
+        // Não lançamos erro aqui para não reverter o soft delete, mas logamos.
+      }
+
+      revalidatePath(`/${resource}`);
+      return { data: { id } };
+    }
+
+    // ---------------------------------------------------------
+    // CASO PADRÃO: HARD DELETE (Outros recursos)
+    // ---------------------------------------------------------
+    // Para comments, photos, etc., continuamos com Hard Delete
+    // até que o schema suporte 'status' ou 'deleted_at' para eles.
+    const { error } = await supabase
+      .from(resource as TableName)
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath(`/${resource}`);
+    return { data: { id } };
+
+  } catch (err: any) {
+    console.error(`[deleteOne Action] CRASH:`, err);
+    return Promise.reject(err);
+  }
+}
+
+
+// =========================================================
+// CUSTOM (Para rotas manuais como Restore)
+// =========================================================
+export async function custom(data: any) {
+  // 1. Verificação de Segurança
+  await verifyUserRole(["admin", "master"]);
+
+  const { url, method, values: payload } = data; // O Refine envia 'values' ou 'payload' dependendo da versão
+  const supabase = createSupabaseServiceRoleClient();
+
+  // 2. Parser da URL
+  // A URL vem como "undefined/profiles/ID" ou "http://.../profiles/ID"
+  // Vamos pegar as duas últimas partes: recurso e ID.
+  const parts = url.split("/");
+  const id = parts.pop(); // Última parte: ID
+  const resource = parts.pop(); // Penúltima parte: Resource
+
+  if (!id || !resource) {
+    throw new Error("URL inválida para Custom Action.");
+  }
+
+  try {
+    // ---------------------------------------------------------
+    // LÓGICA DE RESTORE (PATCH em PROFILES)
+    // ---------------------------------------------------------
+    if (resource === "profiles" && method === "patch") {
+      await verifyUserRole(["master"]);
+
+      // A. Remove o banimento no Supabase Auth
+      // Precisamos buscar o user_id primeiro
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+
+      if (profile?.user_id) {
+        const { error: unbanError } = await supabase.auth.admin.updateUserById(
+          profile.user_id,
+          { ban_duration: "0" } // Remove o banimento
+        );
+        if (unbanError) console.error("Erro ao remover ban:", unbanError);
+      }
+
+      // B. Remove o deleted_at na tabela (Restore)
+      const { data: updatedData, error: updateError } = await supabase
+        .from("profiles")
+        .update({ deleted_at: null })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      revalidatePath(`/${resource}`);
+      return { data: updatedData };
+    }
+
+    // ---------------------------------------------------------
+    // FALLBACK GENÉRICO (Para outras tabelas simples)
+    // ---------------------------------------------------------
+    // Se não for profile, tenta apenas rodar o update com os valores passados
+    if (method === "patch" || method === "put") {
+      const { data: genericData, error: genericError } = await supabase
+        .from(resource)
+        .update(payload || {})
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (genericError) throw genericError;
+
+      revalidatePath(`/${resource}`);
+      return { data: genericData };
+    }
+
+    throw new Error(`Rota customizada não implementada para: ${method} ${resource}`);
+
+  } catch (err: any) {
+    console.error(`[custom Action] CRASH:`, err);
+    return Promise.reject(err);
+  }
 }

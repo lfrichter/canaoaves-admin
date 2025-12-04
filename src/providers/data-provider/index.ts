@@ -2,12 +2,13 @@
 
 import {
   create,
+  custom,
   deleteOne,
   getList,
   getOne,
   update,
 } from "@/app/actions/data";
-import type { BaseKey, DataProvider } from "@refinedev/core";
+import type { BaseKey, CustomResponse, DataProvider } from "@refinedev/core";
 
 export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters, meta }) => {
@@ -85,8 +86,20 @@ export const dataProvider: DataProvider = {
     return ""; // Not applicable for Server Actions
   },
 
-  custom: async ({ url, method, filters, sorters, payload, query }) => {
-    // Implement custom if needed, or throw an error if not supported
-    throw new Error("custom not implemented.");
+  custom: async ({ url, method, filters, sorters, payload, query, headers }) => {
+    try {
+      const response = await custom({
+        url,
+        method,
+        // O Refine entrega os dados em 'payload', mas sua Action espera em 'values'
+        values: payload,
+        query,
+        headers,
+      });
+      return response as unknown as CustomResponse<TData>;
+    } catch (error) {
+      // É importante relançar o erro para o componente tratar
+      throw error;
+    }
   },
 };

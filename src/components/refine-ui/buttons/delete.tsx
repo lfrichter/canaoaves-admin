@@ -6,44 +6,38 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type BaseKey, useDeleteButton } from "@refinedev/core";
+import {
+  type BaseKey,
+  useDeleteButton,
+  useInvalidate,
+  useParsed
+} from "@refinedev/core";
 import { Loader2, Trash } from "lucide-react";
+// [1] Importar o hook de rotas do Next.js
+import { useRouter } from "next/navigation";
 import React from "react";
 
 type DeleteButtonProps = {
-  /**
-   * Resource name for API data interactions. `identifier` of the resource can be used instead of the `name` of the resource.
-   * @default Inferred resource name from the route
-   */
   resource?: string;
-  /**
-   * Data item identifier for the actions with the API
-   * @default Reads `:id` from the URL
-   */
   recordItemId?: BaseKey;
-  /**
-   * Access Control configuration for the button
-   * @default `{ enabled: true, hideIfUnauthorized: false }`
-   */
   accessControl?: {
     enabled?: boolean;
     hideIfUnauthorized?: boolean;
   };
-  /**
-   * Callback executed when the mutation is successful
-   */
-  onSuccess?: () => void; // [1] Adicionada a tipagem do onSuccess
-  /**
-   * `meta` property is used when creating the URL for the related action and path.
-   */
+  onSuccess?: () => void;
   meta?: Record<string, unknown>;
 } & React.ComponentProps<typeof Button>;
 
 export const DeleteButton = React.forwardRef<
   React.ComponentRef<typeof Button>,
   DeleteButtonProps
->(({ resource, recordItemId, accessControl, meta, onSuccess, children, ...rest }, ref) => {
-  // [2] Extraímos 'onSuccess' das props acima para não ir para o ...rest
+>(({ resource: propResource, recordItemId, accessControl, meta, onSuccess, children, ...rest }, ref) => {
+
+  const invalidate = useInvalidate();
+  const { resource: urlResource } = useParsed();
+  const router = useRouter(); // [2] Inicializar o router
+
+  const resourceName = propResource ?? urlResource?.name;
 
   const {
     hidden,
@@ -55,12 +49,36 @@ export const DeleteButton = React.forwardRef<
     confirmOkLabel: defaultConfirmOkLabel,
     cancelLabel: defaultCancelLabel,
   } = useDeleteButton({
-    resource,
+    resource: resourceName,
     id: recordItemId,
     accessControl,
     meta,
-    // [3] Passamos o onSuccess para o hook do Refine gerenciar
-    onSuccess,
+    // [3] Interceptamos o sucesso
+    onSuccess: () => {
+      // Invalidação padrão do Refine (React Query)
+      if (resourceName) {
+        invalidate({
+          resource: resourceName,
+          invalidates: ["list", "many", "detail"],
+        });
+
+        // [4] Lógica específica para PROFILES
+        if (resourceName === "profiles") {
+          // Opção A (Recomendada): Atualiza os dados do servidor sem recarregar a página inteira
+          router.refresh();
+
+          // Opção B (Nuclear): Se a Opção A não funcionar, descomente a linha abaixo.
+          // Isso fará o mesmo que você fez no RestoreButton (F5 na página).
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    }
   });
 
   const [open, setOpen] = React.useState(false);
@@ -80,7 +98,7 @@ export const DeleteButton = React.forwardRef<
         <span>
           <Button
             variant="destructive"
-            {...rest} // Agora 'rest' não contém mais 'onSuccess', resolvendo o warning
+            {...rest}
             ref={ref}
             disabled={isDisabled}
           >
@@ -106,7 +124,6 @@ export const DeleteButton = React.forwardRef<
               size="sm"
               disabled={loading}
               onClick={() => {
-                // A função onConfirm do useDeleteButton já engloba a chamada do onSuccess que passamos no hook
                 onConfirm();
                 setOpen(false);
               }}
