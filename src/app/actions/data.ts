@@ -7,6 +7,7 @@ import { validateResource } from "@utils/validation/server";
 import { revalidatePath } from "next/cache";
 import { TableName } from "../../types/app";
 
+
 export async function getList(resource: string, params: any) {
   try {
     await verifyUserRole(["admin", "master"]);
@@ -142,11 +143,22 @@ export async function getList(resource: string, params: any) {
   }
 }
 
-// getOne: Também pode se beneficiar da View!
-export async function getOne(resource: string, id: string) {
-  await verifyUserRole(["admin", "master"]);
-  validateResource(resource);
+const ID_COLUMNS: Record<string, string> = {
+  profiles: "user_id",
+};
 
+// getOne: Também pode se beneficiar da View!
+export async function getOne(resource: string, { id }: { id: string }) {
+  await verifyUserRole(["admin", "master"]);
+
+  // Guarda contra IDs inválidos/nulos/"undefined"
+  if (!id || id === "undefined" || id === "null") {
+    console.warn(`getOne abortado: ID inválido (${id}) para recurso ${resource}`);
+    return { data: null };
+  }
+
+  validateResource(resource);
+  const idColumn = ID_COLUMNS[resource] || "id";
   const supabase = createSupabaseServiceRoleClient();
 
   // Se for profile, buscamos da view para já vir com o e-mail
@@ -155,13 +167,17 @@ export async function getOne(resource: string, id: string) {
       targetTable = "profile_users";
   }
 
-  const { data, error } = await supabase
-    .from(targetTable as any)
-    .select("*")
-    .eq("id", id)
-    .single();
+  const query = supabase
+  .from(targetTable as any)
+  .select("*")
+  .eq(idColumn, id);
 
-  if (error) throw error;
+  const { data, error } = await query.maybeSingle();
+
+  if (error) {
+    console.error(`Erro em getOne para ${resource}:`, error);
+    throw new Error(error.message);
+  }
 
   return { data };
 }

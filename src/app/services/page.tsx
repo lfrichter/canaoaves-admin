@@ -1,6 +1,6 @@
 "use client";
 
-import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
+import { DeleteButton, EditButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
@@ -110,15 +110,6 @@ export default function ServiceList({
           const id = row.original.id;
           return (
             <div className="flex items-center gap-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div><ShowButton recordItemId={id} /></div>
-                  </TooltipTrigger>
-                  <TooltipContent>Ver Detalhes</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

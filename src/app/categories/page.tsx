@@ -1,6 +1,6 @@
 "use client";
 
-import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
+import { DeleteButton, EditButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
@@ -14,7 +14,15 @@ import {
 import { useServerTable } from "@/hooks/useServerTable";
 import { Category } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
-import { Briefcase, Calendar, Layers, Tag, User } from "lucide-react";
+import {
+  Briefcase,
+  Calendar,
+  CornerDownRight,
+  Layers,
+  LayoutGrid,
+  Tag,
+  User
+} from "lucide-react";
 import React from "react";
 
 // Helper para colorir os tipos de categoria
@@ -29,7 +37,7 @@ const getTypeBadge = (type: string) => {
     case "empresa":
       return (
         <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
-          <Briefcase className="w-3 h-3 mr-1" /> Empresa / Serviço
+          <Briefcase className="w-3 h-3 mr-1" /> Empresa
         </Badge>
       );
     default:
@@ -46,25 +54,57 @@ export default function CategoryList({
     () => [
       {
         id: "name",
-        header: "Categoria",
+        header: "Categoria / Hierarquia",
         accessorKey: "name", // Para ordenação
-        size: 250,
+        size: 300,
         cell: ({ row }) => {
-          const { name, slug } = row.original;
+          const { name, slug, icon, parent_id, type } = row.original;
+          const isParent = !parent_id; // Se não tem parent_id, é uma categoria Raiz (Pai)
+
+          // Define o ícone de fallback baseado no tipo
+          const FallbackIcon = type === 'pessoa' ? User : type === 'empresa' ? Briefcase : Layers;
+
           return (
             <div className="flex items-center gap-3">
-              {/* Ícone Placeholder */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-muted/50">
-                <Layers className="h-5 w-5 text-muted-foreground" />
+              {/* --- 1. THUMBNAIL DO ÍCONE --- */}
+              <div className={`
+                flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-lg border shadow-sm
+                ${icon ? "bg-white text-2xl" : "bg-muted/50"}
+              `}>
+                {icon ? (
+                  <span>{icon}</span>
+                ) : (
+                  <FallbackIcon className="h-5 w-5 text-muted-foreground opacity-50" />
+                )}
               </div>
 
+              {/* --- 2. NOME E HIERARQUIA --- */}
               <div className="flex flex-col">
-                <span className="font-medium text-sm text-foreground">
-                  {name}
-                </span>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <Tag className="w-3 h-3 mr-1 opacity-70" />
-                  {slug || "sem-slug"}
+                <div className="flex items-center gap-2">
+                  {/* Se for filho, mostra a seta de indentação */}
+                  {!isParent && (
+                    <CornerDownRight className="w-4 h-4 text-muted-foreground/40 ml-1" />
+                  )}
+
+                  <span className={`
+                    text-sm text-foreground flex items-center gap-2
+                    ${isParent ? "font-bold text-base" : "font-medium"}
+                  `}>
+                    {name}
+
+                    {/* Badge visual para PAIS */}
+                    {isParent && (
+                      <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary hover:bg-primary/20">
+                        <LayoutGrid className="w-3 h-3 mr-1" />
+                        Categoria Pai
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-center text-xs text-muted-foreground mt-0.5">
+                  <Tag className="w-3 h-3 mr-1 opacity-50" />
+                  <span className="font-mono opacity-80">{slug || "sem-slug"}</span>
                 </div>
               </div>
             </div>
@@ -73,16 +113,16 @@ export default function CategoryList({
       },
       {
         id: "type",
-        header: "Tipo",
+        header: "Tipo de Perfil",
         accessorKey: "type",
-        size: 80,
+        size: 120,
         cell: ({ getValue }) => getTypeBadge(getValue() as string),
       },
       {
         id: "created_at",
         header: "Criado em",
         accessorKey: "created_at",
-        size: 50,
+        size: 120,
         cell: ({ getValue }) => (
           <div className="flex items-center text-muted-foreground text-xs">
             <Calendar className="w-3 h-3 mr-1.5 opacity-70" />
@@ -97,15 +137,6 @@ export default function CategoryList({
           const id = row.original.id;
           return (
             <div className="flex items-center gap-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div><ShowButton resource="categories" recordItemId={id} /></div>
-                  </TooltipTrigger>
-                  <TooltipContent>Ver Detalhes</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -139,19 +170,26 @@ export default function CategoryList({
     resource: "categories",
     columns: columns,
     searchParams: searchParams || {},
-    initialPageSize: 20,
-    searchField: "name", // Busca pelo nome da categoria
+    initialPageSize: 50, // Aumentei o page size para facilitar a visualização de grupos
+    searchField: "name",
+    // 3. ORDENAÇÃO: Tipo primeiro (agrupa Pessoa/Empresa), depois Nome
     sorters: {
-      initial: [{ field: "name", order: "asc" }] // Categorias geralmente ficam melhor em ordem alfabética
+      initial: [
+        { field: "type", order: "desc" }, // 'pessoa' costuma vir depois de 'empresa' no alfabeto, desc pode inverter ou agrupar
+        { field: "name", order: "asc" }
+      ]
     }
   });
 
   return (
-    <ListView>
-      <ListViewHeader title="Categorias" canCreate>
-        <TableSearchInput placeholder="Buscar categorias..." />
-      </ListViewHeader>
-      <DataTable table={table} />
-    </ListView>
+    // 1. LAYOUT: Adicionado Wrapper com padding geral
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
+      <ListView>
+        <ListViewHeader title="Gestão de Categorias" canCreate>
+          <TableSearchInput placeholder="Buscar por nome ou slug..." />
+        </ListViewHeader>
+        <DataTable table={table} />
+      </ListView>
+    </div>
   );
 }

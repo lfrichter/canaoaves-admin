@@ -10,6 +10,7 @@ const ALLOWED_RESOURCES = [
   "reports",
   "city_descriptions",
   "city_images",
+  "cities",
   "state_descriptions",
   "static-content",
   "comments",

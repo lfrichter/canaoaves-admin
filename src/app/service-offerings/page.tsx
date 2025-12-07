@@ -1,10 +1,10 @@
 "use client";
 
-import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
+import { CategoryManager } from "@/components/admin/CategoryManager";
+import { DeleteButton, EditButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
-import { CategoryManager } from "@/components/admin/CategoryManager";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -29,6 +29,7 @@ export default function ServiceOfferingList({
         id: "info",
         header: "Oferta / Serviço",
         accessorKey: "name", // Para ordenação
+        size: 150,
         cell: ({ row }) => {
           const { name, description } = row.original;
           return (
@@ -56,7 +57,7 @@ export default function ServiceOfferingList({
         id: "created_at",
         header: "Criado em",
         accessorKey: "created_at",
-        size: 150,
+        size: 50,
         cell: ({ getValue }) => (
           <div className="flex items-center text-muted-foreground text-xs">
             <Calendar className="w-3 h-3 mr-1.5 opacity-70" />
@@ -74,28 +75,27 @@ export default function ServiceOfferingList({
           return (
             <div className="flex items-center gap-1">
 
-              {/* [NOVO] Botão de Gerenciar Categorias */}
-              <CategoryManager
-                itemId={id}
-                itemName={name}
-                type="offering" // <--- MUDANÇA AQUI
-                trigger={
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                      <Tags className="w-4 h-4" />
-                  </Button>
-                }
-              />
-
-              <div className="w-px h-4 bg-border mx-1" />
-
+              {/*Botão de Gerenciar Categorias */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><ShowButton resource="service_offerings" recordItemId={id} /></div>
+                    <div><CategoryManager
+                        itemId={id}
+                        itemName={name}
+                        type="offering"
+                        trigger={
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                            <Tags className="w-4 h-4" />
+                          </Button>
+                        }
+                      />
+                    </div>
                   </TooltipTrigger>
-                  <TooltipContent>Ver Detalhes</TooltipContent>
+                  <TooltipContent>Associar categorias</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+
+              <div className="w-px h-4 bg-border mx-1" />
 
               <TooltipProvider>
                 <Tooltip>
