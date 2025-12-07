@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteContent, handleContentApproval } from "@/app/actions/content";
+import { update } from "@/app/actions/data"; // Importar update genérico
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import {
   ListView,
@@ -10,33 +11,20 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
+import { Check, Edit, Save, Trash2, Wand2, X } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-// --- MUDANÇA 1: Interface atualizada para RPC (plana) ---
-interface IStateDescription {
-  id: string;
-  state_code: string;
-  description: string;
-  approved: boolean;
-  created_at: string;
-  // Dados do Perfil (Submitter)
-  profile_full_name: string | null;
-  profile_public_name: string | null;
-  profile_score: number | null;
-  profile_category_name: string | null;
-  profile_phone: string | null;
-  profile_avatar_url: string | null;
-  user_email: string | null;
-}
 
 // Mapeamento de Siglas para Nomes de Estados
 const brStateNames: { [key: string]: string } = {
@@ -49,208 +37,315 @@ const brStateNames: { [key: string]: string } = {
   SP: "São Paulo", SE: "Sergipe", TO: "Tocantins",
 };
 
+interface IStateDescription {
+  id: string;
+  state_code: string;
+  description: string;
+  approved: boolean;
+  created_at: string;
+  profile_full_name: string | null;
+  profile_public_name: string | null;
+  profile_score: number | null;
+  profile_category_name: string | null;
+  profile_phone: string | null;
+  profile_avatar_url: string | null;
+  user_email: string | null;
+}
+
+// --- Componente Isolado para Ações (Edição/Aprovação) ---
+const StateDescriptionActions = ({
+  row,
+  onRefresh,
+}: {
+  row: IStateDescription;
+  onRefresh: () => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(row.description || "");
+
+  useEffect(() => {
+    setText(row.description || "");
+  }, [row.description]);
+
+  // Mutation: Aprovar
+  const { mutate: approveMutate, isPending: isApproving } = useMutation({
+    mutationFn: () => handleContentApproval("state_descriptions", row.id, true),
+    onSuccess: () => {
+      toast.success("Estado aprovado com sucesso!");
+      setIsOpen(false);
+      onRefresh();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  // Mutation: Rejeitar/Excluir
+  const { mutate: rejectMutate, isPending: isRejecting } = useMutation({
+    mutationFn: () => deleteContent("state_descriptions", row.id),
+    onSuccess: () => {
+      toast.success("Conteúdo rejeitado com sucesso!");
+      setIsOpen(false);
+      onRefresh();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  // Mutation: Atualizar Texto
+  const { mutate: updateTextMutate, isPending: isUpdating } = useMutation({
+    mutationFn: async () => {
+      // Escreve na tabela real 'state_descriptions'
+      return await update("state_descriptions", row.id, { description: text });
+    },
+    onSuccess: () => {
+      toast.success("Texto atualizado!");
+      setIsEditing(false);
+      onRefresh();
+    },
+    onError: (err: any) => toast.error("Erro ao salvar: " + err.message),
+  });
+
+  const handleSanitize = () => {
+    if (!text) return;
+    const sanitized = text
+      .replace(/\n{3,}/g, "\n\n") // Max 2 quebras de linha
+      .trim();
+    setText(sanitized);
+    toast.info("Texto higienizado (excesso de espaços removidos).");
+  };
+
+  const avatarUrl = row.profile_avatar_url;
+  const displayName = row.profile_public_name || row.profile_full_name || "Usuário desconhecido";
+  const stateName = brStateNames[row.state_code] || row.state_code;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {/* Botões Rápidos */}
+      <Button
+        size="icon"
+        variant="outline"
+        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+        onClick={() => approveMutate()}
+        disabled={isApproving}
+        title="Aprovar Rápido"
+      >
+        <Check className="h-4 w-4" />
+      </Button>
+
+      <Button
+        size="icon"
+        variant="outline"
+        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+        onClick={() => rejectMutate()}
+        disabled={isRejecting}
+        title="Rejeitar Rápido"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+
+      {/* Modal Detalhado */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button size="sm" variant="default">
+            Revisar
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Revisão: {stateName}</DialogTitle>
+          </DialogHeader>
+
+          <div className="grid gap-6 py-4">
+            {/* Card do Usuário */}
+            <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg border">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={displayName}
+                  width={48}
+                  height={48}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold">
+                  {displayName.charAt(0)}
+                </div>
+              )}
+              <div className="space-y-1">
+                <h4 className="font-semibold leading-none">{displayName}</h4>
+                <p className="text-sm text-muted-foreground">{row.user_email}</p>
+                <div className="flex gap-2 text-xs text-muted-foreground mt-1">
+                  <span className="bg-white px-2 py-0.5 rounded border">
+                    Score: {row.profile_score || 0}
+                  </span>
+                  <span className="bg-white px-2 py-0.5 rounded border">
+                    {row.profile_category_name || "Membro"}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-auto text-right text-xs text-muted-foreground space-y-1">
+                <p>Enviado em: {new Date(row.created_at).toLocaleDateString("pt-BR")}</p>
+                <p className="font-medium text-foreground">{stateName} ({row.state_code})</p>
+              </div>
+            </div>
+
+            {/* Editor de Texto */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="desc-state">Descrição do Estado</Label>
+                <div className="flex gap-2">
+                  {!isEditing ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setIsEditing(true)}
+                      className="h-7 text-xs"
+                    >
+                      <Edit className="w-3 h-3 mr-1" /> Editar
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleSanitize}
+                        className="h-7 text-xs text-amber-600"
+                        title="Remover espaços extras"
+                      >
+                        <Wand2 className="w-3 h-3 mr-1" /> Limpar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setText(row.description);
+                        }}
+                        className="h-7 text-xs"
+                      >
+                        <X className="w-3 h-3 mr-1" /> Cancelar
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {isEditing ? (
+                <div className="space-y-2">
+                  <Textarea
+                    id="desc-state"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className="min-h-[200px] font-sans text-base leading-relaxed"
+                  />
+                  <Button
+                    onClick={() => updateTextMutate()}
+                    disabled={isUpdating}
+                    className="w-full"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {isUpdating ? "Salvando..." : "Salvar Alterações"}
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  className="rounded-md border p-4 min-h-[150px] bg-muted/20 whitespace-pre-wrap text-sm leading-relaxed cursor-pointer hover:bg-muted/40 transition-colors"
+                  onClick={() => setIsEditing(true)}
+                  title="Clique para editar"
+                >
+                  {row.description}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="destructive"
+              onClick={() => rejectMutate()}
+              disabled={isRejecting || isApproving}
+            >
+              {isRejecting ? "Rejeitando..." : "Rejeitar"}
+            </Button>
+            <Button
+              onClick={() => approveMutate()}
+              disabled={isRejecting || isApproving}
+              className="bg-green-600 hover:bg-green-700 ml-2"
+            >
+              {isApproving ? "Aprovando..." : "Aprovar e Publicar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 export default function StateDescriptionList() {
-  let table: any = null;
-
-  const { mutate: approveMutate } = useMutation({
-    mutationFn: (id: string) =>
-      handleContentApproval("state_descriptions", id, true),
-    onSuccess: () => {
-      toast.success("Descrição de estado aprovada com sucesso!");
-    },
-    onError: (error: any) => {
-      toast.error(`Erro ao aprovar descrição de estado: ${error.message}`);
-    },
-  });
-
-  const { mutate: rejectMutate } = useMutation({
-    mutationFn: (id: string) => deleteContent("state_descriptions", id),
-    onSuccess: () => {
-      toast.success("Descrição de estado rejeitada (excluída) com sucesso!");
-    },
-    onError: (error: any) => {
-      toast.error(`Erro ao rejeitar descrição de estado: ${error.message}`);
-    },
-  });
-
-  const handleApprove = React.useCallback(
-    async (id: string) => {
-      approveMutate(id, {
-        onSuccess: () => {
-          table?.refineCore.tableQuery.refetch();
-        },
-      });
-    },
-    [approveMutate]
-  );
-
-  const handleReject = React.useCallback(
-    async (id: string) => {
-      rejectMutate(id, {
-        onSuccess: () => {
-          table?.refineCore.tableQuery.refetch();
-        },
-      });
-    },
-    [rejectMutate]
-  );
-
-  // --- MUDANÇA 2: Colunas atualizadas para RPC ---
   const columns = React.useMemo<ColumnDef<IStateDescription>[]>(
     () => [
       {
         id: "state_name",
         accessorKey: "state_code",
-        header: "Nome do Estado",
-        cell: function render({ row }) {
+        header: "Estado",
+        cell: ({ row }) => {
           const code = row.original.state_code;
-          return <span>{brStateNames[code] || code}</span>;
+          return <span className="font-medium">{brStateNames[code] || code}</span>;
         },
       },
       {
         id: "description",
         accessorKey: "description",
-        header: "Descrição",
-        cell: function render({ row }) {
-          const desc = row.original.description;
-          return (
-            <span className="block max-w-sm truncate" title={desc}>
-              {desc}
-            </span>
-          );
-        },
+        header: "Resumo",
+        cell: ({ row }) => (
+          <span className="block max-w-md truncate text-muted-foreground" title={row.original.description}>
+            {row.original.description}
+          </span>
+        ),
       },
       {
         id: "usuario",
-        header: "Usuário",
-        cell: function render({ row }) {
-          const { profile_public_name, profile_full_name } = row.original;
-          if (!profile_public_name && !profile_full_name) {
-            return <span className="text-gray-500">...</span>;
-          }
-          return <span>{profile_public_name || profile_full_name}</span>;
+        header: "Autor",
+        cell: ({ row }) => {
+          const { profile_public_name, profile_full_name, user_email } = row.original;
+          return (
+            <div className="flex flex-col">
+              <span className="text-sm">{profile_public_name || profile_full_name || "N/A"}</span>
+              <span className="text-xs text-muted-foreground">{user_email}</span>
+            </div>
+          );
         },
       },
       {
         id: "actions",
         header: "Ações",
-        cell: function render({ row }) {
-          const desc = row.original;
-          const categoryName = desc.profile_category_name || "Não informado";
-          const stateName = brStateNames[desc.state_code] || desc.state_code;
-          const avatarUrl = desc.profile_avatar_url;
-
-          return (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="default"
-                onClick={() => handleApprove(desc.id)}
-              >
-                Aprovar
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => handleReject(desc.id)}
-              >
-                Rejeitar
-              </Button>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    Ver Detalhes
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Detalhes da Descrição</DialogTitle>
-                  </DialogHeader>
-
-                  <div className="py-4 text-sm">
-                    {/* Avatar e Nome */}
-                    <div className="flex items-center gap-3 mb-4">
-                      {avatarUrl ? (
-                        <Image
-                          src={avatarUrl}
-                          alt={desc.profile_public_name || "Avatar"}
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-200" />
-                      )}
-                      <div>
-                        <strong className="block">
-                          {desc.profile_public_name ||
-                            desc.profile_full_name ||
-                            "Usuário não encontrado"}
-                        </strong>
-                        <span className="text-xs text-muted-foreground">
-                          {categoryName} (Ranking: {desc.profile_score || 0})
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-y-2 gap-x-4">
-                      <strong className="col-span-1">Email:</strong>
-                      <span className="col-span-2">
-                        {desc.user_email || "N/A"}
-                      </span>
-
-                      <strong className="col-span-1">Telefone:</strong>
-                      <span className="col-span-2">
-                        {desc.profile_phone || "N/A"}
-                      </span>
-
-                      <strong className="col-span-1">Enviado em:</strong>
-                      <span className="col-span-2">
-                        {new Date(desc.created_at).toLocaleString("pt-BR")}
-                      </span>
-
-                      <strong className="col-span-1">Estado:</strong>
-                      <span className="col-span-2">{stateName}</span>
-                    </div>
-
-                    <strong className="mt-4 block">Descrição Enviada:</strong>
-                    <p className="mt-1 h-48 max-h-[50vh] overflow-y-auto rounded border p-3">
-                      {desc.description || "Nenhuma descrição."}
-                    </p>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          );
+        cell: function render({ row, table }) {
+          const refreshTable = () => {
+            (table as any).options.meta?.refineCore?.tableQuery?.refetch();
+          };
+          return <StateDescriptionActions row={row.original} onRefresh={refreshTable} />;
         },
       },
     ],
-    [handleApprove, handleReject]
+    []
   );
 
-  table = useTable<IStateDescription>({
+  const table = useTable<IStateDescription>({
     refineCoreProps: {
-      resource: "state_descriptions",
+      resource: "state_descriptions", // Backend vai ler da VIEW
       filters: {
         permanent: [
-          {
-            field: "approved",
-            operator: "eq",
-            value: false,
-          },
+          { field: "approved", operator: "eq", value: false },
         ],
       },
       syncWithLocation: true,
-      // --- MUDANÇA 3: Remover o 'meta.select' quebrado ---
-      // meta: { ... }
+      pagination: { pageSize: 20 },
     },
     columns,
   });
 
   return (
     <ListView>
-      <ListViewHeader title="Descrições de Estados para Aprovação" />
+      <ListViewHeader title="Moderação de Estados" />
       <DataTable table={table} />
     </ListView>
   );

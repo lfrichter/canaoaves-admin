@@ -2,10 +2,18 @@
 
 import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useServerTable } from "@/hooks/useServerTable";
 import { Amenity } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
+import { Calendar, Sparkles } from "lucide-react";
 import React from "react";
 
 export default function AmenityList({
@@ -16,15 +24,43 @@ export default function AmenityList({
   const columns = React.useMemo<ColumnDef<Amenity>[]>(
     () => [
       {
-        id: "id",
-        accessorKey: "id",
-        header: "ID",
-        size: 130,
+        id: "info",
+        header: "Comodidade",
+        accessorKey: "name", // Para ordenação
+        cell: ({ row }) => {
+          const { name, description } = row.original;
+          return (
+            <div className="flex items-center gap-3">
+              {/* Ícone Decorativo */}
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border bg-amber-50/50">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+              </div>
+
+              <div className="flex flex-col justify-center">
+                <span className="font-medium text-sm text-foreground">
+                  {name}
+                </span>
+                {description && (
+                  <span className="text-xs text-muted-foreground line-clamp-1 max-w-md" title={description}>
+                    {description}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        },
       },
       {
-        id: "name",
-        accessorKey: "name",
-        header: "Nome",
+        id: "created_at",
+        header: "Criado em",
+        accessorKey: "created_at",
+        size: 150,
+        cell: ({ getValue }) => (
+          <div className="flex items-center text-muted-foreground text-xs">
+            <Calendar className="w-3 h-3 mr-1.5 opacity-70" />
+            {new Date(getValue() as string).toLocaleDateString("pt-BR")}
+          </div>
+        )
       },
       {
         id: "actions",
@@ -32,10 +68,37 @@ export default function AmenityList({
         cell: function render({ row }) {
           const id = row.original.id;
           return (
-            <div className="flex gap-2">
-              <ShowButton recordItemId={id} />
-              <EditButton recordItemId={id} />
-              <DeleteButton recordItemId={id} />
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div><ShowButton resource="amenities" recordItemId={id} /></div>
+                  </TooltipTrigger>
+                  <TooltipContent>Ver Detalhes</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div><EditButton resource="amenities" recordItemId={id} /></div>
+                  </TooltipTrigger>
+                  <TooltipContent>Editar Comodidade</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <div className="w-px h-4 bg-border mx-1" />
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div><DeleteButton resource="amenities" recordItemId={id} /></div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-destructive text-destructive-foreground">
+                    Excluir
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           );
         },
@@ -48,11 +111,18 @@ export default function AmenityList({
     resource: "amenities",
     columns: columns,
     searchParams: searchParams || {},
+    initialPageSize: 20,
+    searchField: "name", // Busca pelo nome
+    sorters: {
+      initial: [{ field: "name", order: "asc" }] // Ordem alfabética facilita encontrar comodidades
+    }
   });
 
   return (
     <ListView>
-      <ListViewHeader title="Comodidades" canCreate />
+      <ListViewHeader title="Comodidades" canCreate>
+        <TableSearchInput placeholder="Buscar comodidade..." />
+      </ListViewHeader>
       <DataTable table={table} />
     </ListView>
   );

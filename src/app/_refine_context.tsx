@@ -12,19 +12,20 @@ import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import routerProvider from "@refinedev/nextjs-router";
 import {
   Briefcase,
+  Camera,
   ClipboardList,
   FileText,
   Image,
   Landmark,
   LayoutDashboard,
   MapPin,
+  MessageSquare,
   Percent,
   Shapes,
   ShieldAlert,
   Sparkles,
   Users,
-} from "lucide-react";
-import { usePathname } from "next/navigation";
+} from "lucide-react";import { usePathname } from "next/navigation";
 import React from "react";
 // import { Layout } from "@/components/refine-ui/layout/layout";
 
@@ -121,8 +122,17 @@ export const RefineContext = ({ children, ...props }: RefineContextProps) => {
             meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
           },
           {
-            name: "city-descriptions",
-            list: "/city-descriptions",
+            name: "comments",
+            list: "/comments",
+            meta: { label: "Comentários", icon: <MessageSquare size={16} /> },
+          },
+          {
+            name: "photos",
+            list: "/photos",
+            meta: { label: "Fotos", icon: <Camera size={16} /> },
+          },
+          {
+            name: "city-descriptions",            list: "/city-descriptions",
             meta: {
               label: "Descrições de Cidades",
               icon: <FileText size={16} />,

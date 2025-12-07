@@ -12,6 +12,8 @@ const ALLOWED_RESOURCES = [
   "city_images",
   "state_descriptions",
   "static-content",
+  "comments",
+  "photos"
 ];
 
 export function validateResource(resource: string) {

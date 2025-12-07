@@ -44,6 +44,30 @@ export async function getList(resource: string, params: any) {
       if (error) throw error;
       return { data, total: data.length > 0 ? data[0].total_count : 0 };
     }
+
+    if (resource === "city_descriptions") {
+      targetTable = "view_admin_city_descriptions";
+    }
+
+    if (resource === "state_descriptions") {
+      targetTable = "view_admin_state_descriptions";
+    }
+
+    if (resource === "city_images") {
+      targetTable = "view_admin_city_images";
+    }
+
+    if (resource === "comments") {
+      targetTable = "view_admin_comments";
+    }
+
+    if (resource === "photos") {
+      targetTable = "view_admin_photos";
+    }
+
+    if (resource === "service_ownership_claims") {
+      targetTable = "view_admin_service_claims";
+    }
     // ... (Repita para city_descriptions, city_images, state_descriptions se necessário)
 
     // --- QUERY BUILDER PADRÃO ---
@@ -84,6 +108,8 @@ export async function getList(resource: string, params: any) {
          // pois a view tem os dois!
          switch (resource) {
             case "profiles": field = "full_name"; break;
+            case "comments": field = "content"; break;
+            case "photos": field = "caption"; break;
             default: field = "name";
          }
        }

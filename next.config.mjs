@@ -20,6 +20,13 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+        port: "", // optional, defaults to empty
+        pathname: "/**", // allows any path like /seed/..., /id/..., etc.
+        // search: "", // omit to allow *any* query params (recommended)
+      },
     ],
   },
 };

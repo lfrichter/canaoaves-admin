@@ -4,16 +4,6 @@ import { CrudFilters } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 
-/**
- * Hook customizado para encapsular a lógica de Paginação no Lado do Servidor
- * no Next.js App Router com Refine.
- * * Ele lê os parâmetros 'currentPage'/'pageSize' da URL e os passa via 'meta'
- * para o dataProvider, forçando o refetch correto.
- * * @param resource O nome do recurso (ex: "amenities", "categories").
- * @param columns As colunas da tabela.
- * @param searchParams Os parâmetros de busca passados pelo Next.js (URL Query).
- * @returns O objeto de tabela completo do useTable.
- */
 export function useServerTable<TData extends object>({
   resource,
   columns,
@@ -27,52 +17,56 @@ export function useServerTable<TData extends object>({
   initialPageSize?: number;
   searchField?: string;
 }) {
-  // Lemos a paginação e a busca da URL com Fallbacks seguros
-  const currentPage = Number(searchParams?.currentPage ?? 1);
-  const pageSize = Number(searchParams?.pageSize ?? initialPageSize);
+  // Parse URL params
+  const currentPage = Number(searchParams?.currentPage ?? "1");
+  const pageSize = Number(searchParams?.pageSize ?? initialPageSize.toString());
   const searchQuery = searchParams?.q ?? "";
-  const initialFilters: CrudFilters = searchQuery
-    ? [
-        {
-          field: searchField,
-          operator: "contains",
-          value: searchQuery,
-        },
-      ]
-    : [];
+  const paramId = searchParams?.id;
 
-  // A lógica de uso do useTable encapsulada
+  // Build server-side filters
+  const initialFilters: CrudFilters = [];
+
+  if (searchQuery) {
+    initialFilters.push({
+      field: searchField,
+      operator: "contains",
+      value: searchQuery,
+    });
+  }
+
+  if (paramId) {
+    initialFilters.push({
+      field: "id",
+      operator: "eq",
+      value: paramId,
+    });
+  }
+
+  // Pass filters + pagination via refineCoreProps
   const table = useTable<TData>({
     refineCoreProps: {
-      resource: resource,
-      syncWithLocation: true, // Deixa o Refine gerenciar a URL
-
-      // O bloco de paginação foi removido daqui para corrigir o erro de build.
-      // Com syncWithLocation: true, o useTable irá ler 'current' e 'pageSize' da URL.
+      resource,
+      syncWithLocation: true,
 
       filters: {
         mode: "server",
+        // ✅ Use `initial` para definir os filtros INICIAIS (a partir da URL)
         initial: initialFilters,
       },
 
-      // 2. Correção de Server Action: Passa os dados pelo meta
-      meta: {
-        pagination: {
-          currentPage: currentPage,
-          pageSize: pageSize,
-        },
-        searchQuery: searchQuery,
+      pagination: {
+        // ✅ Use `current` e `pageSize` para paginação
+        current: currentPage,
+        pageSize: pageSize,
       },
 
-      // 3. Força o Refetch: Garante que a busca seja refeita quando a URL muda
-      queryOptions: {
-        queryKey: [
-          resource,
-          "list",
-          { currentPage, pageSize, searchQuery, filters: initialFilters },
-        ],
+      // Opcional: meta pode ser útil para passar dados extras ao data provider
+      meta: {
+        searchQuery,
+        paramId,
       },
     },
+
     columns,
   });
 

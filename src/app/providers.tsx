@@ -19,19 +19,19 @@ import { usePathname } from "next/navigation";
 // --- MUDANÇA 1: Importar os ícones do 'lucide-react' ---
 import {
   Briefcase,
-  ClipboardList,
+  Camera,
   FileText,
   Image,
   Landmark,
   LayoutDashboard,
   MapPin,
+  MessageSquare,
   Percent,
   Shapes,
   ShieldAlert,
   Sparkles,
-  Users,
+  Users
 } from "lucide-react";
-
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const notificationProvider = useNotificationProvider();
 
@@ -96,13 +96,22 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               show: "/service-ownership-claims/:id",
               meta: { label: "Reivindicações", icon: <Landmark size={16} /> },
             },
-            {
-              name: "reports",
-              list: "/reports",
-              show: "/reports/:id",
-              meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
-            },
-            {
+                        {
+                          name: "reports",
+                          list: "/reports",
+                          show: "/reports/:id",
+                          meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
+                        },
+                                    {
+                                      name: "comments",
+                                      list: "/comments",
+                                      meta: { label: "Comentários", icon: <MessageSquare size={16} /> },
+                                    },
+                                    {
+                                      name: "photos",
+                                      list: "/photos",
+                                      meta: { label: "Fotos", icon: <Camera size={16} /> },
+                                    },            {
               name: "city_descriptions",
               list: "/city-descriptions",
               show: "/city-descriptions/:id",
@@ -125,15 +134,15 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
                 icon: <MapPin size={16} />,
               },
             },
-            {
-              name: "static_content",
-              list: "/static-content",
-              edit: "/static-content/:id/edit",
-              meta: {
-                label: "Conteúdo Estático",
-                icon: <ClipboardList size={16} />,
-              },
-            },
+            // {
+            //   name: "static_content",
+            //   list: "/static-content",
+            //   edit: "/static-content/:id/edit",
+            //   meta: {
+            //     label: "Conteúdo Estático",
+            //     icon: <ClipboardList size={16} />,
+            //   },
+            // },
           ]}
           options={{
             syncWithLocation: true,

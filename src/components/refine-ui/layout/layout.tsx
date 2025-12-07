@@ -27,7 +27,7 @@ export function Layout({ children, Sider }: PropsWithChildren<{ Sider?: React.FC
             "flex-col",
             "flex-1",
             "px-4",
-            "pt-16"
+            "pt-4"
           )}
         >
           {children}

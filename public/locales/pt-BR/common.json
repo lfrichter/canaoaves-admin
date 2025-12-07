@@ -1,0 +1,24 @@
+{
+  "buttons": {
+    "clone": "Clonar",
+    "create": "Criar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "list": "Listar",
+    "refresh": "Atualizar",
+    "restore": "Restaurar",
+    "show": "Mostrar",
+    "save": "Salvar"
+  },
+  "notifications": {
+    "restoreSuccess": "Registro restaurado",
+    "restoreSuccessDescription": "Sucesso ao restaurar registro"
+  },
+  "warnWhenUnsavedChanges": "Você tem alterações não salvas. Tem certeza de que deseja sair?",
+  "common": {
+    "areYouSure": "Você tem certeza?"
+  },
+  "actions": {
+    "delete": "Excluir"
+  }
+}
