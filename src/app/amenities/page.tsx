@@ -19,6 +19,7 @@ export default function AmenityList({
         id: "id",
         accessorKey: "id",
         header: "ID",
+        size: 130,
       },
       {
         id: "name",

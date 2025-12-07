@@ -20,11 +20,13 @@ export default function ProfileList({
         id: "id",
         accessorKey: "id",
         header: "ID",
+        size: 50,
       },
       {
         id: "email",
         accessorKey: "email",
         header: "Email",
+        size: 110,
       },
       {
         id: "full_name",
@@ -34,8 +36,10 @@ export default function ProfileList({
         cell: ({ row }) => {
           const isDeleted = !!row.original.deleted_at;
           return (
-            <span className={isDeleted ? "text-red-500 line-through decoration-red-500" : ""}>
-              {row.original.full_name}
+            <span>
+              <span className={isDeleted ? "text-red-500 line-through decoration-red-500" : ""}>
+                {row.original.full_name}
+              </span>
               {isDeleted && <span className="ml-2 text-xs bg-red-100 text-red-800 px-1 rounded">Inativo</span>}
             </span>
           );

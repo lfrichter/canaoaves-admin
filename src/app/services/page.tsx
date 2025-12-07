@@ -4,6 +4,7 @@ import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/but
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { Badge } from "@/components/ui/badge";
 import { useServerTable } from "@/hooks/useServerTable";
 import { Service } from "@/types/app";
 import { useInvalidate } from "@refinedev/core";
@@ -25,6 +26,23 @@ export default function ServiceList({
         id: "id",
         accessorKey: "id",
         header: "ID",
+        size: 50,
+      },
+      {
+        id: "status",
+        accessorKey: "status",
+        header: "Status",
+        size: 50,
+        cell: ({ row }) => {
+          const status = row.original.status;
+          return (
+            <div className="flex items-center">
+              <Badge variant={status === "published" ? "default" : "secondary"}>
+                {status === "published" ? "Publicado" : "Rascunho"}
+              </Badge>
+            </div>
+          );
+        },
       },
       {
         id: "name",

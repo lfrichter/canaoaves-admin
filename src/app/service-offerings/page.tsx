@@ -13,7 +13,6 @@ import {
 import { useServerTable } from "@/hooks/useServerTable";
 import { ServiceOffering } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
-import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import React from "react";
 
 export default function ServiceOfferingList({
@@ -27,6 +26,7 @@ export default function ServiceOfferingList({
         id: "id",
         accessorKey: "id",
         header: "ID",
+        size: 130,
       },
       {
         id: "name",
