@@ -4,6 +4,8 @@ import { DeleteButton, EditButton, ShowButton } from "@/components/refine-ui/but
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
+import { CategoryManager } from "@/components/admin/CategoryManager";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -13,7 +15,7 @@ import {
 import { useServerTable } from "@/hooks/useServerTable";
 import { ServiceOffering } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
-import { Briefcase, Calendar } from "lucide-react";
+import { Briefcase, Calendar, Tags } from "lucide-react";
 import React from "react";
 
 export default function ServiceOfferingList({
@@ -67,8 +69,25 @@ export default function ServiceOfferingList({
         header: "Ações",
         cell: function render({ row }) {
           const id = row.original.id;
+          const name = row.original.name;
+
           return (
             <div className="flex items-center gap-1">
+
+              {/* [NOVO] Botão de Gerenciar Categorias */}
+              <CategoryManager
+                itemId={id}
+                itemName={name}
+                type="offering" // <--- MUDANÇA AQUI
+                trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                      <Tags className="w-4 h-4" />
+                  </Button>
+                }
+              />
+
+              <div className="w-px h-4 bg-border mx-1" />
+
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
