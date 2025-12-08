@@ -6,6 +6,7 @@ import { TableSearchInput } from "@/components/refine-ui/data-table/table-search
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -21,9 +22,27 @@ import {
 } from "@/lib/gamificationConstants";
 import { getStatusDetails, normalizeStatusKey } from "@/lib/gamificationUtils";
 import { ProfileWithUser } from "@/types/app";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpCircle, Calendar, Shield, ShieldAlert, Trophy, User } from "lucide-react";
+import { Column, ColumnDef } from "@tanstack/react-table";
+import { ArrowUpCircle, ArrowUpDown, Calendar, Shield, ShieldAlert, Trophy, User } from "lucide-react";
 import { useMemo } from "react";
+
+interface SortableHeaderProps {
+  column: Column<any, any>;
+  title: string;
+}
+
+const SortableHeader = ({ column, title }: SortableHeaderProps) => {
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-slate-50"
+    >
+      <span>{title}</span>
+      <ArrowUpDown className="ml-2 h-3 w-3" />
+    </Button>
+  );
+};
 
 const getRoleBadge = (role: string) => {
   switch (role) {
@@ -45,8 +64,9 @@ export default function ProfileList({
   const columns = useMemo<ColumnDef<ProfileWithUser>[]>(
     () => [
       {
-        id: "identity",
-        header: "Usuário",
+        // [CORREÇÃO] ID alterado para bater com a coluna do banco
+        id: "full_name",
+        header: ({ column }) => <SortableHeader column={column} title="Usuário" />,
         accessorKey: "full_name",
         cell: ({ row }) => {
           const profile = row.original;
@@ -71,21 +91,21 @@ export default function ProfileList({
         },
       },
       {
-        id: "role",
-        header: "Permissão",
+        // [CORREÇÃO] ID alterado para bater com a coluna do banco (app_role)
+        id: "app_role",
+        header: ({ column }) => <SortableHeader column={column} title="Permissão" />,
         accessorKey: "app_role",
         size: 100,
         cell: ({ getValue }) => getRoleBadge(getValue() as string)
       },
       {
         id: "score",
-        header: "Nível & Score",
+        header: ({ column }) => <SortableHeader column={column} title="Nível & Score" />,
         accessorKey: "score",
         size: 140,
         cell: ({ row }) => {
           const score = Number(row.original.score || 0);
 
-          // Uso direto da constante (sem hooks async)
           const { name, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
 
           const statusKey = normalizeStatusKey(name);
@@ -130,7 +150,6 @@ export default function ProfileList({
                     {nextStart ? (
                       <div className="text-xs text-muted-foreground pt-2 border-t flex items-center">
                         <ArrowUpCircle className="w-3 h-3 mr-1.5 text-blue-500" />
-                        {/* CORREÇÃO AQUI: Adicionado mx-1 para espaçamento */}
                         Faltam <strong className="mx-1">{(nextStart - score).toLocaleString('pt-BR')}</strong> para o próximo nível
                       </div>
                     ) : (
@@ -147,7 +166,7 @@ export default function ProfileList({
       },
       {
         id: "created_at",
-        header: "Cadastro",
+        header: ({ column }) => <SortableHeader column={column} title="Cadastro" />,
         accessorKey: "created_at",
         size: 120,
         cell: ({ getValue }) => (
@@ -165,12 +184,8 @@ export default function ProfileList({
           const isDeleted = !!row.original.deleted_at;
           return (
             <div className="flex items-center gap-1">
-              {/* ShowButton removido conforme solicitado */}
-
               <EditButton recordItemId={id} hideText size="sm" />
-
               <div className="w-px h-4 bg-border mx-1" />
-
               {isDeleted ? (
                 <RestoreButton recordItemId={id} hideText size="sm" />
               ) : (
