@@ -86,7 +86,7 @@ const DesktopCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        {userRole === "master" && <SidebarTrigger />}
+        {(userRole === "master" || userRole === "admin") && <SidebarTrigger />}
         <Logo showText={true} />
       </div>
       <div className="flex items-center gap-4">
@@ -111,7 +111,7 @@ const MobileCustomHeader = () => {
       )}
     >
       <div className="flex items-center gap-2">
-        {userRole === "master" && <SidebarTrigger />}
+        {(userRole === "master" || userRole === "admin") && <SidebarTrigger />}
         <Logo showText={true} />
       </div>
       <div className="flex items-center gap-4">

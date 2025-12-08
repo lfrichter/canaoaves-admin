@@ -176,7 +176,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Layout
-      Sider={userRole === "master" ? Sidebar : undefined}
+      Sider={(userRole === "master" || userRole === "admin") ? Sidebar : undefined}
     >
       {children}
     </Layout>
