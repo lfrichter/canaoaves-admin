@@ -62,37 +62,99 @@ export async function getList(resource: string, params: any) {
       .from(targetTable as any)
       .select(selectQuery, { count: "exact" });
 
-    // 1. Aplica filtros
+    let activeFilters = filters;
+
+    // Prioridade da Busca Global
+    // Se houver busca global, removemos filtros de nome conflitantes da cópia
+    if (searchQuery && activeFilters.length > 0) {
+       activeFilters = activeFilters.filter((f: any) =>
+          f.field !== 'name' &&
+          f.field !== 'full_name' &&
+          f.field !== 'public_name'
+       );
+    }
+
+    // 1. Aplica filtros do Refine (use activeFilters)
     let searchHandledByFilters = false;
 
-    if (filters.length > 0) {
-      filters.forEach((filter: CrudFilter) => {
+    if (activeFilters.length > 0) {
+      activeFilters.forEach((filter: CrudFilter) => {
         if ("field" in filter) {
+
+          // LIMPEZA GERAL DE FILTROS FANTASMAS (Para Todos os Recursos)
+          // Se a busca global (q=...) foi limpa, ignoramos os filtros residuais
+          // das colunas de texto principais. Isso conserta Serviços, Categorias, etc.
+          if (!searchQuery) {
+             const ghostFields = ['name', 'full_name', 'public_name', 'title', 'description', 'caption', 'content'];
+
+             // Se for um desses campos, é lixo de memória do frontend. Ignorar.
+             if (ghostFields.includes(filter.field)) {
+                return;
+             }
+          }
+
+          // [MANTIDO] Lógica Específica de Profiles (OR condition quando TEM busca)
+          if (resource === "profiles" && filter.field === "name") {
+             const val = filter.value;
+             query = query.or(`full_name.ilike.%${val}%,public_name.ilike.%${val}%,email.ilike.%${val}%`);
+             searchHandledByFilters = true;
+             return;
+          }
+
           if (filter.operator === "contains" || filter.operator === "ncontains") {
             searchHandledByFilters = true;
           }
+
           switch (filter.operator) {
             case "eq": query = query.eq(filter.field, filter.value); break;
             case "ne": query = query.neq(filter.field, filter.value); break;
             case "contains": query = query.ilike(filter.field, `%${filter.value}%`); break;
             case "ncontains": query = query.not("ilike", filter.field, `%${filter.value}%`); break;
+            // ... adicione outros operadores se necessário (gt, lt, etc)
           }
         }
       });
     }
 
-    // 2. Aplica SearchQuery legado
+    // 2. Aplica Busca Textual (CORRIGIDO E MELHORADO)
     if (searchQuery && !searchHandledByFilters) {
-       let field = meta?.searchField;
-       if (!field) {
-         switch (resource) {
-            case "profiles": field = "full_name"; break;
-            case "comments": field = "content"; break;
-            case "photos": field = "caption"; break;
-            default: field = "name";
+
+       // CASO ESPECIAL: PROFILES (Busca em múltiplos campos)
+       if (resource === "profiles") {
+         // O operador .or() permite buscar em várias colunas ao mesmo tempo
+         query = query.or(`full_name.ilike.%${searchQuery}%,public_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+       }
+
+       // CASO ESPECIAL: CIDADES (Busca nome ou estado)
+       else if (resource === "cities") {
+         query = query.or(`name.ilike.%${searchQuery}%,state.ilike.%${searchQuery}%`);
+       }
+
+       // OUTROS RECURSOS (Lógica padrão com proteção)
+       else {
+         let field = meta?.searchField;
+
+         if (!field) {
+           switch (resource) {
+              case "comments": field = "content"; break;
+              case "photos": field = "caption"; break;
+              case "services": field = "name"; break;
+              case "categories": field = "name"; break;
+              // Adicione mais casos conforme necessário
+              default: field = "id"; // Fallback seguro (ID sempre existe) para não quebrar
+           }
+         }
+
+         // Só aplica o filtro se tivermos um campo válido
+         if (field) {
+            // Se for ID, precisa ser busca exata e verificar se é UUID válido
+            if (field === 'id') {
+               // Ignora busca textual em ID para evitar erro de sintaxe UUID
+            } else {
+               query = query.ilike(field, `%${searchQuery}%`);
+            }
          }
        }
-       query = query.ilike(field, `%${searchQuery}%`);
     }
 
     // 3. Ordenação
