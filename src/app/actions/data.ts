@@ -34,6 +34,9 @@ export async function getList(resource: string, params: any) {
     if (resource === "profiles") {
       targetTable = "profile_users";
     }
+    if (resource === "services") {
+      targetTable = "view_admin_services";
+    }
 
     // --- INTERCEPTAÇÕES DE RPC (Mantidas para casos específicos) ---
     // ... (Mantendo as outras interceptações que você já tinha e funcionam)
@@ -148,7 +151,10 @@ const ID_COLUMNS: Record<string, string> = {
 };
 
 // getOne: Também pode se beneficiar da View!
-export async function getOne(resource: string, { id }: { id: string }) {
+export async function getOne(
+  resource: string,
+  { id, meta }: { id: string; meta?: any }
+) {
   await verifyUserRole(["admin", "master"]);
 
   // Guarda contra IDs inválidos/nulos/"undefined"
@@ -158,13 +164,16 @@ export async function getOne(resource: string, { id }: { id: string }) {
   }
 
   validateResource(resource);
-  const idColumn = ID_COLUMNS[resource] || "id";
+  const idColumn = meta?.idColumn || ID_COLUMNS[resource] || "id";
   const supabase = createSupabaseServiceRoleClient();
 
   // Se for profile, buscamos da view para já vir com o e-mail
   let targetTable = resource;
   if (resource === "profiles") {
-      targetTable = "profile_users";
+    targetTable = "profile_users";
+  }
+  if (resource === "services") {
+    targetTable = "view_admin_services";
   }
 
   const query = supabase

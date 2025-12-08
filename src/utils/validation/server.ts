@@ -14,7 +14,8 @@ const ALLOWED_RESOURCES = [
   "state_descriptions",
   "static-content",
   "comments",
-  "photos"
+  "photos",
+  "view_admin_services"
 ];
 
 export function validateResource(resource: string) {

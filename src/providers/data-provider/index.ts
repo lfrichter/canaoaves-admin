@@ -34,8 +34,11 @@ export const dataProvider: DataProvider = {
     };
   },
 
-  getOne: async ({ resource, id }) => {
-    const response = await getOne(resource, id as string);
+  getOne: async ({ resource, id, meta }) => {
+    const response = await getOne(resource, {
+      id: id as string,
+      meta: { idColumn: meta?.idColumn }, // Passa apenas a propriedade necessária
+    });
     return {
       data: response.data,
     } as any;

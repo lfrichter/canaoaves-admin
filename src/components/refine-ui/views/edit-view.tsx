@@ -1,6 +1,5 @@
 "use client";
 
-import { RefreshButton } from "@/components/refine-ui/buttons/refresh";
 import { Breadcrumb } from "@/components/refine-ui/layout/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -39,15 +38,13 @@ export const EditViewHeader = ({
   headerClassName,
 }: EditViewHeaderProps) => {
   const back = useBack();
-
   const getUserFriendlyName = useUserFriendlyName();
 
   const { resource, identifier } = useResourceParams({
     resource: resourceFromProps,
   });
-  const { id: recordItemId } = useResourceParams();
 
-  const resourceName = resource?.name ?? identifier;
+  // Removemos o 'id' aqui pois não é mais usado sem o RefreshButton
 
   const title =
     titleFromProps ??
@@ -75,6 +72,7 @@ export const EditViewHeader = ({
         )}
       >
         <div className="flex items-center gap-1">
+          {/* Este é o formato de ícone de voltar que você gostou */}
           <Button variant="ghost" size="icon" onClick={back}>
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
@@ -82,12 +80,8 @@ export const EditViewHeader = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Mantivemos o slot para ações customizadas, mas removemos o Refresh fixo */}
           {actionsSlot}
-          <RefreshButton
-            variant="outline"
-            recordItemId={recordItemId}
-            resource={resourceName}
-          />
         </div>
       </div>
     </div>
