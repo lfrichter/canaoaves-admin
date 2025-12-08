@@ -7,6 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Form,
   FormControl,
   FormField,
@@ -24,13 +29,16 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-// [1] Importar useGetIdentity
 import { Authenticated, useGetIdentity, useSelect, useUpdate } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import {
   Briefcase,
+  CalendarDays,
   CheckCircle2,
+  ChevronUpIcon,
   ExternalLink,
+  Eye,
+  Globe,
   Hash, Heart,
   Loader2,
   Lock,
@@ -38,11 +46,12 @@ import {
   MessageCircle,
   MessageSquare,
   SaveIcon,
-  Shield, Trophy
+  Shield, Trophy,
+  UserCircle
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   GAMIFICATION_COLORS,
@@ -72,16 +81,16 @@ export default function ProfileEdit() {
 }
 
 function ProfileEditContent({ id }: { id: string }) {
-  // [2] Obter dados do usuário logado para verificar permissões
   const { data: identity } = useGetIdentity<{ app_role: string }>();
-  // Verifica se quem está logado é MASTER
   const isMaster = identity?.app_role === 'master';
+
+  // Estado para controlar o Collapsible
+  const [isOpenDetails, setIsOpenDetails] = useState(false);
 
   const { mutate: updateProfile, isLoading: isUpdating } = useUpdate();
 
   const {
     refineCore: { query, formLoading },
-    saveButtonProps,
     control,
     handleSubmit,
     watch,
@@ -135,6 +144,50 @@ function ProfileEditContent({ id }: { id: string }) {
     { label: "Master (Super Admin)", value: "master" },
   ];
 
+  // --- PARSERS DE DADOS EXTRAS ---
+
+  // 1. Localização (Internacional ou BR)
+  let displayLocation = { city: "Não informada", state: "-", country: "BR" };
+
+  if (record) {
+    if (record.city_name) {
+      // Tem cidade vinculada no banco (Brasil)
+      displayLocation = {
+        city: record.city_name,
+        state: record.city_state,
+        country: "Brasil"
+      };
+    } else if (record.location_details) {
+      // É estrangeiro ou local manual
+      try {
+        const loc = typeof record.location_details === 'string'
+          ? JSON.parse(record.location_details)
+          : record.location_details;
+
+        displayLocation = {
+          city: loc.city || "N/A",
+          state: loc.province || loc.state || "-",
+          country: loc.country || "Exterior"
+        };
+      } catch (e) {
+        console.error("Erro ao ler location_details", e);
+      }
+    }
+  }
+
+  // 2. Gênero
+  let displayGender = "Não informado";
+  if (record?.gender_details) {
+    try {
+      const genderObj = typeof record.gender_details === 'string'
+        ? JSON.parse(record.gender_details)
+        : record.gender_details;
+      displayGender = genderObj.main || "Não informado";
+      // Capitalize
+      displayGender = displayGender.charAt(0).toUpperCase() + displayGender.slice(1);
+    } catch (e) { }
+  }
+
   const handleCustomSubmit = (values: any) => {
     const payload = {
       full_name: values.full_name,
@@ -151,10 +204,7 @@ function ProfileEditContent({ id }: { id: string }) {
       resource: "profiles",
       id: id,
       values: payload,
-      successNotification: {
-        message: "Observador atualizado com sucesso",
-        type: "success",
-      },
+      successNotification: { message: "Perfil atualizado com sucesso", type: "success" },
       invalidates: ['all']
     });
   };
@@ -170,18 +220,17 @@ function ProfileEditContent({ id }: { id: string }) {
     );
   }
 
-  if (!record) return <div className="p-8 text-center text-muted-foreground">Observador não encontrado.</div>;
+  if (!record) return <div className="p-8 text-center text-muted-foreground">Perfil não encontrado.</div>;
 
   return (
     <EditView>
       <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
-        <EditViewHeader title={`Observador: ${record.full_name || "Usuário"}`} />
+        <EditViewHeader title={`Perfil: ${record.full_name || "Usuário"}`} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* === COLUNA ESQUERDA === */}
+          {/* === ESQUERDA: FORMULÁRIO === */}
           <div className="lg:col-span-2 space-y-6">
-
             <Card>
               <CardHeader>
                 <CardTitle>Dados Cadastrais</CardTitle>
@@ -246,7 +295,7 @@ function ProfileEditContent({ id }: { id: string }) {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Biografia</FormLabel>
+                          <FormLabel>Biografia / Sobre</FormLabel>
                           <FormControl>
                             <Textarea {...field} value={field.value || ""} className="min-h-[100px]" />
                           </FormControl>
@@ -260,8 +309,6 @@ function ProfileEditContent({ id }: { id: string }) {
                         <Shield className="w-4 h-4" /> Área Administrativa
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                        {/* [3] BLOQUEIO DE PERMISSÃO PARA NÃO-MASTER */}
                         <FormField
                           control={control}
                           name="app_role"
@@ -269,14 +316,14 @@ function ProfileEditContent({ id }: { id: string }) {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2">
                                 Permissão
-                                {!isMaster && <Lock className="w-3 h-3 text-muted-foreground" title="Apenas Master pode alterar" />}
+                                {!isMaster && <Lock className="w-3 h-3 text-muted-foreground" />}
                               </FormLabel>
                               <Select
                                 onValueChange={field.onChange}
                                 key={field.value}
                                 value={field.value || "user"}
                                 defaultValue={record.app_role || "user"}
-                                disabled={!isMaster} // BLOQUEADO SE NÃO FOR MASTER
+                                disabled={!isMaster}
                               >
                                 <FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>{roleOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
@@ -284,7 +331,6 @@ function ProfileEditContent({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
-
                         <FormField
                           control={control}
                           name="category_id"
@@ -298,8 +344,6 @@ function ProfileEditContent({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
-
-                        {/* [4] BLOQUEIO DE SCORE PARA NÃO-MASTER (Sugestão) */}
                         <FormField
                           control={control}
                           name="score"
@@ -307,7 +351,7 @@ function ProfileEditContent({ id }: { id: string }) {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2">
                                 Pontuação
-                                {!isMaster && <Lock className="w-3 h-3 text-muted-foreground" title="Apenas Master pode alterar pontuação" />}
+                                {!isMaster && <Lock className="w-3 h-3 text-muted-foreground" />}
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -315,7 +359,7 @@ function ProfileEditContent({ id }: { id: string }) {
                                   className="bg-background"
                                   {...field}
                                   onChange={e => field.onChange(Number(e.target.value))}
-                                  disabled={!isMaster} // BLOQUEADO SE NÃO FOR MASTER
+                                  disabled={!isMaster}
                                 />
                               </FormControl>
                             </FormItem>
@@ -336,113 +380,57 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* 2. CARD DE SERVIÇOS E ATIVIDADE */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-muted-foreground" /> Serviços e Atividade
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Serviços (Dono) */}
-                <div>
-                  <span className="text-xs font-bold uppercase text-muted-foreground block mb-3 flex justify-between">
-                    <span>Dono de Serviços</span>
-                    <Badge variant="secondary" className="h-5">{record.total_services_owned || 0}</Badge>
-                  </span>
-
-                  {record.recent_owned_services?.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {record.recent_owned_services.map((s: any) => (
-                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block group">
-                          <div className="p-3 rounded-md border bg-slate-50 group-hover:bg-blue-50 group-hover:border-blue-200 transition-all">
-                            <div className="flex justify-between items-start mb-1">
-                              <span className="text-sm font-semibold truncate text-slate-800 group-hover:text-blue-800 w-full">{s.name}</span>
-                              {s.is_authenticated && <Shield className="w-3 h-3 text-green-500 shrink-0 ml-2" title="Autenticado" />}
-                            </div>
-                            <div className="text-[10px] text-muted-foreground flex items-center">
-                              Ver detalhes <ExternalLink className="w-3 h-3 ml-1" />
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4 border border-dashed rounded text-center">
-                      <p className="text-xs text-muted-foreground italic">Nenhum serviço próprio.</p>
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                {/* Indicações */}
-                <div>
-                  <span className="text-xs font-bold uppercase text-muted-foreground block mb-3 flex justify-between">
-                    <span>Indicações Feitas</span>
-                    <Badge variant="secondary" className="h-5">{record.total_services_indicated || 0}</Badge>
-                  </span>
-
-                  {record.recent_indicated_services?.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {record.recent_indicated_services.map((s: any) => (
-                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block group">
-                          <div className="p-3 rounded-md border bg-white group-hover:bg-slate-50 transition-all">
-                            <div className="flex justify-between items-start mb-1">
-                              <span className="text-sm font-medium truncate text-muted-foreground group-hover:text-foreground w-full">{s.name}</span>
-                            </div>
-                            <div className="text-[10px] text-muted-foreground flex items-center">
-                              Indicado <ExternalLink className="w-3 h-3 ml-1" />
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4 border border-dashed rounded text-center">
-                      <p className="text-xs text-muted-foreground italic">Nenhuma indicação feita.</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 3. CARD DE COMENTÁRIOS */}
-            {record.recent_comments?.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-muted-foreground" /> Comentários Recentes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {record.recent_comments.map((c: any) => (
-                      <div key={c.id} className="flex gap-3">
-                        <div className="flex flex-col items-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2"></div>
-                          <div className="w-0.5 h-full bg-slate-100 my-1"></div>
-                        </div>
-                        <div className="pb-4 border-b border-slate-50 last:border-0 w-full">
-                          <p className="text-sm text-slate-700 italic">"{c.content}"</p>
-                          <span className="text-[10px] text-muted-foreground block mt-1 font-medium">
-                            Postado em {new Date(c.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+            {/* CARDS SECUNDÁRIOS DE ATIVIDADE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="h-full">
+                <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Briefcase className="w-5 h-5 text-muted-foreground" /> Serviços e Indicações</CardTitle></CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <span className="text-xs font-bold uppercase text-muted-foreground block mb-2 flex justify-between">
+                      <span>Dono</span><Badge variant="secondary" className="h-5">{record.total_services_owned || 0}</Badge>
+                    </span>
+                    {record.recent_owned_services?.length > 0 ? (
+                      <div className="space-y-2">{record.recent_owned_services.map((s: any) => (
+                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-slate-50 border rounded hover:border-blue-300 transition-colors truncate">{s.name}</Link>
+                      ))}</div>
+                    ) : <p className="text-xs text-muted-foreground italic">Nenhum.</p>}
+                  </div>
+                  <Separator />
+                  <div>
+                    <span className="text-xs font-bold uppercase text-muted-foreground block mb-2 flex justify-between">
+                      <span>Indicações</span><Badge variant="secondary" className="h-5">{record.total_services_indicated || 0}</Badge>
+                    </span>
+                    {record.recent_indicated_services?.length > 0 ? (
+                      <div className="space-y-2">{record.recent_indicated_services.map((s: any) => (
+                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-white border rounded hover:bg-slate-50 transition-colors truncate text-muted-foreground">{s.name}</Link>
+                      ))}</div>
+                    ) : <p className="text-xs text-muted-foreground italic">Nenhuma.</p>}
                   </div>
                 </CardContent>
               </Card>
-            )}
 
+              <Card className="h-full">
+                <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><MessageCircle className="w-5 h-5 text-muted-foreground" /> Últimos Comentários</CardTitle></CardHeader>
+                <CardContent>
+                  {record.recent_comments?.length > 0 ? (
+                    <div className="space-y-4">
+                      {record.recent_comments.map((c: any) => (
+                        <div key={c.id} className="text-xs border-l-2 border-slate-200 pl-2">
+                          <p className="text-slate-600 italic line-clamp-2">"{c.content}"</p>
+                          <span className="text-[9px] text-muted-foreground block mt-1">{new Date(c.created_at).toLocaleDateString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <p className="text-xs text-muted-foreground italic">Nenhum comentário.</p>}
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* === COLUNA DIREITA (Igual ao anterior) === */}
+          {/* === DIREITA: CONTEXTO E METADADOS === */}
           <div className="space-y-6">
-            {/* ... Cards da direita permanecem iguais ... */}
-            {/* MANTIVE O CÓDIGO DA DIREITA IGUAL POIS ESTAVA CERTO, APENAS OCUPO MENOS ESPAÇO AQUI NO CHAT */}
-            {/* Se precisar, copio o bloco da direita inteiro novamente, mas ele é idêntico ao anterior */}
+
+            {/* CARD 1: IDENTIDADE */}
             <Card className="overflow-hidden border-slate-200 shadow-sm sticky top-4">
               <div className="h-24 w-full relative" style={{ backgroundColor: `${badgeColor}20` }}>
                 <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
@@ -479,67 +467,95 @@ function ProfileEditContent({ id }: { id: string }) {
                     <div className="w-full h-2.5 bg-white border border-slate-200 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: nextStart ? `${Math.min((score / nextStart) * 100, 100)}%` : '100%', backgroundColor: badgeColor }} />
                     </div>
-                    {nextStart ? (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Falta <strong className="text-foreground">{nextStart - score}</strong> para subir.
-                      </p>
-                    ) : (
-                      <p className="text-xs text-green-600 font-bold mt-1">Nível Máximo Atingido!</p>
-                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* CARD 2: ESTATÍSTICAS */}
             <Card>
-              <CardHeader className="pb-3 pt-5">
-                <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                  <Trophy className="w-4 h-4" /> Engajamento
-                </CardTitle>
-              </CardHeader>
+              <CardHeader className="pb-3 pt-5"><CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Trophy className="w-4 h-4" /> Engajamento</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center hover:bg-slate-100 transition-colors">
-                    <Heart className="w-4 h-4 text-pink-500 mb-1" />
-                    <span className="text-sm font-bold">{record.total_likes_received || 0}</span>
-                    <span className="text-[9px] text-muted-foreground uppercase">Curtidas</span>
-                  </div>
-                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center hover:bg-slate-100 transition-colors">
-                    <CheckCircle2 className="w-4 h-4 text-green-500 mb-1" />
-                    <span className="text-sm font-bold">{record.total_confirmations_made || 0}</span>
-                    <span className="text-[9px] text-muted-foreground uppercase">Validou</span>
-                  </div>
-                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center hover:bg-slate-100 transition-colors">
-                    <MessageSquare className="w-4 h-4 text-blue-500 mb-1" />
-                    <span className="text-sm font-bold">{record.total_comments_made || 0}</span>
-                    <span className="text-[9px] text-muted-foreground uppercase">Comentou</span>
-                  </div>
+                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center"><Heart className="w-4 h-4 text-pink-500 mb-1" /><span className="text-sm font-bold">{record.total_likes_received || 0}</span></div>
+                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mb-1" /><span className="text-sm font-bold">{record.total_confirmations_made || 0}</span></div>
+                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center"><MessageSquare className="w-4 h-4 text-blue-500 mb-1" /><span className="text-sm font-bold">{record.total_comments_made || 0}</span></div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* CARD 3: LOCALIZAÇÃO (INTELIGENTE) */}
             <Card>
-              <CardHeader className="pb-3 pt-5">
-                <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                  <MapPin className="w-4 h-4" /> Localização
-                </CardTitle>
-              </CardHeader>
+              <CardHeader className="pb-3 pt-5"><CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><MapPin className="w-4 h-4" /> Localização</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex justify-between py-2 border-b border-slate-100">
                   <span className="text-muted-foreground">Cidade</span>
-                  <span className="font-medium text-right">{record.city_name || "Não informada"}</span>
+                  <span className="font-medium text-right">{displayLocation.city}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100">
-                  <span className="text-muted-foreground">Estado</span>
-                  <span className="font-medium text-right">{record.city_state || "-"}</span>
+                  <span className="text-muted-foreground">UF / Província</span>
+                  <span className="font-medium text-right">{displayLocation.state}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-100">
+                  <span className="text-muted-foreground">País</span>
+                  <span className="font-medium text-right">{displayLocation.country}</span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-muted-foreground">Categoria</span>
-                  <span className="font-medium flex items-center gap-1">
-                    {record.category_icon} {record.category_name || "Sem categoria"}
-                  </span>
+                  <span className="font-medium flex items-center gap-1">{record.category_icon} {record.category_name || "Sem categoria"}</span>
                 </div>
               </CardContent>
+            </Card>
+
+            {/* CARD 4: DETALHES TÉCNICOS (COLLAPSIBLE) */}
+            <Card className="w-full pb-4">
+              <Collapsible open={isOpenDetails} onOpenChange={setIsOpenDetails}>
+                <div className="flex items-center justify-between px-6 py-4">
+                  <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" /> Detalhes cadastrais
+                  </CardTitle>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <span className="sr-only">Toggle</span>
+                      <ChevronUpIcon className={`h-4 w-4 transition-transform duration-200 ${isOpenDetails ? "" : "rotate-180"}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent>
+                  <CardContent className="space-y-4 pt-0 text-sm">
+                    <div className="flex justify-between py-2 border-b border-slate-100">
+                      <span className="text-muted-foreground flex items-center gap-2"><UserCircle className="w-3 h-3" /> Gênero</span>
+                      <span className="font-medium">{displayGender}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-slate-100">
+                      <span className="text-muted-foreground flex items-center gap-2"><CalendarDays className="w-3 h-3" /> Início</span>
+                      <span className="font-medium">{record.start_date ? new Date(record.start_date).toLocaleDateString('pt-BR') : "-"}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-slate-100">
+                      <span className="text-muted-foreground flex items-center gap-2"><Eye className="w-3 h-3" /> Exibe Nome Completo?</span>
+                      <Badge variant={record.show_full_name ? "default" : "secondary"} className="h-5">{record.show_full_name ? "Sim" : "Não"}</Badge>
+                    </div>
+
+                    {/* LINKS EXTERNOS */}
+                    {record.website_url && (
+                      <div className="flex justify-between py-2 border-b border-slate-100 items-center">
+                        <span className="text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Website</span>
+                        <a href={record.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
+                          Link Externo <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
+                    {record.life_list_url && (
+                      <div className="flex justify-between py-2 items-center">
+                        <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="w-3 h-3" /> Life List</span>
+                        <a href={record.life_list_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
+                          Ver Lista <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
             </Card>
 
             <div className="text-[10px] text-center text-muted-foreground/50 font-mono">
