@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-// [CORREÇÃO 1] Adicionado useUpdate para salvar na tabela correta
 import { Authenticated, useSelect, useUpdate } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import {
@@ -42,6 +41,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+// [1] Importe useEffect
+import { useEffect } from "react";
 
 import {
   GAMIFICATION_COLORS,
@@ -71,7 +72,6 @@ export default function ProfileEdit() {
 }
 
 function ProfileEditContent({ id }: { id: string }) {
-  // [CORREÇÃO 2] Hook para atualizar a tabela 'profiles' diretamente
   const { mutate: updateProfile, isLoading: isUpdating } = useUpdate();
 
   const {
@@ -80,10 +80,11 @@ function ProfileEditContent({ id }: { id: string }) {
     control,
     handleSubmit,
     watch,
+    reset, // [2] Precisamos do reset exposto aqui
     ...form
   } = useForm({
     refineCoreProps: {
-      resource: "view_admin_profiles", // LEITURA: View (traz estatísticas e dados)
+      resource: "view_admin_profiles",
       action: "edit",
       id: id,
     },
@@ -91,6 +92,23 @@ function ProfileEditContent({ id }: { id: string }) {
 
   const record = query?.data?.data;
   const watchedType = watch("profile_type");
+
+  // [3] CORREÇÃO DE POPULAÇÃO DO FORMULÁRIO (Sincronização Forçada)
+  useEffect(() => {
+    if (record) {
+      reset({
+        full_name: record.full_name || "",
+        public_name: record.public_name || "",
+        document: record.document || "",
+        phone: record.phone || "",
+        description: record.description || "",
+        app_role: record.app_role || "user",
+        // Converte para string para garantir que o Select entenda o valor
+        category_id: record.category_id ? String(record.category_id) : undefined,
+        score: Number(record.score || 0),
+      });
+    }
+  }, [record, reset]);
 
   const { options: categoryOptions } = useSelect({
     resource: "categories",
@@ -114,7 +132,6 @@ function ProfileEditContent({ id }: { id: string }) {
     { label: "Master (Super Admin)", value: "master" },
   ];
 
-  // [CORREÇÃO 3] Handler que separa Leitura (View) de Escrita (Table)
   const handleCustomSubmit = (values: any) => {
     const payload = {
       full_name: values.full_name,
@@ -128,14 +145,13 @@ function ProfileEditContent({ id }: { id: string }) {
     };
 
     updateProfile({
-      resource: "profiles", // ESCREVE NA TABELA ORIGINAL
+      resource: "profiles",
       id: id,
       values: payload,
       successNotification: {
         message: "Perfil atualizado com sucesso",
         type: "success",
       },
-      // Invalida a view para recarregar os dados atualizados
       invalidates: ['all']
     });
   };
@@ -170,7 +186,7 @@ function ProfileEditContent({ id }: { id: string }) {
                 <CardDescription>Informações principais editáveis.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form} control={control} handleSubmit={handleSubmit}>
+                <Form {...form} control={control} handleSubmit={handleSubmit} reset={reset}>
                   <form onSubmit={handleSubmit(handleCustomSubmit)} className="grid gap-6">
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -293,7 +309,7 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* 2. CARD DE SERVIÇOS E ATIVIDADE (Layout Aprovado) */}
+            {/* 2. CARD DE SERVIÇOS E ATIVIDADE */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -364,7 +380,7 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* 3. CARD DE COMENTÁRIOS (Layout Aprovado) */}
+            {/* 3. CARD DE COMENTÁRIOS */}
             {record.recent_comments?.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
