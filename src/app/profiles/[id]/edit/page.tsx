@@ -24,9 +24,11 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Authenticated, useSelect } from "@refinedev/core";
+// [CORREÇÃO 1] Adicionado useUpdate para salvar na tabela correta
+import { Authenticated, useSelect, useUpdate } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import {
+  ArrowUpCircle,
   Briefcase,
   CheckCircle2,
   ExternalLink,
@@ -69,8 +71,11 @@ export default function ProfileEdit() {
 }
 
 function ProfileEditContent({ id }: { id: string }) {
+  // [CORREÇÃO 2] Hook para atualizar a tabela 'profiles' diretamente
+  const { mutate: updateProfile, isLoading: isUpdating } = useUpdate();
+
   const {
-    refineCore: { query, onFinish, formLoading },
+    refineCore: { query, formLoading },
     saveButtonProps,
     control,
     handleSubmit,
@@ -78,7 +83,7 @@ function ProfileEditContent({ id }: { id: string }) {
     ...form
   } = useForm({
     refineCoreProps: {
-      resource: "view_admin_profiles",
+      resource: "view_admin_profiles", // LEITURA: View (traz estatísticas e dados)
       action: "edit",
       id: id,
     },
@@ -109,7 +114,8 @@ function ProfileEditContent({ id }: { id: string }) {
     { label: "Master (Super Admin)", value: "master" },
   ];
 
-  const handleCustomSubmit = async (values: any) => {
+  // [CORREÇÃO 3] Handler que separa Leitura (View) de Escrita (Table)
+  const handleCustomSubmit = (values: any) => {
     const payload = {
       full_name: values.full_name,
       public_name: values.public_name,
@@ -120,10 +126,24 @@ function ProfileEditContent({ id }: { id: string }) {
       category_id: values.category_id,
       score: values.score,
     };
-    await onFinish(payload);
+
+    updateProfile({
+      resource: "profiles", // ESCREVE NA TABELA ORIGINAL
+      id: id,
+      values: payload,
+      successNotification: {
+        message: "Perfil atualizado com sucesso",
+        type: "success",
+      },
+      // Invalida a view para recarregar os dados atualizados
+      invalidates: ['all']
+    });
   };
 
-  if (query?.isLoading) {
+  const isLoading = query?.isLoading || formLoading;
+  const isSaving = isUpdating;
+
+  if (isLoading) {
     return (
       <div className="flex h-[50vh] w-full items-center justify-center flex-col gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -263,8 +283,8 @@ function ProfileEditContent({ id }: { id: string }) {
 
                     <div className="flex justify-between items-center pt-4 border-t mt-4">
                       <DeleteButton recordItemId={id} resource="profiles" confirmTitle="Banir Usuário?" confirmOkText="Sim, Banir" />
-                      <Button type="submit" size="lg" disabled={formLoading}>
-                        {formLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
+                      <Button type="submit" size="lg" disabled={isSaving}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
                         Salvar Alterações
                       </Button>
                     </div>
@@ -273,7 +293,7 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* 2. CARD DE SERVIÇOS E ATIVIDADE (Movido para cá) */}
+            {/* 2. CARD DE SERVIÇOS E ATIVIDADE (Layout Aprovado) */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -344,7 +364,7 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* 3. CARD DE COMENTÁRIOS (Condicional) */}
+            {/* 3. CARD DE COMENTÁRIOS (Layout Aprovado) */}
             {record.recent_comments?.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
@@ -416,9 +436,10 @@ function ProfileEditContent({ id }: { id: string }) {
                       <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: nextStart ? `${Math.min((score / nextStart) * 100, 100)}%` : '100%', backgroundColor: badgeColor }} />
                     </div>
                     {nextStart ? (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Falta <strong className="text-foreground">{nextStart - score}</strong> para subir.
-                      </p>
+                      <div className="text-xs text-muted-foreground pt-2 border-t flex items-center justify-center">
+                        <ArrowUpCircle className="w-3 h-3 mr-1.5 text-blue-500" />
+                        Faltam <strong className="mx-1">{(nextStart - score).toLocaleString('pt-BR')}</strong> para subir
+                      </div>
                     ) : (
                       <p className="text-xs text-green-600 font-bold mt-1">Nível Máximo Atingido!</p>
                     )}
