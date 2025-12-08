@@ -20,7 +20,9 @@ import { usePathname } from "next/navigation";
 import {
   Briefcase,
   Camera,
+  Coffee,
   FileText,
+  Globe,
   Image,
   Landmark,
   LayoutDashboard,
@@ -29,6 +31,7 @@ import {
   Percent,
   Shapes,
   ShieldAlert,
+  ShieldCheck,
   Sparkles,
   Users
 } from "lucide-react";
@@ -64,7 +67,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               create: "/services/create",
               edit: "/services/:id/edit",
               show: "/services/:id",
-              meta: { label: "Serviços", icon: <Briefcase size={16} /> },
+              meta: { label: "Serviços", icon: <Coffee size={16} /> },
             },
             {
               name: "categories",
@@ -94,7 +97,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               name: "service_ownership_claims",
               list: "/service-ownership-claims",
               show: "/service-ownership-claims/:id",
-              meta: { label: "Reivindicações", icon: <Landmark size={16} /> },
+              meta: { label: "Reivindicações", icon: <ShieldCheck size={16} /> },
             },
                         {
                           name: "reports",
@@ -117,7 +120,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               show: "/city-descriptions/:id",
               meta: {
                 label: "Descrições de Cidades",
-                icon: <FileText size={16} />,
+                icon: <MapPin size={16} />,
               },
             },
             {
@@ -131,7 +134,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               show: "/state-descriptions/:id",
               meta: {
                 label: "Descrições de Estados",
-                icon: <MapPin size={16} />,
+                icon: <Globe size={16} />,
               },
             },
             // {
