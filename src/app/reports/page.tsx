@@ -62,7 +62,7 @@ interface IReport {
   target_avatar_url: string | null;
 
   // Dados Específicos de Comentário (Vindos da nova RPC)
-  comment_author_id: string | null;     // ID do perfil de quem comentou
+  comment_author_id: string | null;     // ID do observador de quem comentou
   comment_context_slug: string | null;  // Slug da página (serviço ou pessoa)
   comment_context_type: string | null;  // 'service' ou 'profile'
 }
@@ -83,7 +83,7 @@ function getReasonLabel(reason: ReportReason): string {
 function getTypeLabel(target_type: ReportTargetType) {
   switch (target_type) {
     case "service": return { label: "Serviço", icon: <Coffee className="w-3 h-3 mr-1" /> };
-    case "profile": return { label: "Perfil", icon: <User className="w-3 h-3 mr-1" /> };
+    case "profile": return { label: "Observador", icon: <User className="w-3 h-3 mr-1" /> };
     case "comment": return { label: "Comentário", icon: <MessageSquare className="w-3 h-3 mr-1" /> };
     case "photo": return { label: "Foto", icon: <ImageIcon className="w-3 h-3 mr-1" /> };
     default: return { label: target_type, icon: null };
@@ -99,7 +99,7 @@ function getPublicTargetLink(report: IReport): string | null {
     return `${baseUrl}/service/${report.target_slug}`;
   }
 
-  // Lógica para Perfil Direto (Correção: /person/)
+  // Lógica para Observador Direto (Correção: /person/)
   if (report.target_type === "profile" && report.target_slug) {
     return `${baseUrl}/person/${report.target_slug}`;
   }
@@ -124,7 +124,7 @@ function getAdminEditLink(report: IReport): string | null {
     return `/services/${report.target_id}/edit`;
   }
 
-  // Editar Perfil
+  // Editar Observador
   if (report.target_type === "profile") {
     return `/profiles/${report.target_id}/edit`;
   }
@@ -171,7 +171,7 @@ const ReportActions = ({ row, onRefresh }: { row: IReport; onRefresh: () => void
 
   // Define o texto do botão de edição com base no tipo
   const editButtonLabel = row.target_type === 'comment'
-    ? "Editar Perfil do Autor"
+    ? "Editar Observador do Autor"
     : "Editar Cadastro";
 
   return (
@@ -261,7 +261,7 @@ const ReportActions = ({ row, onRefresh }: { row: IReport; onRefresh: () => void
 
                   {row.target_type === 'comment' && row.comment_context_type && (
                     <p className="text-xs text-blue-600 mt-1">
-                      Em: {row.comment_context_type === 'service' ? 'Página de Serviço' : 'Página de Perfil'}
+                      Em: {row.comment_context_type === 'service' ? 'Página de Serviço' : 'Página de Observador'}
                     </p>
                   )}
                 </div>

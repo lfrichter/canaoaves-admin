@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       value: stats.pendingReports,
       icon: <ShieldAlert className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-500" : "text-muted-foreground"}`} />,
       href: "/reports",
-      description: "Comentários, fotos e perfis reportados",
+      description: "Comentários, fotos e observadores reportados",
       alert: stats.pendingReports > 0,
     },
     {
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
 
   const metricItems = [
     {
-      title: "Usuários Ativos",
+      title: "Observadores Ativos",
       value: stats.totalProfiles,
       icon: <Users className="h-6 w-6 text-muted-foreground" />,
       href: "/profiles",

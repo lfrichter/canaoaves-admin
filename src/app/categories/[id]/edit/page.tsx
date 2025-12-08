@@ -399,7 +399,7 @@ export default function CategoryEdit() {
                     <div className="flex flex-col items-start">
                       <span className="font-bold text-sm">{nameValue || "Nome"}</span>
                       <span className="text-[10px] text-muted-foreground leading-none">
-                        {selectedType === 'pessoa' ? 'Perfil Profissional' : 'Serviço/Local'}
+                        {selectedType === 'pessoa' ? 'Observador Profissional' : 'Serviço/Local'}
                       </span>
                     </div>
                   </div>

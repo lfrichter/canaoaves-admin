@@ -17,7 +17,7 @@ import { Category, Profile } from "@/types/app";
 export default function ProfileShow() {
   const router = useRouter();
 
-  // 1. Busca os dados do Perfil
+  // 1. Busca os dados do Observador
   const { query } = useShow<Profile>({
     meta: {
       select: "*", // Garante que trazemos todos os campos
@@ -26,8 +26,8 @@ export default function ProfileShow() {
   const { data, isLoading } = query;
   const record = data?.data;
 
-  // 2. Busca o nome da Categoria (baseado no ID do perfil)
-  // O 'enabled' garante que só buscamos se o perfil já tiver carregado e tiver uma categoria
+  // 2. Busca o nome da Categoria (baseado no ID do observador)
+  // O 'enabled' garante que só buscamos se o observador já tiver carregado e tiver uma categoria
   const { query: categoryQuery } = useOne<Category>({
     resource: "categories",
     id: record?.category_id || "",
@@ -39,7 +39,7 @@ export default function ProfileShow() {
   const categoryName = categoryData?.data?.name;
 
   if (isLoading) {
-    return <div className="p-6">Carregando detalhes do perfil...</div>;
+    return <div className="p-6">Carregando detalhes do observador...</div>;
   }
 
   return (
@@ -57,7 +57,7 @@ export default function ProfileShow() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Detalhes do Perfil
+              Detalhes do Observador
             </h1>
             <p className="text-muted-foreground">
               Visualizando: {record?.full_name || "Sem nome"}

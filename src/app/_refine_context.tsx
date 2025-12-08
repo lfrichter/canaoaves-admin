@@ -77,7 +77,7 @@ export const RefineContext = ({ children, ...props }: RefineContextProps) => {
             list: "/profiles",
             show: "/profiles/:id",
             edit: "/profiles/:id/edit",
-            meta: { label: "Perfis", icon: <Users size={16} /> },
+            meta: { label: "Observadores", icon: <Users size={16} /> },
           },
           {
             name: "services",

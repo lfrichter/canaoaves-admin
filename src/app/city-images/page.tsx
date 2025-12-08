@@ -31,7 +31,7 @@ interface ICityImage {
   // Dados da cidade
   city_name: string | null;
   city_state: string | null;
-  // Dados do Perfil
+  // Dados do Observador
   profile_full_name: string | null;
   profile_public_name: string | null;
   profile_score: number | null;

@@ -298,7 +298,7 @@ function ServiceEditForm() {
                           </div>
                           <Button variant="outline" size="sm" className="w-full h-7 text-xs bg-white hover:text-blue-600" asChild>
                             <Link href={`/profiles/${record.created_by_user_id}`} target="_blank">
-                              Ver Perfil Público <ExternalLink className="w-3 h-3 ml-2 opacity-50" />
+                              Ver Observador Público <ExternalLink className="w-3 h-3 ml-2 opacity-50" />
                             </Link>
                           </Button>
                         </div>

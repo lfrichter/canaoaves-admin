@@ -152,7 +152,7 @@ function ProfileEditContent({ id }: { id: string }) {
       id: id,
       values: payload,
       successNotification: {
-        message: "Perfil atualizado com sucesso",
+        message: "Observador atualizado com sucesso",
         type: "success",
       },
       invalidates: ['all']
@@ -170,12 +170,12 @@ function ProfileEditContent({ id }: { id: string }) {
     );
   }
 
-  if (!record) return <div className="p-8 text-center text-muted-foreground">Perfil não encontrado.</div>;
+  if (!record) return <div className="p-8 text-center text-muted-foreground">Observador não encontrado.</div>;
 
   return (
     <EditView>
       <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
-        <EditViewHeader title={`Perfil: ${record.full_name || "Usuário"}`} />
+        <EditViewHeader title={`Observador: ${record.full_name || "Usuário"}`} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

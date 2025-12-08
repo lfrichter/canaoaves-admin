@@ -59,7 +59,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               create: "/profiles/create",
               edit: "/profiles/:id/edit",
               show: "/profiles/:id",
-              meta: { label: "Perfis", icon: <Users size={16} /> },
+              meta: { label: "Observadores", icon: <Users size={16} /> },
             },
             {
               name: "services",

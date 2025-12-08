@@ -108,7 +108,7 @@ const PhotoActions = ({ row, onRefresh }: { row: IPhoto; onRefresh: () => void }
               <div className="bg-muted/50 p-3 rounded">
                 <p className="font-semibold mb-1">Local (Contexto):</p>
                 <p>{row.target_name}</p>
-                <Badge variant="outline" className="mt-1">{row.target_type === 'service' ? 'Serviço' : 'Perfil'}</Badge>
+                <Badge variant="outline" className="mt-1">{row.target_type === 'service' ? 'Serviço' : 'Observador'}</Badge>
               </div>
             </div>
 
@@ -227,7 +227,7 @@ export default function PhotoList({
             <div className="flex flex-col items-start gap-1">
               <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">
                 {type === 'service' ? <Coffee className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
-                {type === 'service' ? 'Serviço' : 'Perfil'}
+                {type === 'service' ? 'Serviço' : 'Observador'}
               </Badge>
               <Link href={href} target="_blank" className="text-xs font-medium hover:underline flex items-center text-blue-600">
                 {name} <ExternalLink className="w-3 h-3 ml-1" />

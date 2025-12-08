@@ -113,7 +113,7 @@ export default function CategoryList({
       },
       {
         id: "type",
-        header: "Tipo de Perfil",
+        header: "Tipo de Observador",
         accessorKey: "type",
         size: 120,
         cell: ({ getValue }) => getTypeBadge(getValue() as string),

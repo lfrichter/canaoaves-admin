@@ -264,14 +264,14 @@ export async function update(resource: string, id: string, variables: any) {
 }
 
 // =========================================================
-// DELETE (Com lógica de Soft Delete para Perfis)
+// DELETE (Com lógica de Soft Delete para Observadores)
 // =========================================================
 export async function deleteOne(resource: string, id: string) {
   // 1. Verificação de Segurança
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
 
-  // Para deletar usuários/perfis, exigimos role Master por segurança
+  // Para deletar usuários/observadores, exigimos role Master por segurança
   if (resource === "profiles") {
     await verifyUserRole(["master"]);
   }
@@ -291,10 +291,10 @@ export async function deleteOne(resource: string, id: string) {
         .single();
 
       if (fetchError || !profile) {
-        throw new Error("Perfil não encontrado para exclusão.");
+        throw new Error("Observador não encontrado para exclusão.");
       }
 
-      // 2. Soft Delete no Perfil (marca deleted_at)
+      // 2. Soft Delete no Observador (marca deleted_at)
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ deleted_at: new Date().toISOString() })

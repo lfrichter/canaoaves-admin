@@ -53,7 +53,7 @@ interface IServiceClaim {
   service_slug: string;
   service_already_authenticated: boolean;
 
-  // Dados do Perfil
+  // Dados do Observador
   profile_public_name: string | null;
   profile_full_name: string | null;
   profile_avatar_url: string | null;
@@ -135,7 +135,7 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                 <User className="w-4 h-4" /> Solicitante
               </h4>
 
-              {/* Card do Perfil na Plataforma */}
+              {/* Card do Observador na Plataforma */}
               <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg border">
                 {row.profile_avatar_url ? (
                   <Image src={row.profile_avatar_url} alt="Avatar" width={48} height={48} className="rounded-full object-cover border" />
@@ -261,7 +261,7 @@ export default function ServiceOwnershipClaimList() {
       },
       {
         id: "profile",
-        header: "Perfil Vinculado",
+        header: "Observador Vinculado",
         cell: ({ row }) => {
           const name = row.original.profile_public_name || row.original.profile_full_name;
           return (
