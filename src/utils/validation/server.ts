@@ -1,4 +1,3 @@
-// "use server"; // <-- REMOVA ESTA LINHA
 
 const ALLOWED_RESOURCES = [
   "profiles",
@@ -15,7 +14,8 @@ const ALLOWED_RESOURCES = [
   "static-content",
   "comments",
   "photos",
-  "view_admin_services"
+  "view_admin_services",
+  'statuses'
 ];
 
 export function validateResource(resource: string) {

@@ -1,21 +1,39 @@
 // src/lib/gamificationUtils.ts
+
 export const normalizeStatusKey = (statusName: string): string => {
+  if (!statusName) return 'ovo';
   return statusName
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-    .replace(/\s+/g, '-') // substitui espaços por hífens (ex: "Beija flor" → "beija-flor")
-    .replace(/[^a-z0-9-]/g, ''); // remove caracteres inválidos
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 };
 
-// utils/gamification.ts
-export const getStatusFromScore = (score: number, statuses: { start_score: number; name: string }[]): string => {
-  if (!statuses?.length) return 'ovo';
-  let current = 'ovo';
-  const sorted = [...statuses].sort((a, b) => a.start_score - b.start_score);
-  for (const s of sorted) {
-    if (score >= s.start_score) current = s.name.toLowerCase();
-    else break;
+interface GameStatus {
+  start_score: number;
+  name: string;
+}
+
+export const getStatusDetails = (score: number, sortedStatuses: GameStatus[]) => {
+  if (!sortedStatuses?.length) return { current: 'ovo', next: null, limit: null };
+
+  let currentStatus = sortedStatuses[0];
+  let nextStatus = null;
+
+  // Itera para encontrar o nível atual e o próximo
+  for (let i = 0; i < sortedStatuses.length; i++) {
+    if (score >= sortedStatuses[i].start_score) {
+      currentStatus = sortedStatuses[i];
+      nextStatus = sortedStatuses[i + 1] || null; // Se não tiver próximo, é o nível máximo
+    } else {
+      break; // Passou do score atual, para o loop
+    }
   }
-  return current;
+
+  return {
+    name: currentStatus.name, // Nome original do banco (ex: "Gavião Real")
+    currentStart: currentStatus.start_score,
+    nextStart: nextStatus ? nextStatus.start_score : null // Pontos para o próximo nível
+  };
 };

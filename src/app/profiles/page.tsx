@@ -1,6 +1,6 @@
 "use client";
 
-import { DeleteButton, EditButton, RestoreButton, ShowButton } from "@/components/refine-ui/buttons";
+import { DeleteButton, EditButton, RestoreButton } from "@/components/refine-ui/buttons";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
@@ -13,12 +13,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useServerTable } from "@/hooks/useServerTable";
+import {
+  GAMIFICATION_COLORS,
+  GAMIFICATION_ICONS,
+  GAMIFICATION_LABELS,
+  GAMIFICATION_LEVELS
+} from "@/lib/gamificationConstants";
+import { getStatusDetails, normalizeStatusKey } from "@/lib/gamificationUtils";
 import { ProfileWithUser } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
-import { Calendar, Shield, ShieldAlert, Trophy, User } from "lucide-react";
-import React from "react";
+import { ArrowUpCircle, Calendar, Shield, ShieldAlert, Trophy, User } from "lucide-react";
+import { useMemo } from "react";
 
-// Helper para cores das roles
 const getRoleBadge = (role: string) => {
   switch (role) {
     case "master":
@@ -35,16 +41,16 @@ export default function ProfileList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  const columns = React.useMemo<ColumnDef<ProfileWithUser>[]>(
+
+  const columns = useMemo<ColumnDef<ProfileWithUser>[]>(
     () => [
       {
         id: "identity",
         header: "Usuário",
-        accessorKey: "full_name", // Para ordenação funcionar
+        accessorKey: "full_name",
         cell: ({ row }) => {
           const profile = row.original;
           const isDeleted = !!profile.deleted_at;
-
           return (
             <div className={`flex items-center gap-3 ${isDeleted ? "opacity-50 grayscale" : ""}`}>
               <Avatar className="h-10 w-10 border">
@@ -53,15 +59,10 @@ export default function ProfileList({
                   {profile.full_name?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-
               <div className="flex flex-col">
                 <span className="font-medium text-sm text-foreground flex items-center gap-2">
                   {profile.full_name || "Sem nome"}
-                  {isDeleted && (
-                    <Badge variant="destructive" className="h-4 px-1 text-[10px] uppercase">
-                      Inativo
-                    </Badge>
-                  )}
+                  {isDeleted && <Badge variant="destructive" className="h-4 px-1 text-[10px]">Inativo</Badge>}
                 </span>
                 <span className="text-xs text-muted-foreground">{profile.email}</span>
               </div>
@@ -74,22 +75,75 @@ export default function ProfileList({
         header: "Permissão",
         accessorKey: "app_role",
         size: 100,
-        cell: ({ getValue }) => {
-          const role = getValue() as string;
-          return getRoleBadge(role || "user");
-        }
+        cell: ({ getValue }) => getRoleBadge(getValue() as string)
       },
       {
         id: "score",
-        header: "Score",
+        header: "Nível & Score",
         accessorKey: "score",
-        size: 80,
-        cell: ({ getValue }) => (
-          <div className="flex items-center text-amber-600 font-medium text-sm">
-            <Trophy className="w-3 h-3 mr-1.5" />
-            {Number(getValue() || 0).toLocaleString('pt-BR')}
-          </div>
-        )
+        size: 140,
+        cell: ({ row }) => {
+          const score = Number(row.original.score || 0);
+
+          // Uso direto da constante (sem hooks async)
+          const { name, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
+
+          const statusKey = normalizeStatusKey(name);
+          const label = GAMIFICATION_LABELS[statusKey] || name;
+          const icon = GAMIFICATION_ICONS[statusKey] || '🏆';
+          const color = GAMIFICATION_COLORS[statusKey] || '#64748b';
+
+          return (
+            <TooltipProvider>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <div className="flex flex-col items-start gap-1 cursor-help w-full max-w-[140px]">
+                    <Badge
+                      style={{
+                        backgroundColor: `${color}15`,
+                        color: color,
+                        borderColor: `${color}30`
+                      }}
+                      className="font-bold border hover:bg-muted transition-colors w-full justify-start"
+                    >
+                      <span className="mr-1.5 text-base">{icon}</span>
+                      {label}
+                    </Badge>
+
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-0.5">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: nextStart ? `${Math.min((score / nextStart) * 100, 100)}%` : '100%',
+                          backgroundColor: color
+                        }}
+                      />
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="p-3 bg-white border shadow-xl">
+                  <div className="space-y-2">
+                    <p className="font-bold flex items-center text-sm text-slate-800">
+                      <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                      {score.toLocaleString('pt-BR')} pontos
+                    </p>
+                    {nextStart ? (
+                      <div className="text-xs text-muted-foreground pt-2 border-t flex items-center">
+                        <ArrowUpCircle className="w-3 h-3 mr-1.5 text-blue-500" />
+                        {/* CORREÇÃO AQUI: Adicionado mx-1 para espaçamento */}
+                        Faltam <strong className="mx-1">{(nextStart - score).toLocaleString('pt-BR')}</strong> para o próximo nível
+                      </div>
+                    ) : (
+                      <div className="text-xs text-emerald-600 pt-2 border-t font-medium flex items-center">
+                        <Shield className="w-3 h-3 mr-1.5" /> Nível Máximo!
+                      </div>
+                    )}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        }
       },
       {
         id: "created_at",
@@ -109,53 +163,18 @@ export default function ProfileList({
         cell: function render({ row }) {
           const id = row.original.id;
           const isDeleted = !!row.original.deleted_at;
-
           return (
             <div className="flex items-center gap-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {/* Envolvemos em div para o tooltip funcionar no botão */}
-                    <div><ShowButton recordItemId={id} /></div>
-                  </TooltipTrigger>
-                  <TooltipContent>Ver Detalhes</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/* ShowButton removido conforme solicitado */}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div><EditButton recordItemId={id} /></div>
-                  </TooltipTrigger>
-                  <TooltipContent>Editar Perfil</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <EditButton recordItemId={id} hideText size="sm" />
 
               <div className="w-px h-4 bg-border mx-1" />
 
-              {/* Lógica de Troca de Botão (Restaurar vs Excluir) */}
               {isDeleted ? (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div><RestoreButton recordItemId={id} /></div>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-green-600 text-white border-green-700">
-                      Reativar Usuário
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <RestoreButton recordItemId={id} hideText size="sm" />
               ) : (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div><DeleteButton recordItemId={id} /></div>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-destructive text-destructive-foreground">
-                      Banir Usuário
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <DeleteButton recordItemId={id} hideText size="sm" />
               )}
             </div>
           );
@@ -170,16 +189,15 @@ export default function ProfileList({
     columns: columns,
     searchParams: searchParams || {},
     initialPageSize: 20,
-    searchField: "full_name", // Busca pelo nome
-    // Ordenação padrão por data de criação decrescente
-    sorters: {
-      initial: [{ field: "created_at", order: "desc" }]
-    }
+    searchField: "full_name",
+    sorters: { initial: [{ field: "created_at", order: "desc" }] }
   });
 
   return (
     <ListView>
-      <ListViewHeader title="Gestão de Usuários"><TableSearchInput placeholder="Buscar por nome ou email..." /></ListViewHeader>
+      <ListViewHeader title="Gestão de Usuários">
+        <TableSearchInput placeholder="Buscar por nome ou email..." />
+      </ListViewHeader>
       <DataTable table={table} />
     </ListView>
   );
