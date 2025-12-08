@@ -17,8 +17,9 @@ const ALLOWED_RESOURCES = [
   "photos",
   "view_admin_services",
   "view_admin_profiles",
+  "view_admin_categories_tree",
   'statuses',
-  "likes"
+  "likes",
 ];
 
 export function validateResource(resource: string) {

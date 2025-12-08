@@ -55,6 +55,7 @@ export async function getList(resource: string, params: any) {
     if (resource === "comments") targetTable = "view_admin_comments";
     if (resource === "photos") targetTable = "view_admin_photos";
     if (resource === "service_ownership_claims") targetTable = "view_admin_service_claims";
+    if (resource === "categories") targetTable = "view_admin_categories_tree";
 
     const selectQuery = meta?.select ? meta.select : "*";
 
@@ -160,10 +161,18 @@ export async function getList(resource: string, params: any) {
     // 3. Ordenação
     if (sorters.length > 0) {
       sorters.forEach((sorter: any) => {
+        // Se a ordenação vier do frontend, respeita
         query = query.order(sorter.field, { ascending: sorter.order === "asc" });
       });
     } else {
-        query = query.order("id", { ascending: true });
+        // [CORREÇÃO] Ordenação Padrão por Recurso
+        if (resource === "categories") {
+            // A view de árvore DEVE ser ordenada por path_ids para manter a hierarquia
+            query = query.order("path_ids", { ascending: true });
+        } else {
+            // Padrão para outros recursos
+            query = query.order("id", { ascending: true });
+        }
     }
 
     // 4. Paginação
