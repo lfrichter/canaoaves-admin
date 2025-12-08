@@ -189,7 +189,6 @@ export default function ProfileList({
     columns: columns,
     searchParams: searchParams || {},
     initialPageSize: 20,
-    searchField: "full_name",
     sorters: { initial: [{ field: "created_at", order: "desc" }] }
   });
 
