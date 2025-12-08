@@ -238,7 +238,7 @@ function ServiceEditForm() {
                   <User className="w-4 h-4" /> Propriedade e Origem
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm">
+              <CardContent className="space-y-6 text-sm">
 
                 {/* DONO */}
                 <div>
@@ -311,8 +311,6 @@ function ServiceEditForm() {
                   </div>
                 )}
 
-                <Separator />
-
                 <div className="flex justify-between items-center px-1">
                   <span className="text-muted-foreground text-xs">Autenticado?</span>
                   {record?.is_authenticated ? (
@@ -329,7 +327,7 @@ function ServiceEditForm() {
                   <Layers className="w-4 h-4" /> Detalhes do Serviço
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm">
+              <CardContent className="space-y-6 text-sm">
 
                 {/* FOTO */}
                 {record?.featured_photo_url && (
@@ -368,7 +366,6 @@ function ServiceEditForm() {
                 {/* MISSÃO */}
                 {record?.mission && (
                   <div>
-                    <Separator />
                     <span className="text-[10px] uppercase text-muted-foreground font-bold flex items-center gap-1 mb-1">
                       <Target className="w-3 h-3" /> Missão
                     </span>
