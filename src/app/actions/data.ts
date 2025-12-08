@@ -147,7 +147,7 @@ export async function getList(resource: string, params: any) {
 }
 
 const ID_COLUMNS: Record<string, string> = {
-  profiles: "user_id",
+  // profiles: "user_id",
 };
 
 // getOne: Também pode se beneficiar da View!

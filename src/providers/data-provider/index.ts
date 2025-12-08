@@ -12,7 +12,6 @@ import type { BaseKey, CustomResponse, DataProvider } from "@refinedev/core";
 
 export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters, meta }) => {
-    console.log("dataProvider getList pagination:", pagination);
 
     const current = meta?.pagination?.currentPage || pagination?.currentPage || 1;
     const pageSize = meta?.pagination?.pageSize || pagination?.pageSize || 10;

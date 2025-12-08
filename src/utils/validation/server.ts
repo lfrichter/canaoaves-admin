@@ -6,6 +6,7 @@ const ALLOWED_RESOURCES = [
   "amenities",
   "service_offerings",
   "service_ownership_claims",
+  "service_confirmations",
   "reports",
   "city_descriptions",
   "city_images",
@@ -15,7 +16,9 @@ const ALLOWED_RESOURCES = [
   "comments",
   "photos",
   "view_admin_services",
-  'statuses'
+  "view_admin_profiles",
+  'statuses',
+  "likes"
 ];
 
 export function validateResource(resource: string) {
