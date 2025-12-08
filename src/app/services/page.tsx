@@ -5,6 +5,7 @@ import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button"; // Imported Button
 import {
   Tooltip,
   TooltipContent,
@@ -13,12 +14,31 @@ import {
 } from "@/components/ui/tooltip";
 import { useServerTable } from "@/hooks/useServerTable";
 import { Service } from "@/types/app";
-import { ColumnDef } from "@tanstack/react-table";
-import { Building2, Calendar, CheckCircle2, FileText, Globe } from "lucide-react";
+import { Column, ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, Building2, Calendar, CheckCircle2, FileText, Globe } from "lucide-react"; // Imported ArrowUpDown
 import Image from "next/image";
-import React from "react";
+import { useMemo } from "react";
 
-// Helper para Status
+// --- REUSABLE SORTABLE HEADER ---
+interface SortableHeaderProps {
+  column: Column<any, any>;
+  title: string;
+}
+
+const SortableHeader = ({ column, title }: SortableHeaderProps) => {
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-slate-50"
+    >
+      <span>{title}</span>
+      <ArrowUpDown className="ml-2 h-3 w-3" />
+    </Button>
+  );
+};
+
+// Helper for Status
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "published":
@@ -35,19 +55,19 @@ export default function ServiceList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  const columns = React.useMemo<ColumnDef<Service>[]>(
+  const columns = useMemo<ColumnDef<Service>[]>(
     () => [
       {
-        id: "info",
-        header: "Serviço / Estabelecimento",
-        accessorKey: "name", // Para ordenação
+        id: "name", // Matches DB column 'name'
+        header: ({ column }) => <SortableHeader column={column} title="Serviço / Estabelecimento" />,
+        accessorKey: "name",
         cell: ({ row }) => {
           const service = row.original;
           const photo = service.featured_photo_url;
 
           return (
             <div className="flex items-start gap-3">
-              {/* Foto ou Placeholder */}
+              {/* Photo or Placeholder */}
               <div className="relative h-12 w-12 min-w-[3rem] rounded-md overflow-hidden border bg-muted flex items-center justify-center">
                 {photo ? (
                   <Image
@@ -61,7 +81,7 @@ export default function ServiceList({
                 )}
               </div>
 
-              {/* Texto */}
+              {/* Text */}
               <div className="flex flex-col justify-center">
                 <span className="font-medium text-sm text-foreground flex items-center gap-1.5">
                   {service.name}
@@ -86,15 +106,15 @@ export default function ServiceList({
       },
       {
         id: "status",
-        header: "Status",
-        accessorKey: "status",
+        header: ({ column }) => <SortableHeader column={column} title="Status" />,
+        accessorKey: "status", // Matches DB column 'status'
         size: 100,
         cell: ({ getValue }) => getStatusBadge(getValue() as string),
       },
       {
         id: "created_at",
-        header: "Criado em",
-        accessorKey: "created_at",
+        header: ({ column }) => <SortableHeader column={column} title="Criado em" />,
+        accessorKey: "created_at", // Matches DB column 'created_at'
         size: 120,
         cell: ({ getValue }) => (
           <div className="flex items-center text-muted-foreground text-xs">
