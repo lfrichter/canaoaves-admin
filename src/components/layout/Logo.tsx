@@ -24,16 +24,13 @@ export const Logo: React.FC<LogoProps> = ({
   const logoSizeClass = isLogin ? 'w-[80px] h-[80px]' : 'h-[30px] w-auto';
   const textSizeClass = isLogin ? 'text-lg' : 'text-xs';
 
-  // --- 1. LÓGICA DO CONTAINER CORRIGIDA ---
-  // A classe de layout agora depende se o 'showText' está ativo.
   const containerLayoutClass = isLogin
-    ? 'flex flex-col items-center gap-2' // Login: Vertical com gap
+    ? 'flex flex-col items-center gap-2'
     : showText
-      ? 'flex items-center gap-2' // Header Aberto: Horizontal com gap
-      : 'flex items-center justify-center'; // Header Fechado: Centralizado, sem gap
+      ? 'flex items-center gap-2'
+      : 'flex items-center justify-center';
 
   return (
-    // Aplicamos a nova classe de layout dinâmica
     <div className={cn(containerLayoutClass, className)}>
       <Link href="/">
         <Image
@@ -46,16 +43,15 @@ export const Logo: React.FC<LogoProps> = ({
         />
       </Link>
 
-      {/* --- 2. RENDERIZAÇÃO CONDICIONAL DO TEXTO --- */}
-      {/* O <span> agora é completamente removido do DOM quando 'showText' é falso.
-        Isso remove o 'gap-2' e permite que o 'justify-center' (acima) funcione.
-      */}
       {showText && (
         <span
           className={cn(
-            "text-gray-200 font-bold whitespace-nowrap", // Adicionado whitespace-nowrap
+            "font-bold whitespace-nowrap",
+            // [CORREÇÃO] Substituído cores fixas por semânticas
+            // 'text-foreground' garante legibilidade perfeita em qualquer tema
+            "text-foreground",
             textSizeClass,
-            "transition-opacity duration-200", // Mantém a animação de fade
+            "transition-opacity duration-200",
             {
               "opacity-100": showText,
               "opacity-0": !showText,

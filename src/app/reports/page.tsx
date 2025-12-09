@@ -307,11 +307,14 @@ const ReportActions = ({ row, onRefresh }: { row: IReport; onRefresh: () => void
             <div>
               <span className="text-sm font-semibold block mb-1">Descrição do Problema:</span>
               <div className="
-                bg-red-50 dark:bg-red-950/30
-                text-red-900 dark:text-red-200
-                p-3 rounded-md
-                border border-red-200 dark:border-red-800/40
+                p-4 rounded-md border
                 text-sm whitespace-pre-wrap min-h-[80px]
+
+                /* Fundo: Mantém o tom de alerta (vermelho suave) */
+                bg-destructive/10 border-destructive/20
+
+                /* TEXTO: Preto/Cinza Escuro (Garante leitura) */
+                text-gray-900 dark:text-gray-100
               ">
                 {row.description || "Nenhuma descrição fornecida."}
               </div>

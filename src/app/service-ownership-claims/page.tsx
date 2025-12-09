@@ -187,12 +187,15 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                 <Briefcase className="w-4 h-4" /> Serviço Alvo
               </h4>
 
-              <div className="
-                  bg-blue-50 dark:bg-blue-950/30
-                  p-4 rounded-lg
-                  border border-blue-200 dark:border-blue-800/40
-                ">
-                <p className="font-bold text-lg text-blue-900 dark:text-blue-300">
+              <div
+                className="
+                  p-4 rounded-lg border
+                  /* [CORREÇÃO] Usando variáveis do tema em vez de cores fixas */
+                  bg-muted/50 border-border
+                  text-foreground
+                "
+              >
+                <p className="font-bold text-lg">
                   {row.service_name}
                 </p>
 
@@ -206,7 +209,12 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                   <Link
                     href={serviceLink}
                     target="_blank"
-                    className="text-xs flex items-center text-blue-600 dark:text-blue-400 hover:underline hover:dark:text-blue-300"
+                    className="
+                      text-xs flex items-center font-medium
+                      /* Link Público: Usa a cor Primary (Verde do tema) */
+                      text-primary hover:text-primary/80
+                      hover:underline transition-colors
+                    "
                   >
                     <ExternalLink className="w-3 h-3 mr-1" /> Ver página pública
                   </Link>
@@ -214,27 +222,16 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                   <Link
                     href={adminServiceLink}
                     target="_blank"
-                    className="text-xs flex items-center text-amber-600 dark:text-amber-400 hover:underline hover:dark:text-amber-300"
+                    className="
+                      text-xs flex items-center font-medium
+                      /* Link Admin: Usa Muted Foreground para diferenciar (Cinza escuro) */
+                      text-muted-foreground hover:text-foreground
+                      hover:underline transition-colors
+                    "
                   >
                     <Edit className="w-3 h-3 mr-1" /> Editar cadastro atual
                   </Link>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="font-medium text-sm">Documento Comprobatório:</p>
-                {row.document_url ? (
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <Link href={row.document_url} target="_blank">
-                      <FileText className="w-4 h-4 mr-2" />
-                      Abrir Documento Anexado
-                    </Link>
-                  </Button>
-                ) : (
-                  <div className="text-red-500 text-sm flex items-center">
-                    <X className="w-4 h-4 mr-1" /> Nenhum documento enviado
-                  </div>
-                )}
               </div>
             </div>
           </div>
