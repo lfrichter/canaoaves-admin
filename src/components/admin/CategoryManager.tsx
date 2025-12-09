@@ -175,7 +175,7 @@ export function CategoryManager({ itemId, itemName, type, trigger }: CategoryMan
 
         {/* Alerta de Fantasmas */}
         {ghostIds.length > 0 && !isLoadingData && (
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-xs text-amber-800 flex flex-col gap-1">
+          <div className="bg-amber-500/10 border border-amber-200 dark:border-amber-800/60 rounded-md p-3 text-xs text-amber-700 dark:text-amber-400 flex flex-col gap-1">
             <div className="flex items-center font-bold">
               <EyeOff className="w-3 h-3 mr-1" />
               Atenção: Vínculos Antigos Detectados

@@ -84,7 +84,6 @@ function ProfileEditContent({ id }: { id: string }) {
   const { data: identity } = useGetIdentity<{ app_role: string }>();
   const isMaster = identity?.app_role === 'master';
 
-  // Estado para controlar o Collapsible
   const [isOpenDetails, setIsOpenDetails] = useState(false);
 
   const { mutate: updateProfile, isLoading: isUpdating } = useUpdate();
@@ -144,21 +143,17 @@ function ProfileEditContent({ id }: { id: string }) {
     { label: "Master (Super Admin)", value: "master" },
   ];
 
-  // --- PARSERS DE DADOS EXTRAS ---
-
-  // 1. Localização (Internacional ou BR)
+  // --- PARSERS ---
   let displayLocation = { city: "Não informada", state: "-", country: "BR" };
 
   if (record) {
     if (record.city_name) {
-      // Tem cidade vinculada no banco (Brasil)
       displayLocation = {
         city: record.city_name,
         state: record.city_state,
         country: "Brasil"
       };
     } else if (record.location_details) {
-      // É estrangeiro ou local manual
       try {
         const loc = typeof record.location_details === 'string'
           ? JSON.parse(record.location_details)
@@ -175,7 +170,6 @@ function ProfileEditContent({ id }: { id: string }) {
     }
   }
 
-  // 2. Gênero
   let displayGender = "Não informado";
   if (record?.gender_details) {
     try {
@@ -183,7 +177,6 @@ function ProfileEditContent({ id }: { id: string }) {
         ? JSON.parse(record.gender_details)
         : record.gender_details;
       displayGender = genderObj.main || "Não informado";
-      // Capitalize
       displayGender = displayGender.charAt(0).toUpperCase() + displayGender.slice(1);
     } catch (e) { }
   }
@@ -304,7 +297,8 @@ function ProfileEditContent({ id }: { id: string }) {
                       )}
                     />
 
-                    <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border space-y-4">
+                    {/* [FIX DARK MODE] Alterado de bg-slate-50 para bg-muted/40 */}
+                    <div className="bg-muted/40 p-4 rounded-md border border-border space-y-4">
                       <h4 className="text-sm font-bold uppercase text-muted-foreground flex items-center gap-2">
                         <Shield className="w-4 h-4" /> Área Administrativa
                       </h4>
@@ -369,8 +363,8 @@ function ProfileEditContent({ id }: { id: string }) {
                     </div>
 
                     <div className="flex justify-between items-center pt-4 border-t mt-4">
-                      <DeleteButton recordItemId={id} resource="profiles" confirmTitle="Banir Usuário?" confirmOkText="Sim, Banir" />
-                      <Button type="submit" size="lg" disabled={isSaving}>
+                      <DeleteButton recordItemId={id} resource="profiles" confirmTitle="Banir Usuário?" confirmOkText="Sim, Banir" size="sm" hideText />
+                      <Button type="submit" size="sm" disabled={isSaving}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
                         Salvar Alterações
                       </Button>
@@ -391,7 +385,8 @@ function ProfileEditContent({ id }: { id: string }) {
                     </span>
                     {record.recent_owned_services?.length > 0 ? (
                       <div className="space-y-2">{record.recent_owned_services.map((s: any) => (
-                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-slate-50 border rounded hover:border-blue-300 transition-colors truncate">{s.name}</Link>
+                        // [FIX DARK MODE] bg-slate-50 -> bg-muted/40 | border-blue-300 -> border-primary/50
+                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-muted/40 border border-border rounded hover:border-primary/50 transition-colors truncate">{s.name}</Link>
                       ))}</div>
                     ) : <p className="text-xs text-muted-foreground italic">Nenhum.</p>}
                   </div>
@@ -402,7 +397,8 @@ function ProfileEditContent({ id }: { id: string }) {
                     </span>
                     {record.recent_indicated_services?.length > 0 ? (
                       <div className="space-y-2">{record.recent_indicated_services.map((s: any) => (
-                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-white border rounded hover:bg-slate-50 transition-colors truncate text-muted-foreground">{s.name}</Link>
+                        // [FIX DARK MODE] bg-white -> bg-card | hover:bg-slate-50 -> hover:bg-muted/50
+                        <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-card border border-border rounded hover:bg-muted/50 transition-colors truncate text-muted-foreground">{s.name}</Link>
                       ))}</div>
                     ) : <p className="text-xs text-muted-foreground italic">Nenhuma.</p>}
                   </div>
@@ -415,9 +411,10 @@ function ProfileEditContent({ id }: { id: string }) {
                   {record.recent_comments?.length > 0 ? (
                     <div className="space-y-4">
                       {record.recent_comments.map((c: any) => (
-                        <div key={c.id} className="text-xs border-l-2 border-slate-200 pl-2">
-                          <p className="text-slate-600 italic line-clamp-2">"{c.content}"</p>
-                          <span className="text-[9px] text-muted-foreground block mt-1">{new Date(c.created_at).toLocaleDateString()}</span>
+                        // [FIX DARK MODE] border-slate-200 -> border-border
+                        <div key={c.id} className="text-xs border-l-2 border-border pl-2">
+                          <p className="text-muted-foreground italic line-clamp-2">"{c.content}"</p>
+                          <span className="text-[9px] text-muted-foreground/60 block mt-1">{new Date(c.created_at).toLocaleDateString()}</span>
                         </div>
                       ))}
                     </div>
@@ -431,12 +428,13 @@ function ProfileEditContent({ id }: { id: string }) {
           <div className="space-y-6">
 
             {/* CARD 1: IDENTIDADE */}
-            <Card className="overflow-hidden border-slate-200 shadow-sm sticky top-4">
+            <Card className="overflow-hidden border-border shadow-sm sticky top-4">
               <div className="h-24 w-full relative" style={{ backgroundColor: `${badgeColor}20` }}>
                 <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
-                  <Avatar className="h-20 w-20 border-4 border-white shadow-md bg-white">
+                  {/* [FIX DARK MODE] bg-white -> bg-background */}
+                  <Avatar className="h-20 w-20 border-4 border-background shadow-md bg-background">
                     <AvatarImage src={record.avatar_url} className="object-cover" />
-                    <AvatarFallback className="text-2xl font-bold bg-slate-100 text-slate-400">
+                    <AvatarFallback className="text-2xl font-bold bg-muted text-muted-foreground">
                       {record.full_name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -453,7 +451,8 @@ function ProfileEditContent({ id }: { id: string }) {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-lg border space-y-3">
+                {/* [FIX DARK MODE] bg-slate-50 -> bg-muted/40 */}
+                <div className="bg-muted/40 p-4 rounded-lg border border-border space-y-3">
                   <div className="flex justify-center">
                     <Badge className="text-sm px-4 py-1.5 font-bold border shadow-sm" style={{ backgroundColor: `${badgeColor}15`, color: badgeColor, borderColor: `${badgeColor}40` }}>
                       <span className="mr-2 text-lg">{badgeIcon}</span> {badgeLabel}
@@ -464,7 +463,8 @@ function ProfileEditContent({ id }: { id: string }) {
                       <span>{score.toLocaleString()} pts</span>
                       <span>{nextStart ? nextStart.toLocaleString() : 'MAX'} pts</span>
                     </div>
-                    <div className="w-full h-2.5 bg-white border border-slate-200 rounded-full overflow-hidden">
+                    {/* [FIX DARK MODE] bg-white -> bg-secondary/50 | border-slate-200 -> border-border */}
+                    <div className="w-full h-2.5 bg-secondary/50 border border-border rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: nextStart ? `${Math.min((score / nextStart) * 100, 100)}%` : '100%', backgroundColor: badgeColor }} />
                     </div>
                   </div>
@@ -477,26 +477,28 @@ function ProfileEditContent({ id }: { id: string }) {
               <CardHeader className="pb-3 pt-5"><CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Trophy className="w-4 h-4" /> Engajamento</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center"><Heart className="w-4 h-4 text-pink-500 mb-1" /><span className="text-sm font-bold">{record.total_likes_received || 0}</span></div>
-                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mb-1" /><span className="text-sm font-bold">{record.total_confirmations_made || 0}</span></div>
-                  <div className="p-2 bg-slate-50 rounded border flex flex-col items-center"><MessageSquare className="w-4 h-4 text-blue-500 mb-1" /><span className="text-sm font-bold">{record.total_comments_made || 0}</span></div>
+                  {/* [FIX DARK MODE] bg-slate-50 -> bg-muted/40 */}
+                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center"><Heart className="w-4 h-4 text-pink-500 mb-1" /><span className="text-sm font-bold">{record.total_likes_received || 0}</span></div>
+                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mb-1" /><span className="text-sm font-bold">{record.total_confirmations_made || 0}</span></div>
+                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center"><MessageSquare className="w-4 h-4 text-blue-500 mb-1" /><span className="text-sm font-bold">{record.total_comments_made || 0}</span></div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* CARD 3: LOCALIZAÇÃO (INTELIGENTE) */}
+            {/* CARD 3: LOCALIZAÇÃO */}
             <Card>
               <CardHeader className="pb-3 pt-5"><CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><MapPin className="w-4 h-4" /> Localização</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-sm">
-                <div className="flex justify-between py-2 border-b border-slate-100">
+                {/* [FIX DARK MODE] border-slate-100 -> border-border */}
+                <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">Cidade</span>
                   <span className="font-medium text-right">{displayLocation.city}</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-100">
+                <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">UF / Província</span>
                   <span className="font-medium text-right">{displayLocation.state}</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-slate-100">
+                <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">País</span>
                   <span className="font-medium text-right">{displayLocation.country}</span>
                 </div>
@@ -507,12 +509,12 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* CARD 4: DETALHES TÉCNICOS (COLLAPSIBLE) */}
-            <Card className="w-full pb-4">
+            {/* CARD 4: DETALHES TÉCNICOS */}
+            <Card className="w-full pb-0">
               <Collapsible open={isOpenDetails} onOpenChange={setIsOpenDetails}>
                 <div className="flex items-center justify-between px-6 py-4">
                   <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> Detalhes cadastrais
+                    <CheckCircle2 className="w-4 h-4" /> Detalhes Técnicos
                   </CardTitle>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -523,24 +525,24 @@ function ProfileEditContent({ id }: { id: string }) {
                 </div>
                 <CollapsibleContent>
                   <CardContent className="space-y-4 pt-0 text-sm">
-                    <div className="flex justify-between py-2 border-b border-slate-100">
+                    {/* [FIX DARK MODE] border-slate-100 -> border-border */}
+                    <div className="flex justify-between py-2 border-b border-border">
                       <span className="text-muted-foreground flex items-center gap-2"><UserCircle className="w-3 h-3" /> Gênero</span>
                       <span className="font-medium">{displayGender}</span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-slate-100">
+                    <div className="flex justify-between py-2 border-b border-border">
                       <span className="text-muted-foreground flex items-center gap-2"><CalendarDays className="w-3 h-3" /> Início</span>
                       <span className="font-medium">{record.start_date ? new Date(record.start_date).toLocaleDateString('pt-BR') : "-"}</span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-slate-100">
+                    <div className="flex justify-between py-2 border-b border-border">
                       <span className="text-muted-foreground flex items-center gap-2"><Eye className="w-3 h-3" /> Exibe Nome Completo?</span>
                       <Badge variant={record.show_full_name ? "default" : "secondary"} className="h-5">{record.show_full_name ? "Sim" : "Não"}</Badge>
                     </div>
 
-                    {/* LINKS EXTERNOS */}
                     {record.website_url && (
-                      <div className="flex justify-between py-2 border-b border-slate-100 items-center">
+                      <div className="flex justify-between py-2 border-b border-border items-center">
                         <span className="text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Website</span>
-                        <a href={record.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
+                        <a href={record.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
                           Link Externo <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
@@ -548,7 +550,7 @@ function ProfileEditContent({ id }: { id: string }) {
                     {record.life_list_url && (
                       <div className="flex justify-between py-2 items-center">
                         <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="w-3 h-3" /> Life List</span>
-                        <a href={record.life_list_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
+                        <a href={record.life_list_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
                           Ver Lista <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>

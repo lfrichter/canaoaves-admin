@@ -216,7 +216,7 @@ function ServiceEditForm() {
                         confirmTitle="Excluir Serviço?"
                         confirmOkText="Sim, excluir"
                       />
-                      <Button type="submit" size="lg">
+                      <Button type="submit" size="sm">
                         {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Salvar Alterações
                       </Button>
@@ -232,7 +232,7 @@ function ServiceEditForm() {
           <div className="space-y-6">
 
             {/* CARD 1: ORIGEM */}
-            <Card className="bg-slate-50 border-slate-200 shadow-sm">
+            <Card className="bg-muted/40 border border-border shadow-sm">
               <CardHeader className="pb-0 pt-0">
                 <CardTitle className="text-xs font-bold uppercase text-muted-foreground tracking-wider flex items-center gap-2">
                   <User className="w-4 h-4" /> Propriedade e Origem
@@ -243,7 +243,7 @@ function ServiceEditForm() {
                 {/* DONO */}
                 <div>
                   <span className="text-[10px] uppercase text-muted-foreground font-semibold">Dono Atual</span>
-                  <div className="flex items-center gap-3 mt-1.5 p-2 bg-white rounded border shadow-sm">
+                  <div className="flex items-center gap-3 mt-1.5 p-2 bg-card rounded border shadow-sm">
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border overflow-hidden relative">
                       {record.owner_avatar_url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
@@ -254,7 +254,7 @@ function ServiceEditForm() {
                     </div>
                     <div className="overflow-hidden w-full">
                         <>
-                          <p className="font-medium truncate text-slate-900">
+                          <p className="font-medium truncate text-foreground">
                             {record.owner_full_name || record.owner_public_name || "Sem Dono (Sistema)"}
                           </p>
                           {record.owner_app_role && <Badge variant="outline" className="mt-1">{record.owner_app_role}</Badge>}
@@ -269,13 +269,13 @@ function ServiceEditForm() {
                   <div className="relative">
                     <div className="absolute left-5 -top-4 bottom-4 w-px bg-slate-200 -z-10"></div>
 
-                    <span className="text-[10px] uppercase text-blue-600 font-semibold flex items-center gap-1 bg-slate-50 w-fit pr-2">
+                    <span className="text-[10px] uppercase text-blue-600 font-semibold flex items-center gap-1 bg-muted/40 w-fit pr-2">
                       <AlertCircle className="w-3 h-3" /> Cadastrado por (Indicação)
                     </span>
 
                     <div className="mt-2 ml-2">
                       {record.creator_full_name ? (
-                        <div className="p-3 bg-blue-50/50 rounded border border-blue-100 border-dashed relative">
+                        <div className="p-3 bg-blue-50/50 dark:bg-blue-950/30 rounded border border-blue-100 dark:border-blue-800/40 border-dashed relative">
                           <div className="flex items-start gap-3 mb-3">
                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-blue-200 overflow-hidden">
                               {record.creator_avatar_url ? (
@@ -286,7 +286,7 @@ function ServiceEditForm() {
                               )}
                             </div>
                             <div className="flex-1 overflow-hidden">
-                              <span className="font-medium text-xs text-blue-900 block truncate">
+                              <span className="font-medium text-xs text-blue-900 dark:text-blue-300 block truncate">
                                 {record.creator_full_name || record.creator_public_name}
                               </span>
                               {record.creator_app_role && <Badge variant="outline" className="mt-1 bg-blue-50 text-blue-800 border-blue-200">{record.creator_app_role}</Badge>}
@@ -369,7 +369,13 @@ function ServiceEditForm() {
                     <span className="text-[10px] uppercase text-muted-foreground font-bold flex items-center gap-1 mb-1">
                       <Target className="w-3 h-3" /> Missão
                     </span>
-                    <p className="text-xs text-muted-foreground leading-relaxed italic bg-yellow-50/50 p-2 rounded border border-yellow-100 text-yellow-800">
+                    <p className="
+                      text-xs leading-relaxed italic
+                      p-2 rounded
+                      bg-yellow-50 dark:bg-yellow-900/20
+                      border border-yellow-200 dark:border-yellow-800/50
+                      text-yellow-800 dark:text-yellow-200
+                    ">
                       "{record.mission}"
                     </p>
                   </div>

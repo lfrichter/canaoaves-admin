@@ -28,7 +28,8 @@ export default async function DashboardPage() {
     {
       title: "Denúncias e Alertas",
       value: stats.pendingReports,
-      icon: <ShieldAlert className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-500" : "text-muted-foreground"}`} />,
+      // Ícone ajustado para brilhar um pouco mais no dark mode se necessário
+      icon: <ShieldAlert className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`} />,
       href: "/reports",
       description: "Comentários, fotos e observadores reportados",
       alert: stats.pendingReports > 0,
@@ -110,7 +111,13 @@ export default async function DashboardPage() {
               <Card
                 className={`
                   flex flex-col h-full transition-all duration-200 hover:shadow-md
-                  ${item.alert ? "border-red-200 bg-red-50/50 hover:bg-red-50" : "hover:bg-muted/50"}
+                  ${item.alert
+                    // [CORREÇÃO DARK MODE]
+                    // Light: Fundo vermelho claro, borda vermelha clara.
+                    // Dark: Fundo vermelho escuro (10% opacidade), borda vermelha escura.
+                    ? "border-red-200 bg-red-50/50 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900/50 dark:hover:bg-red-900/20"
+                    : "hover:bg-muted/50"
+                  }
                 `}
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 gap-3">
@@ -121,11 +128,11 @@ export default async function DashboardPage() {
                     {item.icon}
                   </div>
                 </CardHeader>
-                {/* flex-1: Faz este container ocupar todo o espaço vertical disponível
-                   justify-end: Empurra o conteúdo (número e descrição) para o rodapé
-                */}
                 <CardContent className="flex flex-col flex-1 justify-end">
-                  <div className={`text-2xl font-bold ${item.alert ? "text-red-700" : ""}`}>
+                  <div className={`
+                    text-2xl font-bold
+                    ${item.alert ? "text-red-700 dark:text-red-400" : ""}
+                  `}>
                     {(item.value ?? 0).toLocaleString('pt-BR')}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -153,7 +160,6 @@ export default async function DashboardPage() {
                     {item.icon}
                   </div>
                 </CardHeader>
-                {/* Mesma lógica: flex-1 e justify-end para colar no fundo */}
                 <CardContent className="flex flex-col flex-1 justify-end">
                   <div className="text-2xl font-bold">
                     {(item.value ?? 0).toLocaleString('pt-BR')}

@@ -145,8 +145,18 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                 <div>
                   <p className="font-bold text-sm">{displayName}</p>
                   <div className="flex gap-2 text-[10px] text-muted-foreground mt-1">
-                    <span className="bg-white px-1 border rounded">Score: {row.profile_score || 0}</span>
-                    <span className="bg-white px-1 border rounded">{row.profile_category_name || "Membro"}</span>
+                    <span className="
+                      bg-card px-1 border rounded
+                      dark:bg-muted/50 dark:border-muted
+                    ">
+                      Score: {row.profile_score || 0}
+                    </span>
+                    <span className="
+                      bg-card px-1 border rounded
+                      dark:bg-muted/50 dark:border-muted
+                    ">
+                      {row.profile_category_name || "Membro"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -177,16 +187,35 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                 <Briefcase className="w-4 h-4" /> Serviço Alvo
               </h4>
 
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <p className="font-bold text-lg text-blue-900">{row.service_name}</p>
+              <div className="
+                  bg-blue-50 dark:bg-blue-950/30
+                  p-4 rounded-lg
+                  border border-blue-200 dark:border-blue-800/40
+                ">
+                <p className="font-bold text-lg text-blue-900 dark:text-blue-300">
+                  {row.service_name}
+                </p>
+
                 {row.service_already_authenticated && (
-                  <Badge variant="destructive" className="mt-2">Atenção: Serviço já autenticado!</Badge>
+                  <Badge variant="destructive" className="mt-2">
+                    Atenção: Serviço já autenticado!
+                  </Badge>
                 )}
+
                 <div className="flex flex-col gap-2 mt-4">
-                  <Link href={serviceLink} target="_blank" className="text-xs flex items-center text-blue-600 hover:underline">
+                  <Link
+                    href={serviceLink}
+                    target="_blank"
+                    className="text-xs flex items-center text-blue-600 dark:text-blue-400 hover:underline hover:dark:text-blue-300"
+                  >
                     <ExternalLink className="w-3 h-3 mr-1" /> Ver página pública
                   </Link>
-                  <Link href={adminServiceLink} target="_blank" className="text-xs flex items-center text-amber-600 hover:underline">
+
+                  <Link
+                    href={adminServiceLink}
+                    target="_blank"
+                    className="text-xs flex items-center text-amber-600 dark:text-amber-400 hover:underline hover:dark:text-amber-300"
+                  >
                     <Edit className="w-3 h-3 mr-1" /> Editar cadastro atual
                   </Link>
                 </div>

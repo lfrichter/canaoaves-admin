@@ -100,7 +100,7 @@ export default function ServiceOfferingList({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><EditButton resource="service_offerings" recordItemId={id} /></div>
+                    <div><EditButton resource="service_offerings" recordItemId={id} size="sm" hideText /></div>
                   </TooltipTrigger>
                   <TooltipContent>Editar Oferta</TooltipContent>
                 </Tooltip>
@@ -111,9 +111,9 @@ export default function ServiceOfferingList({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><DeleteButton resource="service_offerings" recordItemId={id} /></div>
+                    <div><DeleteButton resource="service_offerings" recordItemId={id} size="sm" hideText /></div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-destructive text-destructive-foreground">
+                  <TooltipContent>
                     Excluir
                   </TooltipContent>
                 </Tooltip>

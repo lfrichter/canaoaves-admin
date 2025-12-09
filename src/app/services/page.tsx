@@ -30,7 +30,7 @@ const SortableHeader = ({ column, title }: SortableHeaderProps) => {
     <Button
       variant="ghost"
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-slate-50"
+      className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-muted/50"
     >
       <span>{title}</span>
       <ArrowUpDown className="ml-2 h-3 w-3" />
@@ -42,7 +42,7 @@ const SortableHeader = ({ column, title }: SortableHeaderProps) => {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "published":
-      return <Badge className="bg-green-600 hover:bg-green-700 border-green-600"><Globe className="w-3 h-3 mr-1" /> Publicado</Badge>;
+      return <Badge className="border-transparent bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-500/20"><Globe className="w-3 h-3 mr-1" /> Publicado</Badge>;
     case "draft":
       return <Badge variant="secondary" className="text-muted-foreground"><FileText className="w-3 h-3 mr-1" /> Rascunho</Badge>;
     default:
@@ -89,7 +89,7 @@ export default function ServiceList({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <CheckCircle2 className="w-4 h-4 text-blue-500 fill-blue-50" />
+                          <CheckCircle2 className="w-4 h-4 text-blue-500 fill-blue-500/10 dark:fill-blue-500/20" />
                         </TooltipTrigger>
                         <TooltipContent>Serviço Verificado / Autenticado</TooltipContent>
                       </Tooltip>
@@ -133,7 +133,7 @@ export default function ServiceList({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><EditButton recordItemId={id} /></div>
+                    <div><EditButton recordItemId={id} size="sm" hideText /></div>
                   </TooltipTrigger>
                   <TooltipContent>Editar Serviço</TooltipContent>
                 </Tooltip>
@@ -144,9 +144,9 @@ export default function ServiceList({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><DeleteButton recordItemId={id} /></div>
+                    <div><DeleteButton recordItemId={id} size="sm" hideText /></div>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-destructive text-destructive-foreground">
+                  <TooltipContent>
                     Excluir Serviço
                   </TooltipContent>
                 </Tooltip>

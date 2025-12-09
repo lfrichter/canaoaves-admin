@@ -198,20 +198,40 @@ export default function CategoryCreate() {
                             <RadioGroupItem value="pessoa" id="type-pessoa" className="peer sr-only" />
                             <label
                               htmlFor="type-pessoa"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 cursor-pointer transition-all"
+                              className="
+                                flex flex-col items-center justify-between rounded-md border-2 border-muted
+                                bg-popover p-4
+                                hover:bg-accent hover:text-accent-foreground
+                                peer-data-[state=checked]:border-blue-500
+                                peer-data-[state=checked]:bg-blue-500/10
+                                peer-data-[state=checked]:text-blue-700
+                                dark:peer-data-[state=checked]:bg-blue-500/15
+                                dark:peer-data-[state=checked]:text-blue-300
+                                cursor-pointer transition-all
+                              "
                             >
-                              <User className="mb-2 h-6 w-6 text-blue-600" />
-                              <span className="font-semibold text-sm">Pessoa</span>
+                              <User className="mb-2 h-6 w-6 text-blue-600 dark:text-blue-400" />
+                              <span className="font-semibold text-sm text-foreground">Pessoa</span>
                             </label>
                           </div>
                           <div>
                             <RadioGroupItem value="empresa" id="type-empresa" className="peer sr-only" />
                             <label
                               htmlFor="type-empresa"
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:bg-emerald-50 cursor-pointer transition-all"
+                              className="
+                                flex flex-col items-center justify-between rounded-md border-2 border-muted
+                                bg-popover p-4
+                                hover:bg-accent hover:text-accent-foreground
+                                peer-data-[state=checked]:border-emerald-500
+                                peer-data-[state=checked]:bg-emerald-500/10
+                                peer-data-[state=checked]:text-emerald-700
+                                dark:peer-data-[state=checked]:bg-emerald-500/15
+                                dark:peer-data-[state=checked]:text-emerald-300
+                                cursor-pointer transition-all
+                              "
                             >
-                              <Building2 className="mb-2 h-6 w-6 text-emerald-600" />
-                              <span className="font-semibold text-sm">Serviço / Empresa</span>
+                              <Building2 className="mb-2 h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                              <span className="font-semibold text-sm text-foreground">Serviço / Empresa</span>
                             </label>
                           </div>
                         </RadioGroup>
@@ -454,7 +474,7 @@ export default function CategoryCreate() {
             </div>
 
             <div className="flex justify-end gap-4">
-              <Button {...saveButtonProps} size="lg" className="w-full md:w-auto">
+              <Button {...saveButtonProps} size="sm" className="w-full md:w-auto">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Salvar Categoria
               </Button>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { RotateCw } from "lucide-react";
 import { InputPassword } from "@/components/refine-ui/form/input-password";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,18 +150,14 @@ export const SignUpForm = () => {
               />
             </div>
 
-            <Button
-              type="submit"
-              size="lg"
-              className={cn(
-                "w-full",
-                "mt-6",
-                "bg-green-600",
-                "hover:bg-green-700",
-                "text-white"
-              )}
-            >
-              Sign up
+            <Button type="submit" disabled={loading} className="w-full">
+              <RotateCw
+                className={cn(
+                  "mr-2 h-4 w-4 animate-spin",
+                  loading ? "inline-block" : "hidden"
+                )}
+              />
+              {loading ? "Criando conta..." : "Criar conta"}
             </Button>
 
             <div className={cn("flex", "items-center", "gap-4", "mt-6")}>

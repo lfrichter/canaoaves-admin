@@ -48,7 +48,7 @@ export default function AmenityEdit() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Salvar</Button>
+              <Button type="submit" size="sm">Salvar</Button>
             </form>
           </Form>
         </CardContent>

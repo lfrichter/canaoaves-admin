@@ -78,7 +78,7 @@ export const ListViewHeader = ({
 
           {isCreateButtonVisible && (
             <div className="flex-shrink-0">
-              <CreateButton resource={resourceName} />
+              <CreateButton resource={resourceName} label="Criar" />
             </div>
           )}
         </div>

@@ -36,7 +36,7 @@ const SortableHeader = ({ column, title }: SortableHeaderProps) => {
     <Button
       variant="ghost"
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-slate-50"
+      className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-muted/50"
     >
       <span>{title}</span>
       <ArrowUpDown className="ml-2 h-3 w-3" />
@@ -47,9 +47,8 @@ const SortableHeader = ({ column, title }: SortableHeaderProps) => {
 const getRoleBadge = (role: string) => {
   switch (role) {
     case "master":
-      return <Badge className="bg-slate-900 hover:bg-slate-800 border-slate-900"><ShieldAlert className="w-3 h-3 mr-1 text-red-500" /> Master</Badge>;
-    case "admin":
-      return <Badge className="bg-blue-600 hover:bg-blue-700 border-blue-600"><Shield className="w-3 h-3 mr-1" /> Admin</Badge>;
+    return <Badge className="border-transparent bg-slate-800 text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-slate-300"><ShieldAlert className="w-3 h-3 mr-1" /> Master</Badge>;    case "admin":
+      return <Badge className="border-transparent bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20"><Shield className="w-3 h-3 mr-1" /> Admin</Badge>;
     default:
       return <Badge variant="secondary" className="font-normal text-muted-foreground"><User className="w-3 h-3 mr-1" /> Usuário</Badge>;
   }
@@ -75,7 +74,7 @@ export default function ProfileList({
             <div className={`flex items-center gap-3 ${isDeleted ? "opacity-50 grayscale" : ""}`}>
               <Avatar className="h-10 w-10 border">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-slate-100 text-slate-500 font-bold">
+                <AvatarFallback className="bg-muted text-muted-foreground font-bold">
                   {profile.full_name?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
@@ -130,7 +129,7 @@ export default function ProfileList({
                       {label}
                     </Badge>
 
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-0.5">
+                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -141,10 +140,9 @@ export default function ProfileList({
                     </div>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="p-3 bg-white border shadow-xl">
-                  <div className="space-y-2">
-                    <p className="font-bold flex items-center text-sm text-slate-800">
-                      <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                <TooltipContent className="p-3 bg-popover border shadow-xl">
+                <div className="space-y-2">
+                <p className="font-bold flex items-center text-sm text-popover-foreground">                      <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
                       {score.toLocaleString('pt-BR')} pontos
                     </p>
                     {nextStart ? (

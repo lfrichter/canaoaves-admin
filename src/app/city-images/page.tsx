@@ -144,10 +144,16 @@ const CityImageActions = ({
                 <h4 className="font-semibold leading-none">{displayName}</h4>
                 <p className="text-sm text-muted-foreground">{row.user_email || "Email N/A"}</p>
                 <div className="flex gap-2 text-xs text-muted-foreground mt-1">
-                  <span className="bg-white px-2 py-0.5 rounded border">
+                  <span className="
+                    bg-card px-2 py-0.5 rounded border
+                    dark:bg-muted/50 dark:border-muted
+                  ">
                     Score: {row.profile_score || 0}
                   </span>
-                  <span className="bg-white px-2 py-0.5 rounded border">
+                  <span className="
+                    bg-card px-2 py-0.5 rounded border
+                    dark:bg-muted/50 dark:border-muted
+                  ">
                     {row.profile_category_name || "Membro"}
                   </span>
                 </div>

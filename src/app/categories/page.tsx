@@ -28,9 +28,9 @@ import { useMemo } from "react";
 const getTypeBadge = (type: string) => {
   switch (type) {
     case "pessoa":
-      return <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700"><User className="w-3 h-3 mr-1" /> Pessoa</Badge>;
+      return <Badge variant="outline" className="border-blue-200 dark:border-blue-900 bg-blue-500/10 text-blue-700 dark:text-blue-400"><User className="w-3 h-3 mr-1" /> Pessoa</Badge>;
     case "empresa":
-      return <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700"><Briefcase className="w-3 h-3 mr-1" /> Empresa</Badge>;
+      return <Badge variant="outline" className="border-emerald-200 dark:border-emerald-900 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"><Briefcase className="w-3 h-3 mr-1" /> Empresa</Badge>;
     default:
       return <Badge variant="secondary">{type}</Badge>;
   }
@@ -65,7 +65,7 @@ export default function CategoryList({
               {/* Ícone */}
               <div className={`
                 flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-lg border shadow-sm
-                ${icon ? "bg-white text-2xl" : "bg-muted/50"}
+                ${icon ? "bg-card text-2xl" : "bg-muted/50"}
                 ${!isParent ? "h-8 w-8 text-xl" : ""}
               `}>
                 {icon ? <span>{icon}</span> : <FallbackIcon className="h-4 w-4 text-muted-foreground opacity-50" />}
@@ -76,7 +76,7 @@ export default function CategoryList({
                   <span className={`text-sm text-foreground flex items-center gap-2 ${isParent ? "font-bold text-base" : "font-medium"}`}>
                     {name}
                     {isParent && (
-                      <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 border-slate-200">
+                      <span className="inline-flex items-center rounded-full border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 text-[10px] font-semibold bg-slate-500/10 text-slate-700 dark:text-slate-400">
                         <LayoutGrid className="w-3 h-3 mr-1" /> Raiz
                       </span>
                     )}
@@ -119,15 +119,15 @@ export default function CategoryList({
             <div className="flex items-center gap-1">
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild><div><EditButton resource="categories" recordItemId={id} /></div></TooltipTrigger>
+                  <TooltipTrigger asChild><div><EditButton resource="categories" recordItemId={id} size="sm" hideText /></div></TooltipTrigger>
                   <TooltipContent>Editar</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <div className="w-px h-4 bg-border mx-1" />
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild><div><DeleteButton resource="categories" recordItemId={id} /></div></TooltipTrigger>
-                  <TooltipContent className="bg-destructive text-destructive-foreground">Excluir</TooltipContent>
+                  <TooltipTrigger asChild><div><DeleteButton resource="categories" recordItemId={id} size="sm" hideText /></div></TooltipTrigger>
+                  <TooltipContent>Excluir</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>

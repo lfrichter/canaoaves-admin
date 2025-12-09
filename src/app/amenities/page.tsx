@@ -111,7 +111,7 @@ export default function AmenityList({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><EditButton resource="amenities" recordItemId={id} /></div>
+                    <div><EditButton resource="amenities" recordItemId={id} size="sm" hideText /></div>
                   </TooltipTrigger>
                   <TooltipContent>Editar Comodidade</TooltipContent>
                 </Tooltip>
@@ -122,7 +122,7 @@ export default function AmenityList({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div><DeleteButton resource="amenities" recordItemId={id} /></div>
+                    <div><DeleteButton resource="amenities" recordItemId={id} size="sm" hideText /></div>
                   </TooltipTrigger>
                   <TooltipContent>
                     Excluir
