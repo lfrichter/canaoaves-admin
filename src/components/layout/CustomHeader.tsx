@@ -87,7 +87,6 @@ const DesktopCustomHeader = () => {
     >
       <div className="flex items-center gap-2">
         {(userRole === "master" || userRole === "admin") && <SidebarTrigger />}
-        <Logo showText={true} />
       </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />

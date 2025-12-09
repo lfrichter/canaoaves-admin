@@ -1,10 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useGetIdentity, useMenu } from "@refinedev/core";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { Logo } from "./Logo";
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +9,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { useGetIdentity, useMenu } from "@refinedev/core";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Logo } from "./Logo";
 
 export const CustomSider = () => {
   const [isMounted, setIsMounted] = useState(false);
