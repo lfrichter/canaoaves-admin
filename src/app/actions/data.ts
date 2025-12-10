@@ -23,11 +23,17 @@ export async function getList(resource: string, params: any) {
       filters = [],
       sorters = [],
       meta = {},
+      status: rootStatus,
     } = params;
 
-    const current = Number(rawCurrent) || 1;
+    const current = meta?.current ? Number(meta.current) : (Number(rawCurrent) || 1);
     const pageSize = Number(rawPageSize) || 10;
     const { searchQuery = "" } = meta;
+
+    // Tenta pegar o filtro de status de qualquer lugar possível
+    // 1. Do meta (se enviado pelo frontend explicitamente)
+    // 2. Da raiz (se veio via query string da URL)
+    const statusFilter = meta?.statusFilter || meta?.status || rootStatus;
 
     // --- DEFINIÇÃO DO ALVO (TABELA OU VIEW) ---
     let targetTable = resource;
@@ -117,7 +123,9 @@ export async function getList(resource: string, params: any) {
       });
     }
 
-    // 2. Aplica Busca Textual (CORRIGIDO E MELHORADO)
+    // =========================================================
+    // 2. BUSCA - Aplica Busca Textual
+    // =========================================================
     if (searchQuery && !searchHandledByFilters) {
 
        // CASO ESPECIAL: PROFILES (Busca em múltiplos campos)
@@ -158,7 +166,16 @@ export async function getList(resource: string, params: any) {
        }
     }
 
-    // 3. Ordenação
+    // =========================================================
+    // 3. FILTRO DE STATUS (Via Meta)
+    // =========================================================
+    if (statusFilter && statusFilter !== "all") {
+      query = query.eq('status', statusFilter);
+    }
+
+    // =========================================================
+    // 4. Ordenação
+    // =========================================================
     if (sorters.length > 0) {
       sorters.forEach((sorter: any) => {
         // Se a ordenação vier do frontend, respeita
@@ -175,7 +192,9 @@ export async function getList(resource: string, params: any) {
         }
     }
 
-    // 4. Paginação
+    // =========================================================
+    // 5. Paginação
+    // =========================================================
     const start = (current - 1) * pageSize;
     const end = start + pageSize - 1;
     query = query.range(start, end);
