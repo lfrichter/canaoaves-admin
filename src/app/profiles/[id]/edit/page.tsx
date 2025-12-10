@@ -474,13 +474,35 @@ function ProfileEditContent({ id }: { id: string }) {
 
             {/* CARD 2: ESTATÍSTICAS */}
             <Card>
-              <CardHeader className="pb-3 pt-5"><CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Trophy className="w-4 h-4" /> Engajamento</CardTitle></CardHeader>
+              <CardHeader className="pb-3 pt-5">
+                <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                  <Trophy className="w-4 h-4" /> Engajamento
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  {/* [FIX DARK MODE] bg-slate-50 -> bg-muted/40 */}
-                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center"><Heart className="w-4 h-4 text-pink-500 mb-1" /><span className="text-sm font-bold">{record.total_likes_received || 0}</span></div>
-                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center"><CheckCircle2 className="w-4 h-4 text-green-500 mb-1" /><span className="text-sm font-bold">{record.total_confirmations_made || 0}</span></div>
-                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center"><MessageSquare className="w-4 h-4 text-blue-500 mb-1" /><span className="text-sm font-bold">{record.total_comments_made || 0}</span></div>
+
+                  {/* Curtidas */}
+                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center justify-center min-h-[80px]">
+                    <Heart className="w-4 h-4 text-pink-500 mb-1" />
+                    <span className="text-sm font-bold leading-none">{record.total_likes_received || 0}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1">Curtidas</span>
+                  </div>
+
+                  {/* Confirmações */}
+                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center justify-center min-h-[80px]">
+                    <CheckCircle2 className="w-4 h-4 text-green-500 mb-1" />
+                    <span className="text-sm font-bold leading-none">{record.total_confirmations_made || 0}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1">Validações</span>
+                  </div>
+
+                  {/* Comentários */}
+                  <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center justify-center min-h-[80px]">
+                    <MessageSquare className="w-4 h-4 text-blue-500 mb-1" />
+                    <span className="text-sm font-bold leading-none">{record.total_comments_made || 0}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1">Comentários</span>
+                  </div>
+
                 </div>
               </CardContent>
             </Card>

@@ -11,6 +11,9 @@ import { TableName } from "../../types/app";
 // GET LIST
 // =========================================================
 export async function getList(resource: string, params: any) {
+  if (resource === 'profiles') {
+    console.log("👤 [DEBUG PROFILES] Params:", JSON.stringify(params, null, 2));
+  }
   try {
     await verifyUserRole(["admin", "master"]);
     validateResource(resource);
@@ -87,6 +90,8 @@ export async function getList(resource: string, params: any) {
     if (activeFilters.length > 0) {
       activeFilters.forEach((filter: CrudFilter) => {
         if ("field" in filter) {
+
+          if (resource === 'profiles' && filter.field === 'status') return;
 
           // LIMPEZA GERAL DE FILTROS FANTASMAS (Para Todos os Recursos)
           // Se a busca global (q=...) foi limpa, ignoramos os filtros residuais
@@ -169,8 +174,34 @@ export async function getList(resource: string, params: any) {
     // =========================================================
     // 3. FILTRO DE STATUS (Via Meta)
     // =========================================================
-    if (statusFilter && statusFilter !== "all") {
-      query = query.eq('status', statusFilter);
+
+    // A. SERVIÇOS APENAS: Filtra pela coluna 'status'
+    if (resource === 'services') {
+       if (statusFilter && statusFilter !== "all") {
+         query = query.eq('status', statusFilter);
+       }
+    }
+
+    // B. PERFIS APENAS: Filtra pela coluna 'deleted_at'
+    if (resource === 'profiles') {
+       // O log mostrou que o Refine joga o parametro da URL em 'meta.status'
+       // Então vamos pegar diretamente dele para não ter erro.
+       // Normalizamos para string e minúsculo para garantir.
+       const rawStatus = meta?.userStatus || meta?.status || rootStatus || 'all';
+       const finalStatus = String(rawStatus).toLowerCase();
+
+       // LOG PARA DEBUG (Ver no terminal)
+       console.log(`🔍 [PERFIS] Filtrando por: ${finalStatus}`);
+
+       if (finalStatus === 'active') {
+         // Quero ver APENAS quem tem deleted_at VAZIO
+         query = query.is('deleted_at', null);
+       }
+       else if (finalStatus === 'deleted') {
+         // Quero ver APENAS quem tem deleted_at PREENCHIDO
+         query = query.not('deleted_at', 'is', null);
+       }
+       // Se for 'all', não fazemos nada (traz tudo)
     }
 
     // =========================================================

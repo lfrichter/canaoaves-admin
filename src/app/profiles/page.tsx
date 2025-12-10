@@ -8,6 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -23,7 +30,8 @@ import {
 import { getStatusDetails, normalizeStatusKey } from "@/lib/gamificationUtils";
 import { ProfileWithUser } from "@/types/app";
 import { Column, ColumnDef } from "@tanstack/react-table";
-import { ArrowUpCircle, ArrowUpDown, Calendar, Shield, ShieldAlert, Trophy, User } from "lucide-react";
+import { ArrowUpCircle, ArrowUpDown, Calendar, Filter, Shield, ShieldAlert, Trophy, User } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation"; // <--- Hooks de navegação
 import { useMemo } from "react";
 
 interface SortableHeaderProps {
@@ -47,7 +55,8 @@ const SortableHeader = ({ column, title }: SortableHeaderProps) => {
 const getRoleBadge = (role: string) => {
   switch (role) {
     case "master":
-    return <Badge className="border-transparent bg-slate-800 text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-slate-300"><ShieldAlert className="w-3 h-3 mr-1" /> Master</Badge>;    case "admin":
+      return <Badge className="border-transparent bg-slate-800 text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-slate-300"><ShieldAlert className="w-3 h-3 mr-1" /> Master</Badge>;
+    case "admin":
       return <Badge className="border-transparent bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20"><Shield className="w-3 h-3 mr-1" /> Admin</Badge>;
     default:
       return <Badge variant="secondary" className="font-normal text-muted-foreground"><User className="w-3 h-3 mr-1" /> Usuário</Badge>;
@@ -59,19 +68,26 @@ export default function ProfileList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
+  // Hooks de navegação para controlar o filtro via URL
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParamsHook = useSearchParams();
+
+  // 1. Ler o status da URL (Padrão: "all" ou "active" se preferir que já comece filtrado)
+  const currentStatus = searchParamsHook.get("status") || "active";
 
   const columns = useMemo<ColumnDef<ProfileWithUser>[]>(
     () => [
       {
-        // [CORREÇÃO] ID alterado para bater com a coluna do banco
         id: "full_name",
         header: ({ column }) => <SortableHeader column={column} title="Usuário" />,
         accessorKey: "full_name",
+        size: 300, // [UX] Nome precisa de espaço
         cell: ({ row }) => {
           const profile = row.original;
           const isDeleted = !!profile.deleted_at;
           return (
-            <div className={`flex items-center gap-3 ${isDeleted ? "opacity-50 grayscale" : ""}`}>
+            <div className={`flex items-center gap-3 ${isDeleted ? "opacity-60 grayscale" : ""}`}>
               <Avatar className="h-10 w-10 border">
                 <AvatarImage src={profile.avatar_url || undefined} />
                 <AvatarFallback className="bg-muted text-muted-foreground font-bold">
@@ -81,7 +97,7 @@ export default function ProfileList({
               <div className="flex flex-col">
                 <span className="font-medium text-sm text-foreground flex items-center gap-2">
                   {profile.full_name || "Sem nome"}
-                  {isDeleted && <Badge variant="destructive" className="h-4 px-1 text-[10px]">Inativo</Badge>}
+                  {isDeleted && <Badge variant="destructive" className="h-4 px-1 text-[10px]">Excluído</Badge>}
                 </span>
                 <span className="text-xs text-muted-foreground">{profile.email}</span>
               </div>
@@ -90,7 +106,6 @@ export default function ProfileList({
         },
       },
       {
-        // [CORREÇÃO] ID alterado para bater com a coluna do banco (app_role)
         id: "app_role",
         header: ({ column }) => <SortableHeader column={column} title="Permissão" />,
         accessorKey: "app_role",
@@ -104,9 +119,7 @@ export default function ProfileList({
         size: 140,
         cell: ({ row }) => {
           const score = Number(row.original.score || 0);
-
           const { name, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
-
           const statusKey = normalizeStatusKey(name);
           const label = GAMIFICATION_LABELS[statusKey] || name;
           const icon = GAMIFICATION_ICONS[statusKey] || '🏆';
@@ -128,7 +141,6 @@ export default function ProfileList({
                       <span className="mr-1.5 text-base">{icon}</span>
                       {label}
                     </Badge>
-
                     <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
                       <div
                         className="h-full rounded-full transition-all duration-500"
@@ -141,8 +153,9 @@ export default function ProfileList({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="p-3 bg-popover border shadow-xl">
-                <div className="space-y-2">
-                <p className="font-bold flex items-center text-sm text-popover-foreground">                      <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                  <div className="space-y-2">
+                    <p className="font-bold flex items-center text-sm text-popover-foreground">
+                      <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
                       {score.toLocaleString('pt-BR')} pontos
                     </p>
                     {nextStart ? (
@@ -177,6 +190,7 @@ export default function ProfileList({
       {
         id: "actions",
         header: "Ações",
+        size: 100,
         cell: function render({ row }) {
           const id = row.original.id;
           const isDeleted = !!row.original.deleted_at;
@@ -202,13 +216,64 @@ export default function ProfileList({
     columns: columns,
     searchParams: searchParams || {},
     initialPageSize: 20,
-    sorters: { initial: [{ field: "created_at", order: "desc" }] }
+    sorters: { initial: [{ field: "created_at", order: "desc" }] },
+    // [NOVO] Enviamos o filtro para o backend via META
+    meta: {
+      userStatus: currentStatus !== "all" ? currentStatus : undefined
+    }
   });
+
+  // Função para atualizar a URL
+  const handleStatusFilterChange = (value: string) => {
+    const params = new URLSearchParams(searchParamsHook.toString());
+    params.set("current", "1"); // Reseta paginação
+    if (value === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", value);
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <ListView>
       <ListViewHeader title="Gestão de Usuários">
-        <TableSearchInput placeholder="Buscar por nome ou email..." />
+        {/* Layout Responsivo: Busca + Filtro */}
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-end sm:items-center">
+
+          <div className="w-full sm:w-[300px] relative">
+            <TableSearchInput placeholder="Buscar por nome ou email..." />
+          </div>
+
+          <div className="w-full sm:w-[180px]">
+            <Select
+              value={currentStatus}
+              onValueChange={handleStatusFilterChange}
+            >
+              <SelectTrigger className="h-10 w-full bg-background">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Filter className="w-4 h-4" />
+                  <SelectValue placeholder="Status" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500" />
+                    Ativos
+                  </span>
+                </SelectItem>
+                <SelectItem value="deleted">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                    Excluídos
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </ListViewHeader>
       <DataTable table={table} />
     </ListView>
