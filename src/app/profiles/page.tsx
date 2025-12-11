@@ -109,14 +109,14 @@ export default function ProfileList({
         id: "app_role",
         header: ({ column }) => <SortableHeader column={column} title="Permissão" />,
         accessorKey: "app_role",
-        size: 100,
+        size: 70,
         cell: ({ getValue }) => getRoleBadge(getValue() as string)
       },
       {
         id: "score",
         header: ({ column }) => <SortableHeader column={column} title="Nível & Score" />,
         accessorKey: "score",
-        size: 140,
+        size: 90,
         cell: ({ row }) => {
           const score = Number(row.original.score || 0);
           const { name, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
@@ -179,7 +179,7 @@ export default function ProfileList({
         id: "created_at",
         header: ({ column }) => <SortableHeader column={column} title="Cadastro" />,
         accessorKey: "created_at",
-        size: 120,
+        size: 70,
         cell: ({ getValue }) => (
           <div className="flex items-center text-muted-foreground text-xs">
             <Calendar className="w-3 h-3 mr-1.5 opacity-70" />
@@ -190,7 +190,7 @@ export default function ProfileList({
       {
         id: "actions",
         header: "Ações",
-        size: 100,
+        size: 110,
         cell: function render({ row }) {
           const id = row.original.id;
           const isDeleted = !!row.original.deleted_at;
@@ -217,9 +217,9 @@ export default function ProfileList({
     searchParams: searchParams || {},
     initialPageSize: 20,
     sorters: { initial: [{ field: "created_at", order: "desc" }] },
-    // [NOVO] Enviamos o filtro para o backend via META
+    // [CORREÇÃO] Envia o status exatamente como está (active, deleted ou all)
     meta: {
-      userStatus: currentStatus !== "all" ? currentStatus : undefined
+      userStatus: currentStatus
     }
   });
 
@@ -227,11 +227,7 @@ export default function ProfileList({
   const handleStatusFilterChange = (value: string) => {
     const params = new URLSearchParams(searchParamsHook.toString());
     params.set("current", "1"); // Reseta paginação
-    if (value === "all") {
-      params.delete("status");
-    } else {
-      params.set("status", value);
-    }
+    params.set("status", value);
     router.replace(`${pathname}?${params.toString()}`);
   };
 

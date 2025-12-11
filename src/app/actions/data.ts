@@ -184,24 +184,19 @@ export async function getList(resource: string, params: any) {
 
     // B. PERFIS APENAS: Filtra pela coluna 'deleted_at'
     if (resource === 'profiles') {
-       // O log mostrou que o Refine joga o parametro da URL em 'meta.status'
-       // Então vamos pegar diretamente dele para não ter erro.
-       // Normalizamos para string e minúsculo para garantir.
-       const rawStatus = meta?.userStatus || meta?.status || rootStatus || 'all';
+       // Pega o status enviado. SE NÃO TIVER NADA, ASSUME 'active' (Padrão)
+       const rawStatus = meta?.userStatus || meta?.status || rootStatus || 'active';
        const finalStatus = String(rawStatus).toLowerCase();
 
-       // LOG PARA DEBUG (Ver no terminal)
-       console.log(`🔍 [PERFIS] Filtrando por: ${finalStatus}`);
-
        if (finalStatus === 'active') {
-         // Quero ver APENAS quem tem deleted_at VAZIO
+         // Padrão: Apenas ativos (deleted_at IS NULL)
          query = query.is('deleted_at', null);
        }
        else if (finalStatus === 'deleted') {
-         // Quero ver APENAS quem tem deleted_at PREENCHIDO
+         // Apenas excluídos
          query = query.not('deleted_at', 'is', null);
        }
-       // Se for 'all', não fazemos nada (traz tudo)
+       // Se for 'all', não entra em nenhum if e retorna tudo.
     }
 
     // =========================================================
