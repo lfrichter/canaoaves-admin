@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
-import { Building2, Loader2, Search, Smile, User } from "lucide-react";
+import { Building2, Loader2, Search, Smile, Trash2, User } from "lucide-react"; // <--- Importei Trash2 e Ban
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -265,7 +265,9 @@ export default function CategoryEdit() {
                                   <DialogHeader>
                                     <DialogTitle>Selecionar Ícone</DialogTitle>
                                   </DialogHeader>
-                                  <div className="flex gap-2 py-4">
+
+                                  {/* BUSCA E AÇÃO DE REMOVER */}
+                                  <div className="flex gap-2 py-4 items-center">
                                     <div className="relative flex-1">
                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                       <Input
@@ -275,16 +277,34 @@ export default function CategoryEdit() {
                                         onChange={(e) => setIconSearch(e.target.value)}
                                       />
                                     </div>
+
                                     <Input
                                       placeholder="Colar"
-                                      className="w-20 text-center text-xl"
+                                      className="w-16 text-center text-xl p-0"
                                       maxLength={2}
                                       value={field.value || ""}
                                       onChange={(e) => field.onChange(e.target.value)}
+                                      title="Cole um emoji aqui"
                                     />
+
+                                    {/* BOTÃO REMOVER ÍCONE NO HEADER */}
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                      title="Remover Ícone"
+                                      onClick={() => {
+                                        form.setValue("icon", null);
+                                        setIsIconModalOpen(false);
+                                      }}
+                                    >
+                                      <Trash2 className="h-5 w-5" />
+                                    </Button>
                                   </div>
                                 </div>
 
+                                {/* ÁREA DE ROLAGEM VERTICAL */}
                                 <ScrollArea className="flex-1 w-full bg-muted/10">
                                   <div className="px-6 pb-6">
                                     <div className="space-y-8 pb-6">

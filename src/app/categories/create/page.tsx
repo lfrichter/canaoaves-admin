@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
-import { Building2, Loader2, Search, Smile, User } from "lucide-react";
+import { Building2, Loader2, Search, Smile, Trash2, User } from "lucide-react"; // <--- Adicionado Trash2
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -72,7 +72,7 @@ const formSchema = z.object({
     required_error: "Selecione o tipo de categoria",
   }),
   description: z.string().optional(),
-  icon: z.string().optional(),
+  icon: z.string().nullable().optional(), // Aceita null ou string
   parent_id: z.string().nullable().optional(),
 });
 
@@ -154,12 +154,9 @@ export default function CategoryCreate() {
     const result: Record<string, string[]> = {};
 
     Object.entries(ICON_CATEGORIES).forEach(([category, icons]) => {
-      // Como emojis não têm texto, a busca filtra pelo nome da categoria
-      // OU se o usuário digitou o próprio emoji
       if (category.toLowerCase().includes(search)) {
         result[category] = icons;
       } else {
-        // Se o usuário digitou um emoji específico na busca
         const found = icons.filter(icon => icon.includes(search));
         if (found.length > 0) result[category] = found;
       }
@@ -261,7 +258,7 @@ export default function CategoryCreate() {
                     />
 
                     <div className="grid grid-cols-[100px_1fr] gap-4">
-                      {/* --- ÍCONE AGORA É UM DIALOG SEPARADO --- */}
+                      {/* --- ÍCONE COM DIALOG E ROLAGEM VERTICAL --- */}
                       <FormField
                         control={form.control}
                         name="icon"
@@ -286,17 +283,16 @@ export default function CategoryCreate() {
                                 </FormControl>
                               </DialogTrigger>
 
-                              {/* AJUSTE 1: max-w-3xl para ficar mais largo, h-[80vh] para altura fixa e overflow-hidden para não vazar */}
+                              {/* CONFIGURAÇÃO DO MODAL COM ROLAGEM */}
                               <DialogContent className="max-w-3xl h-[80vh] flex flex-col overflow-hidden p-0">
 
-                                {/* Cabeçalho Fixo */}
                                 <div className="px-6 pt-6 pb-2 shrink-0">
                                   <DialogHeader>
                                     <DialogTitle>Selecionar Ícone</DialogTitle>
                                   </DialogHeader>
 
-                                  {/* Busca e Input Manual */}
-                                  <div className="flex gap-2 py-4">
+                                  {/* Busca e Botão de Remover */}
+                                  <div className="flex gap-2 py-4 items-center">
                                     <div className="relative flex-1">
                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                       <Input
@@ -306,32 +302,43 @@ export default function CategoryCreate() {
                                         onChange={(e) => setIconSearch(e.target.value)}
                                       />
                                     </div>
-                                    <div className="relative" title="Colar Emoji">
-                                      <Input
-                                        placeholder="Colar..."
-                                        className="w-24 text-center text-xl"
-                                        maxLength={2}
-                                        value={field.value || ""}
-                                        onChange={(e) => field.onChange(e.target.value)}
-                                      />
-                                    </div>
+                                    <Input
+                                      placeholder="Colar"
+                                      className="w-16 text-center text-xl p-0"
+                                      maxLength={2}
+                                      value={field.value || ""}
+                                      onChange={(e) => field.onChange(e.target.value)}
+                                      title="Cole um emoji aqui"
+                                    />
+                                    {/* BOTÃO REMOVER ÍCONE */}
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                      title="Remover Ícone"
+                                      onClick={() => {
+                                        form.setValue("icon", null);
+                                        setIsIconModalOpen(false);
+                                      }}
+                                    >
+                                      <Trash2 className="h-5 w-5" />
+                                    </Button>
                                   </div>
                                 </div>
 
-                                {/* AJUSTE 2: Área de Scroll ocupa o resto do espaço (flex-1) */}
+                                {/* ÁREA DE SCROLL */}
                                 <ScrollArea className="flex-1 w-full bg-muted/10">
                                   <div className="px-6 pb-6">
                                     <div className="space-y-8 pb-6">
                                       {Object.entries(filteredIcons).map(([category, icons]) => (
                                         icons.length > 0 && (
                                           <div key={category}>
-                                            {/* Título da Categoria Sticky (opcional, removi o sticky para não conflitar com scroll area nativo do shadcn em alguns browsers, mas o visual fica limpo) */}
                                             <h4 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2 mt-4 border-b pb-1">
                                               {category}
                                               <span className="text-[10px] opacity-50 font-normal">({icons.length})</span>
                                             </h4>
 
-                                            {/* Grid de Ícones */}
                                             <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2">
                                               {icons.map((icon) => (
                                                 <button
