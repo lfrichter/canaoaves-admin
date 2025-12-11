@@ -154,3 +154,102 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* src/app/globals.css */
+
+@layer components {
+  /* DASHBOARD CARD ALERT */
+  /* --- MODO CLARO (LIGHT) --- */
+  .alert-card-style {
+    background-color: #fef2f2 !important; /* red-50 */
+    border-color: #fecaca !important;     /* red-200 */
+    transition: all 0.2s ease-in-out;
+  }
+
+  .alert-card-style:hover {
+     background-color: #fee2e2 !important; /* red-100 */
+     cursor: pointer;
+  }
+
+  /* --- MODO ESCURO (DARK) --- */
+  :is(.dark) .alert-card-style {
+    background-color: var(--card) !important;
+    border-color: #7f1d1d !important; /* red-900 */
+  }
+
+  :is(.dark) .alert-card-style:hover {
+    background-color: var(--accent) !important;
+  }
+
+  /* --- NOVO: FORÇAR TÍTULO NO DARK MODE --- */
+  /* Isso procura qualquer h3 (que é o CardTitle) dentro do card de alerta */
+  :is(.dark) .alert-card-style h3 {
+    font-weight: 800 !important; /* Extra Bold */
+    color: #ffffff !important;   /* Branco Puro */
+  }
+
+/* CAIXA DE DESCRIÇÃO DA DENÚNCIA */
+  .report-description-box {
+    @apply p-4 rounded-md border text-sm whitespace-pre-wrap min-h-[80px];
+
+    /* Light Mode: Fundo Rosa Claro e Texto ESCURO (Cinza Quase Preto) */
+    background-color: #fef2f2; /* red-50 */
+    border-color: #fecaca;     /* red-200 */
+    color: #111827;            /* gray-900 (Preto para leitura) */
+  }
+
+  /* Dark Mode: Fundo Vinho Transparente e Texto CLARO */
+  :is(.dark) .report-description-box {
+    background-color: rgba(127, 29, 29, 0.2); /* red-900/20 */
+    border-color: rgba(127, 29, 29, 0.5);     /* red-900/50 */
+    color: #e5e7eb;                           /* gray-200 */
+  }
+
+
+  /* CONTAINER DO CARD - SERVICE - EDIT - CREATOR */
+  .creator-card {
+    @apply p-3 rounded border border-dashed relative transition-colors;
+
+    /* Modo Normal (Light): Forçamos contraste alto */
+    background-color: #eff6ff; /* blue-50 */
+    border-color: #bfdbfe;     /* blue-200 */
+  }
+
+  /* Modo Dark */
+  :is(.dark) .creator-card {
+    background-color: rgba(23, 37, 84, 0.3); /* blue-950/30 */
+    border-color: rgba(30, 64, 175, 0.4);    /* blue-800/40 */
+  }
+
+  /* NOME DO USUÁRIO */
+  .creator-name {
+    @apply font-bold text-xs block truncate;
+    color: #1e3a8a; /* blue-900 (Bem escuro para ler no light) */
+  }
+  :is(.dark) .creator-name {
+    color: #93c5fd; /* blue-300 (Claro para ler no dark) */
+  }
+
+  /* BOTÃO DE AÇÃO */
+  .creator-btn {
+    @apply w-full h-7 text-xs shadow-sm flex items-center justify-center border;
+
+    /* Light: Botão branco com texto azul escuro */
+    background-color: #ffffff;
+    color: #1d4ed8; /* blue-700 */
+    border-color: #bfdbfe; /* blue-200 */
+  }
+  .creator-btn:hover {
+    background-color: #dbeafe; /* blue-100 */
+  }
+
+  /* Dark: Botão transparente */
+  :is(.dark) .creator-btn {
+    background-color: transparent;
+    color: #93c5fd; /* blue-300 */
+    border-color: #1e40af; /* blue-800 */
+  }
+  :is(.dark) .creator-btn:hover {
+    background-color: rgba(30, 58, 138, 0.5);
+  }
+}
