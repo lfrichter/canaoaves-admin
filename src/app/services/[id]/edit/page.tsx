@@ -275,9 +275,9 @@ function ServiceEditForm() {
 
                     <div className="mt-2 ml-2">
                       {record.creator_full_name ? (
-                        <div className="p-3 bg-blue-50/50 dark:bg-blue-950/30 rounded border border-blue-100 dark:border-blue-800/40 border-dashed relative">
+                        <div className="creator-card"> {/* <--- Classe Global */}
                           <div className="flex items-start gap-3 mb-3">
-                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-blue-200 overflow-hidden">
+                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-blue-200 overflow-hidden dark:bg-transparent dark:border-blue-700">
                               {record.creator_avatar_url ? (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img src={record.creator_avatar_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -286,24 +286,32 @@ function ServiceEditForm() {
                               )}
                             </div>
                             <div className="flex-1 overflow-hidden">
-                              <span className="font-medium text-xs text-blue-900 dark:text-blue-300 block truncate">
+
+                              <span className="creator-name"> {/* <--- Classe Global */}
                                 {record.creator_full_name || record.creator_public_name}
                               </span>
-                              {record.creator_app_role && <Badge variant="outline" className="mt-1 bg-blue-50 text-blue-800 border-blue-200">{record.creator_app_role}</Badge>}
-                              <span className="text-[10px] text-slate-500 flex items-center mt-1">
-                                <Calendar className="w-3 h-3 mr-1" />
+
+                              {record.creator_app_role && (
+                                <Badge variant="outline" className="mt-1 bg-white text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700">
+                                  {record.creator_app_role}
+                                </Badge>
+                              )}
+
+                              <span className="text-[10px] text-slate-500 flex items-center mt-1 dark:text-slate-400">
+                                <Calendar className="w-3 h-3 mr-1 opacity-70" />
                                 {record?.created_at ? new Date(record.created_at).toLocaleDateString('pt-BR') : '-'}
                               </span>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" className="w-full h-7 text-xs bg-white hover:text-blue-600" asChild>
+
+                          <Button variant="outline" size="sm" className="creator-btn" asChild>
                             <Link href={`/profiles/${record.created_by_user_id}`} target="_blank">
                               Ver Observador Público <ExternalLink className="w-3 h-3 ml-2 opacity-50" />
                             </Link>
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground block p-2 border border-dashed rounded">
+                        <span className="text-xs text-muted-foreground block p-2 border border-dashed rounded bg-muted/30">
                           Usuário desconhecido (ID: {record?.created_by_user_id})
                         </span>
                       )}
