@@ -28,8 +28,8 @@ export default async function DashboardPage() {
     {
       title: "Denúncias e Alertas",
       value: stats.pendingReports,
-      // Ícone ajustado para brilhar um pouco mais no dark mode se necessário
-      icon: <ShieldAlert className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`} />,
+      // Ajuste aqui: Usamos text-red-400 no dark para "acender" o ícone sobre o fundo escuro
+      icon: <ShieldAlert className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`} />,
       href: "/reports",
       description: "Comentários, fotos e observadores reportados",
       alert: stats.pendingReports > 0,
@@ -110,32 +110,40 @@ export default async function DashboardPage() {
             <Link href={item.href} key={item.title} className="h-full">
               <Card
                 className={`
-                  flex flex-col h-full transition-all duration-200 hover:shadow-md
+                  flex flex-col h-full transition-all duration-200 hover:shadow-md border
                   ${item.alert
-                    // [CORREÇÃO DARK MODE]
-                    // Light: Fundo vermelho claro, borda vermelha clara.
-                    // Dark: Fundo vermelho escuro (10% opacidade), borda vermelha escura.
-                    ? "border-red-200 bg-red-50/50 hover:bg-red-50 dark:bg-red-900/10 dark:border-red-900/50 dark:hover:bg-red-900/20"
-                    : "hover:bg-muted/50"
-                  }
+                                  ? "alert-card-style" // <--- AQUI: Usamos a classe CSS personalizada que criamos
+                                  : "hover:bg-muted/50"
+                                }
                 `}
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 gap-3">
-                  <CardTitle className="text-sm font-medium leading-tight">
+                  {/* Título */}
+                  <CardTitle className={`
+                    text-sm font-medium leading-tight
+                    ${item.alert ? "text-red-900 dark:text-foreground dark:font-bold" : ""}
+                  `}>
                     {item.title}
                   </CardTitle>
                   <div className="shrink-0">
                     {item.icon}
                   </div>
                 </CardHeader>
+
                 <CardContent className="flex flex-col flex-1 justify-end">
+                  {/* Valor Numérico */}
                   <div className={`
                     text-2xl font-bold
-                    ${item.alert ? "text-red-700 dark:text-red-400" : ""}
+                    ${item.alert ? "text-red-700 dark:text-red-500" : ""}
                   `}>
                     {(item.value ?? 0).toLocaleString('pt-BR')}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+
+                  {/* Descrição */}
+                  <p className={`
+                    text-xs mt-1
+                    ${item.alert ? "text-red-600/80 dark:text-muted-foreground" : "text-muted-foreground"}
+                  `}>
                     {item.description}
                   </p>
                 </CardContent>

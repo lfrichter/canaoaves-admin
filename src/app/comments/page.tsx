@@ -30,8 +30,7 @@ import {
   ExternalLink,
   Loader2,
   Trash2,
-  User,
-  X
+  User
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -254,35 +253,25 @@ export default function CommentList({
   return (
     <ListView>
       {/* [PADRÃO] Componente de busca do projeto */}
-      <ListViewHeader title="Gestão de Comentários">
-        <TableSearchInput />
+          <ListViewHeader title="Gestão de Comentários">
+            <TableSearchInput />
+          </ListViewHeader>
 
-        {/* Aviso de Filtro Ativo */}
-        {searchParams?.id && (
-          <div className="ml-4 flex items-center gap-2 animate-in fade-in">
-
-            <Button variant="default" size="sm" asChild className="h-8 mx-2 bg-slate-700 hover:bg-slate-800">
-              <Link href="/reports">
-                <ArrowLeft className="w-4 h-4 mr-2" />
+          {searchParams.id && (
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-2 mt-4">
+              <Link href="/reports" className="flex items-center gap-1 text-sm text-muted-foreground hover:underline">
+                <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Link>
-            </Button>
-
-
-            <Badge variant="secondary" className="h-8 px-3">
-              Filtrando por ID: {searchParams.id}
-            </Badge>
-
-            {/* Este Link funciona como um "Reset". */}
-            <Button variant="ghost" size="sm" asChild className="h-8">
-              <a href="/comments" className="text-destructive hover:text-destructive">
-                <X className="w-3 h-3 mr-2" />
+              <p className="text-sm font-medium sm:flex-grow sm:text-center">Filtrando por ID: {searchParams.id}</p>
+              <a
+                href="/comments"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 px-3" // Replicating ghost button styling
+              >
                 Limpar Filtro
               </a>
-            </Button>
-          </div>
-        )}
-      </ListViewHeader>
+            </div>
+          )}
       <DataTable table={table} />
     </ListView>
   );

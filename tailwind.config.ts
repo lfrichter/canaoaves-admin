@@ -10,6 +10,7 @@ const config = {
   ],
   prefix: "",
   theme: {
+    compatibility: "v3",
     container: {
       center: true,
       padding: "2rem",
