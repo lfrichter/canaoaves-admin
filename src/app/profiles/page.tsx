@@ -88,7 +88,7 @@ export default function ProfileList({
           id: "full_name",
           header: ({ column }) => <SortableHeader column={column} title="Usuário" />,
           accessorKey: "full_name",
-          size: 300,
+          size: 250,
           cell: ({ row }) => {
             const profile = row.original;
             const isDeleted = !!profile.deleted_at;
@@ -122,7 +122,7 @@ export default function ProfileList({
           id: "score",
           header: ({ column }) => <SortableHeader column={column} title="Nível & Score" />,
           accessorKey: "score",
-          size: 90,
+          size: 110,
           cell: ({ row }) => {
             const score = Number(row.original.score || 0);
             const { name, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
@@ -217,7 +217,7 @@ export default function ProfileList({
 
       // 3. LÓGICA DE FILTRO MOBILE
       if (isMobile) {
-        return allColumns.filter(col => col.id !== "created_at");
+        return allColumns.filter(col => col.id !== "created_at" && col.id !== "app_role");
       }
 
       return allColumns;

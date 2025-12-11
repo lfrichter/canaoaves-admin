@@ -18,13 +18,10 @@ import { usePathname } from "next/navigation";
 
 // --- MUDANÇA 1: Importar os ícones do 'lucide-react' ---
 import {
-  Briefcase,
   Camera,
   Coffee,
-  FileText,
   Globe,
   Image,
-  Landmark,
   LayoutDashboard,
   MapPin,
   MessageSquare,
@@ -52,6 +49,12 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               name: "dashboard",
               list: "/",
               meta: { label: "Dashboard", icon: <LayoutDashboard size={16} /> },
+            },
+            {
+              name: "reports",
+              list: "/reports",
+              show: "/reports/:id",
+              meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
             },
             {
               name: "profiles",
@@ -94,27 +97,22 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               meta: { label: "Ofertas de Serviço", icon: <Percent size={16} /> },
             },
             {
+              name: "comments",
+              list: "/comments",
+              meta: { label: "Comentários", icon: <MessageSquare size={16} /> },
+            },
+            {
+              name: "photos",
+              list: "/photos",
+              meta: { label: "Fotos", icon: <Camera size={16} /> },
+            },
+            {
               name: "service_ownership_claims",
               list: "/service-ownership-claims",
               show: "/service-ownership-claims/:id",
               meta: { label: "Reivindicações", icon: <ShieldCheck size={16} /> },
             },
-                        {
-                          name: "reports",
-                          list: "/reports",
-                          show: "/reports/:id",
-                          meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
-                        },
-                                    {
-                                      name: "comments",
-                                      list: "/comments",
-                                      meta: { label: "Comentários", icon: <MessageSquare size={16} /> },
-                                    },
-                                    {
-                                      name: "photos",
-                                      list: "/photos",
-                                      meta: { label: "Fotos", icon: <Camera size={16} /> },
-                                    },            {
+            {
               name: "city_descriptions",
               list: "/city-descriptions",
               show: "/city-descriptions/:id",

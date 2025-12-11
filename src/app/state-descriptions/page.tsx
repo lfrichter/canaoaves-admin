@@ -2,6 +2,7 @@
 
 import { deleteContent, handleContentApproval } from "@/app/actions/content";
 import { update } from "@/app/actions/data"; // Importar update genérico
+import { UserProfileCard } from "@/components/admin/UserProfileCard";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import {
   ListView,
@@ -22,7 +23,6 @@ import { useTable } from "@refinedev/react-table";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { Check, Edit, Save, Trash2, Wand2, X } from "lucide-react";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -47,6 +47,7 @@ interface IStateDescription {
   profile_public_name: string | null;
   profile_score: number | null;
   profile_category_name: string | null;
+  category_icon: string | null;
   profile_phone: string | null;
   profile_avatar_url: string | null;
   user_email: string | null;
@@ -156,43 +157,18 @@ const StateDescriptionActions = ({
 
           <div className="grid gap-6 py-4">
             {/* Card do Usuário */}
-            <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg border">
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt={displayName}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold">
-                  {displayName.charAt(0)}
-                </div>
-              )}
-              <div className="space-y-1">
-                <h4 className="font-semibold leading-none">{displayName}</h4>
-                <p className="text-sm text-muted-foreground">{row.user_email}</p>
-                <div className="flex gap-2 text-xs text-muted-foreground mt-1">
-                  <span className="
-                    bg-card px-2 py-0.5 rounded border
-                    dark:bg-muted/50 dark:border-muted
-                  ">
-                    Score: {row.profile_score || 0}
-                  </span>
-                  <span className="
-                    bg-card px-2 py-0.5 rounded border
-                    dark:bg-muted/50 dark:border-muted
-                  ">
-                    {row.profile_category_name || "Membro"}
-                  </span>
-                </div>
-              </div>
-              <div className="ml-auto text-right text-xs text-muted-foreground space-y-1">
-                <p>Enviado em: {new Date(row.created_at).toLocaleDateString("pt-BR")}</p>
-                <p className="font-medium text-foreground">{stateName} ({row.state_code})</p>
-              </div>
-            </div>
+            <UserProfileCard
+              key={row.id}
+              displayName={displayName}
+              email={row.user_email}
+              avatarUrl={avatarUrl}
+              profileScore={row.profile_score}
+              profileCategoryName={row.profile_category_name}
+              profileCategoryIcon={row.category_icon}
+              createdAt={row.created_at}
+              locationLabel={`${stateName} (${row.state_code})`}
+              phone={row.profile_phone}
+            />
 
             {/* Editor de Texto */}
             <div className="space-y-2">

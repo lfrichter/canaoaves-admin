@@ -1,6 +1,7 @@
 "use client";
 
 import { handleClaimApproval } from "@/app/actions/service-claims";
+import { UserProfileCard } from "@/components/admin/UserProfileCard";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import {
   ListView,
@@ -59,6 +60,7 @@ interface IServiceClaim {
   profile_avatar_url: string | null;
   profile_score: number | null;
   profile_category_name: string | null;
+  profile_category_icon: string | null;
 }
 
 // --- Componente de Ações Isolado ---
@@ -136,7 +138,15 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
               </h4>
 
               {/* Card do Observador na Plataforma */}
-              <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg border">
+              <UserProfileCard
+                variant="claim"
+                displayName={displayName}
+                profileScore={row.profile_score}
+                profileCategoryName={row.profile_category_name}
+                profileCategoryIcon={row.profile_category_icon}
+                avatarUrl={row.profile_avatar_url}
+              />
+              {/* <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg border">
                 {row.profile_avatar_url ? (
                   <Image src={row.profile_avatar_url} alt="Avatar" width={48} height={48} className="rounded-full object-cover border" />
                 ) : (
@@ -159,7 +169,7 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Dados do Formulário */}
               <div className="text-sm space-y-2">
