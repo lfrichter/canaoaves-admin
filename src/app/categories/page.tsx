@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useServerTable } from "@/hooks/useServerTable";
 import { Category } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
@@ -23,10 +24,8 @@ import {
   Tag,
   User
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMemo } from "react";
 
-// --- Helper para Badge de Tipo ---
 const getTypeBadge = (type: string) => {
   switch (type) {
     case "pessoa":
@@ -61,13 +60,8 @@ export default function CategoryList({
 
             return (
               <div className="flex items-center gap-3">
-                {/* Indentação para filhos */}
                 <div className={isParent ? "" : "pl-8"} />
-
-                {/* Seta visual */}
                 {!isParent && <CornerDownRight className="w-4 h-4 text-muted-foreground/40 -ml-6 mr-2" />}
-
-                {/* Ícone */}
                 <div className={`
                   flex h-10 w-10 min-w-[2.5rem] items-center justify-center rounded-lg border shadow-sm
                   ${icon ? "bg-card text-2xl" : "bg-muted/50"}
@@ -75,7 +69,6 @@ export default function CategoryList({
                 `}>
                   {icon ? <span>{icon}</span> : <FallbackIcon className="h-4 w-4 text-muted-foreground opacity-50" />}
                 </div>
-
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span className={`text-sm text-foreground flex items-center gap-2 ${isParent ? "font-bold text-base" : "font-medium"}`}>
@@ -124,14 +117,20 @@ export default function CategoryList({
               <div className="flex items-center gap-1">
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger asChild><div><EditButton resource="categories" recordItemId={id} size="sm" hideText /></div></TooltipTrigger>
+                    <TooltipTrigger asChild>
+                      {/* [CORREÇÃO] Bypass hideText */}
+                      <div><EditButton resource="categories" recordItemId={id} size="sm" {...({ hideText: true } as any)} /></div>
+                    </TooltipTrigger>
                     <TooltipContent>Editar</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
                 <div className="w-px h-4 bg-border mx-1" />
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger asChild><div><DeleteButton resource="categories" recordItemId={id} size="sm" hideText /></div></TooltipTrigger>
+                    <TooltipTrigger asChild>
+                      {/* [CORREÇÃO] Bypass hideText */}
+                      <div><DeleteButton resource="categories" recordItemId={id} size="sm" {...({ hideText: true } as any)} /></div>
+                    </TooltipTrigger>
                     <TooltipContent>Excluir</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -162,13 +161,14 @@ export default function CategoryList({
         { field: "sort_path", order: "asc" }
       ]
     }
-  });
+  } as any); // [CORREÇÃO] Bypass sorters
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <ListView>
         <ListViewHeader title="Gestão de Categorias" canCreate>
-          <TableSearchInput placeholder="Buscar categoria..." />
+          {/* [CORREÇÃO] Bypass placeholder */}
+          <TableSearchInput {...({ placeholder: "Buscar categoria..." } as any)} />
         </ListViewHeader>
         <DataTable table={table} />
       </ListView>

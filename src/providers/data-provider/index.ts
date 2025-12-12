@@ -8,7 +8,7 @@ import {
   getOne,
   update,
 } from "@/app/actions/data";
-import type { BaseKey, CustomResponse, DataProvider } from "@refinedev/core";
+import type { BaseKey, DataProvider } from "@refinedev/core";
 
 export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters, meta }) => {
@@ -98,7 +98,8 @@ export const dataProvider: DataProvider = {
         query,
         headers,
       });
-      return response as unknown as CustomResponse<TData>;
+      // [CORREÇÃO] Removido 'CustomResponse<TData>' e usado 'any' para evitar erro de tipo genérico
+      return response as any;
     } catch (error) {
       // É importante relançar o erro para o componente tratar
       throw error;

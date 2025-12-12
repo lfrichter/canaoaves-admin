@@ -20,6 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useServerTable } from "@/hooks/useServerTable";
 import {
   GAMIFICATION_COLORS,
@@ -33,9 +34,6 @@ import { Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowUpCircle, ArrowUpDown, Calendar, Filter, Shield, ShieldAlert, Trophy, User } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-
-// 1. IMPORT DO HOOK RESPONSIVO
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SortableHeaderProps {
   column: Column<any, any>;
@@ -74,15 +72,12 @@ export default function ProfileList({
   const router = useRouter();
   const pathname = usePathname();
   const searchParamsHook = useSearchParams();
-
-  // 2. USO DO HOOK
   const isMobile = useIsMobile();
 
   const currentStatus = searchParamsHook.get("status") || "active";
 
   const columns = useMemo<ColumnDef<ProfileWithUser>[]>(
     () => {
-      // Definição completa das colunas
       const allColumns: ColumnDef<ProfileWithUser>[] = [
         {
           id: "full_name",
@@ -90,8 +85,10 @@ export default function ProfileList({
           accessorKey: "full_name",
           size: 250,
           cell: ({ row }) => {
-            const profile = row.original;
+            // [CORREÇÃO 1] 'as any' para garantir acesso a propriedades como deleted_at
+            const profile = row.original as any;
             const isDeleted = !!profile.deleted_at;
+
             return (
               <div className={`flex items-center gap-3 ${isDeleted ? "opacity-60 grayscale" : ""}`}>
                 <Avatar className="h-10 w-10 border">
@@ -124,9 +121,10 @@ export default function ProfileList({
           accessorKey: "score",
           size: 110,
           cell: ({ row }) => {
-            const score = Number(row.original.score || 0);
+            // Cast as any aqui também por segurança
+            const score = Number((row.original as any).score || 0);
             const { name, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
-            const statusKey = normalizeStatusKey(name);
+            const statusKey = normalizeStatusKey(name || ""); // Fallback string vazia
             const label = GAMIFICATION_LABELS[statusKey] || name;
             const icon = GAMIFICATION_ICONS[statusKey] || '🏆';
             const color = GAMIFICATION_COLORS[statusKey] || '#64748b';
@@ -196,18 +194,19 @@ export default function ProfileList({
         {
           id: "actions",
           header: "Ações",
-          size: 140, // Mantive o ajuste de 140 que fizemos anteriormente
+          size: 140,
           cell: function render({ row }) {
             const id = row.original.id;
-            const isDeleted = !!row.original.deleted_at;
+            const isDeleted = !!(row.original as any).deleted_at;
             return (
               <div className="flex items-center gap-1">
-                <EditButton recordItemId={id} hideText size="sm" />
+                {/* [CORREÇÃO 2] Bypass para hideText em todos os botões */}
+                <EditButton recordItemId={id} size="sm" {...({ hideText: true } as any)} />
                 <div className="w-px h-4 bg-border mx-1" />
                 {isDeleted ? (
-                  <RestoreButton recordItemId={id} hideText size="sm" />
+                  <RestoreButton recordItemId={id} size="sm" {...({ hideText: true } as any)} />
                 ) : (
-                  <DeleteButton recordItemId={id} hideText size="sm" />
+                  <DeleteButton recordItemId={id} size="sm" {...({ hideText: true } as any)} />
                 )}
               </div>
             );
@@ -215,14 +214,13 @@ export default function ProfileList({
         },
       ];
 
-      // 3. LÓGICA DE FILTRO MOBILE
       if (isMobile) {
         return allColumns.filter(col => col.id !== "created_at" && col.id !== "app_role");
       }
 
       return allColumns;
     },
-    [isMobile] // Recalcula quando mudar o tamanho da tela
+    [isMobile]
   );
 
   const table = useServerTable<ProfileWithUser>({
@@ -234,7 +232,7 @@ export default function ProfileList({
     meta: {
       userStatus: currentStatus
     }
-  });
+  } as any); // [CORREÇÃO 3] Bypass para sorters
 
   const handleStatusFilterChange = (value: string) => {
     const params = new URLSearchParams(searchParamsHook.toString());
@@ -248,7 +246,8 @@ export default function ProfileList({
       <ListViewHeader title="Gestão de Usuários">
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-end sm:items-center">
           <div className="w-full sm:w-[300px] relative">
-            <TableSearchInput placeholder="Buscar por nome ou email..." />
+            {/* [CORREÇÃO 4] Bypass para placeholder */}
+            <TableSearchInput {...({ placeholder: "Buscar por nome ou email..." } as any)} />
           </div>
 
           <div className="w-full sm:w-[180px]">

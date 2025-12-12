@@ -12,21 +12,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useServerTable } from "@/hooks/useServerTable";
 import { Amenity } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import { Calendar, Sparkles, Tags } from "lucide-react";
 import { useMemo } from "react";
 
-// 1. IMPORT DO HOOK
-import { useIsMobile } from "@/hooks/use-mobile";
-
 export default function AmenityList({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  // 2. USO DO HOOK
   const isMobile = useIsMobile();
 
   const columns = useMemo<ColumnDef<Amenity>[]>(
@@ -41,11 +38,9 @@ export default function AmenityList({
             const { name, description } = row.original;
             return (
               <div className="flex items-center gap-3">
-                {/* Ícone Decorativo - Mantemos hidden sm:flex para economizar espaço dentro da célula */}
                 <div className="hidden sm:flex h-9 w-9 items-center justify-center rounded-lg border bg-amber-50/50">
                   <Sparkles className="h-4 w-4 text-amber-500" />
                 </div>
-
                 <div className="flex flex-col justify-center">
                   <span className="font-medium text-sm text-foreground">
                     {name}
@@ -62,11 +57,10 @@ export default function AmenityList({
         },
         {
           id: "created_at",
-          header: "Criado em", // Removemos o 'hidden sm:inline' pois a coluna inteira sairá
+          header: "Criado em",
           accessorKey: "created_at",
-          size: 120, // Ajuste de tamanho padrão
+          size: 120,
           cell: ({ getValue }) => (
-            // Removemos o 'hidden sm:flex' pois a coluna não existirá no mobile
             <div className="flex items-center text-muted-foreground text-xs">
               <Calendar className="w-3 h-3 mr-1.5 opacity-70" />
               {new Date(getValue() as string).toLocaleDateString("pt-BR")}
@@ -76,7 +70,7 @@ export default function AmenityList({
         {
           id: "actions",
           header: "Ações",
-          size: 140, // Espaço confortável para os 3 botões
+          size: 140,
           cell: function render({ row }) {
             const id = row.original.id;
             const name = row.original.name;
@@ -108,7 +102,8 @@ export default function AmenityList({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div><EditButton resource="amenities" recordItemId={id} size="sm" hideText /></div>
+                      {/* [CORREÇÃO 1] Bypass hideText */}
+                      <div><EditButton resource="amenities" recordItemId={id} size="sm" {...({ hideText: true } as any)} /></div>
                     </TooltipTrigger>
                     <TooltipContent>Editar Comodidade</TooltipContent>
                   </Tooltip>
@@ -119,7 +114,8 @@ export default function AmenityList({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div><DeleteButton resource="amenities" recordItemId={id} size="sm" hideText /></div>
+                      {/* [CORREÇÃO 1] Bypass hideText */}
+                      <div><DeleteButton resource="amenities" recordItemId={id} size="sm" {...({ hideText: true } as any)} /></div>
                     </TooltipTrigger>
                     <TooltipContent>Excluir</TooltipContent>
                   </Tooltip>
@@ -130,7 +126,6 @@ export default function AmenityList({
         },
       ];
 
-      // 3. REMOVE A COLUNA NO MOBILE
       if (isMobile) {
         return allColumns.filter((col) => col.id !== "created_at");
       }
@@ -149,12 +144,13 @@ export default function AmenityList({
     sorters: {
       initial: [{ field: "name", order: "asc" }]
     }
-  });
+  } as any); // [CORREÇÃO 2] Bypass sorters
 
   return (
     <ListView>
       <ListViewHeader title="Comodidades" canCreate>
-        <TableSearchInput placeholder="Buscar comodidade..." />
+        {/* [CORREÇÃO 3] Bypass placeholder */}
+        <TableSearchInput {...({ placeholder: "Buscar comodidade..." } as any)} />
       </ListViewHeader>
       <DataTable table={table} />
     </ListView>

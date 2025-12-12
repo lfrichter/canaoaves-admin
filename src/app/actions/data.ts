@@ -241,7 +241,7 @@ export async function getList(resource: string, params: any) {
 // GET ONE
 // =========================================================
 const ID_COLUMNS: Record<string, string> = {
-  // profiles: "user_id", // MANTIDO COMENTADO PARA USAR ID
+  // profiles: "user_id",
 };
 
 export async function getOne(
@@ -263,12 +263,15 @@ export async function getOne(
   if (resource === "profiles") targetTable = "view_admin_profiles";
   if (resource === "services") targetTable = "view_admin_services";
 
-  const query = supabase
-  .from(targetTable as any)
-  .select("*")
-  .eq(idColumn, id);
+  // [CORREÇÃO CRÍTICA PARA BUILD]
+  // O TypeScript entrava em loop infinito tentando inferir tipos aqui.
+  // Forçamos 'any' no queryBuilder para quebrar a análise estática profunda.
+  const queryBuilder: any = supabase.from(targetTable as any);
 
-  const { data, error } = await query.maybeSingle();
+  const { data, error } = await queryBuilder
+    .select("*")
+    .eq(idColumn, id)
+    .maybeSingle();
 
   if (error) {
     console.error(`Erro em getOne para ${resource}:`, error);

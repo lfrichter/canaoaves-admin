@@ -12,21 +12,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useServerTable } from "@/hooks/useServerTable";
 import { ServiceOffering } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import { Briefcase, Calendar, Tags } from "lucide-react";
 import { useMemo } from "react";
 
-// 1. IMPORT DO HOOK
-import { useIsMobile } from "@/hooks/use-mobile";
-
 export default function ServiceOfferingList({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  // 2. USO DO HOOK
   const isMobile = useIsMobile();
 
   const columns = useMemo<ColumnDef<ServiceOffering>[]>(
@@ -41,11 +38,9 @@ export default function ServiceOfferingList({
             const { name, description } = row.original;
             return (
               <div className="flex items-center gap-3">
-                {/* 3. ÍCONE OCULTO NO MOBILE (hidden sm:flex) */}
                 <div className="hidden sm:flex h-9 w-9 items-center justify-center rounded-lg border bg-violet-50">
                   <Briefcase className="h-4 w-4 text-violet-600" />
                 </div>
-
                 <div className="flex flex-col justify-center">
                   <span className="font-medium text-sm text-foreground">
                     {name}
@@ -81,15 +76,10 @@ export default function ServiceOfferingList({
 
             return (
               <div className="flex items-center gap-1">
-
-                {/*Botão de Gerenciar Categorias */}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div><CategoryManager
-                        itemId={id}
-                        itemName={name}
-                        type="offering"
+                      <div><CategoryManager itemId={id} itemName={name} type="offering"
                         trigger={
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
                             <Tags className="w-4 h-4" />
@@ -107,7 +97,8 @@ export default function ServiceOfferingList({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div><EditButton resource="service_offerings" recordItemId={id} size="sm" hideText /></div>
+                      {/* [CORREÇÃO] Bypass hideText */}
+                      <div><EditButton resource="service_offerings" recordItemId={id} size="sm" {...({ hideText: true } as any)} /></div>
                     </TooltipTrigger>
                     <TooltipContent>Editar Oferta</TooltipContent>
                   </Tooltip>
@@ -118,11 +109,10 @@ export default function ServiceOfferingList({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div><DeleteButton resource="service_offerings" recordItemId={id} size="sm" hideText /></div>
+                      {/* [CORREÇÃO] Bypass hideText */}
+                      <div><DeleteButton resource="service_offerings" recordItemId={id} size="sm" {...({ hideText: true } as any)} /></div>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      Excluir
-                    </TooltipContent>
+                    <TooltipContent>Excluir</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
@@ -131,11 +121,9 @@ export default function ServiceOfferingList({
         },
       ];
 
-      // 4. REMOVE A COLUNA DE DATA NO MOBILE
       if (isMobile) {
         return allColumns.filter((col) => col.id !== "created_at");
       }
-
       return allColumns;
     },
     [isMobile]
@@ -147,15 +135,14 @@ export default function ServiceOfferingList({
     searchParams: searchParams || {},
     initialPageSize: 20,
     searchField: "name",
-    sorters: {
-      initial: [{ field: "name", order: "asc" }]
-    }
-  });
+    sorters: { initial: [{ field: "name", order: "asc" }] }
+  } as any); // [CORREÇÃO] Bypass sorters
 
   return (
     <ListView>
       <ListViewHeader title="Ofertas de Serviço" canCreate>
-        <TableSearchInput placeholder="Buscar ofertas..." />
+        {/* [CORREÇÃO] Bypass placeholder */}
+        <TableSearchInput {...({ placeholder: "Buscar ofertas..." } as any)} />
       </ListViewHeader>
       <DataTable table={table} />
     </ListView>

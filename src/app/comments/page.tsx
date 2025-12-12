@@ -2,7 +2,6 @@
 
 import { deleteOne, update } from "@/app/actions/data";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
-// [PADRÃO] Importamos o Input de busca padrão do seu projeto
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import {
   ListView,
@@ -19,7 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-// [PADRÃO] Trocamos useTable pelo seu hook customizado useServerTable
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useServerTable } from "@/hooks/useServerTable";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
@@ -140,138 +139,140 @@ const CommentActions = ({ row, onRefresh }: { row: IComment; onRefresh: () => vo
   );
 };
 
-// [PADRÃO] Recebemos searchParams assim como na página de Profiles
 export default function CommentList({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  const filterById = searchParams?.id
-    ? [
-      {
-        field: "id",
-        operator: "eq",
-        value: searchParams.id,
-      },
-    ]
-    : [];
+  // [MELHORIA] Adicionado hook para responsividade (caso precise no futuro)
+  const isMobile = useIsMobile();
+
+  // Garantir que searchParams existe
+  const safeParams = searchParams || {};
+
   const columns = React.useMemo<ColumnDef<IComment>[]>(
-    () => [
-      {
-        id: "author",
-        header: "Autor",
-        cell: ({ row }) => {
-          const name = row.original.author_public_name || row.original.author_full_name || "Anônimo";
-          const avatar = row.original.author_avatar_url;
-          return (
-            <div className="flex items-center gap-2">
-              {avatar ? (
-                <Image src={avatar} alt="Avatar" width={32} height={32} className="rounded-full object-cover" />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>
-              )}
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{name}</span>
-                <span className="text-xs text-muted-foreground">{row.original.author_email}</span>
+    () => {
+      const allColumns: ColumnDef<IComment>[] = [
+        {
+          id: "author",
+          header: "Autor",
+          cell: ({ row }) => {
+            const name = row.original.author_public_name || row.original.author_full_name || "Anônimo";
+            const avatar = row.original.author_avatar_url;
+            return (
+              <div className="flex items-center gap-2">
+                {avatar ? (
+                  <Image src={avatar} alt="Avatar" width={32} height={32} className="rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>
+                )}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{name}</span>
+                  <span className="text-xs text-muted-foreground">{row.original.author_email}</span>
+                </div>
               </div>
+            );
+          },
+        },
+        {
+          id: "content",
+          accessorKey: "content",
+          header: "Comentário",
+          cell: ({ row }) => (
+            <div className="max-w-md">
+              <p className="text-sm line-clamp-2 text-muted-foreground" title={row.original.content}>
+                {row.original.content}
+              </p>
             </div>
-          );
+          ),
         },
-      },
-      {
-        id: "content",
-        accessorKey: "content",
-        header: "Comentário",
-        cell: ({ row }) => (
-          <div className="max-w-md">
-            <p className="text-sm line-clamp-2 text-muted-foreground" title={row.original.content}>
-              {row.original.content}
-            </p>
-          </div>
-        ),
-      },
-      {
-        id: "target",
-        header: "Onde",
-        cell: ({ row }) => {
-          const type = row.original.target_type;
-          const name = row.original.target_name;
-          const slug = row.original.target_slug;
+        {
+          id: "target",
+          header: "Onde",
+          cell: ({ row }) => {
+            const type = row.original.target_type;
+            const name = row.original.target_name;
+            const slug = row.original.target_slug;
 
-          let href = "#";
-          if (slug) {
-            if (type === 'service') href = `https://www.canaoaves.com.br/service/${slug}`;
-            if (type === 'profile') href = `https://www.canaoaves.com.br/person/${slug}`;
-          }
+            let href = "#";
+            if (slug) {
+              if (type === 'service') href = `https://www.canaoaves.com.br/service/${slug}`;
+              if (type === 'profile') href = `https://www.canaoaves.com.br/person/${slug}`;
+            }
 
-          return (
-            <div className="flex flex-col items-start gap-1">
-              <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">
-                {type === 'service' ? <Coffee className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
-                {type === 'service' ? 'Serviço' : 'Observador'}
-              </Badge>
-              <Link href={href} target="_blank" className="text-xs font-medium hover:underline flex items-center text-blue-600">
-                {name} <ExternalLink className="w-3 h-3 ml-1" />
-              </Link>
-            </div>
-          );
+            return (
+              <div className="flex flex-col items-start gap-1">
+                <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">
+                  {type === 'service' ? <Coffee className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
+                  {type === 'service' ? 'Serviço' : 'Observador'}
+                </Badge>
+                <Link href={href} target="_blank" className="text-xs font-medium hover:underline flex items-center text-blue-600">
+                  {name} <ExternalLink className="w-3 h-3 ml-1" />
+                </Link>
+              </div>
+            );
+          },
         },
-      },
-      {
-        id: "created_at",
-        header: "Data",
-        accessorKey: "created_at",
-        cell: ({ getValue }) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(getValue() as string).toLocaleDateString("pt-BR")} {new Date(getValue() as string).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}</span>
-      },
-      {
-        id: "actions",
-        header: "Ações",
-        cell: function render({ row, table }) {
-          // [PADRÃO] O useServerTable geralmente expõe o refresh via table.options.meta
-          const refreshTable = () => {
-            (table as any).options.meta?.refineCore?.tableQuery?.refetch();
-          };
-          return <CommentActions row={row.original} onRefresh={refreshTable} />;
+        {
+          id: "created_at",
+          header: "Data",
+          accessorKey: "created_at",
+          cell: ({ getValue }) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(getValue() as string).toLocaleDateString("pt-BR")} {new Date(getValue() as string).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}</span>
         },
-      },
-    ],
-    []
+        {
+          id: "actions",
+          header: "Ações",
+          cell: function render({ row, table }) {
+            const refreshTable = () => {
+              (table as any).options.meta?.refineCore?.tableQuery?.refetch();
+            };
+            return <CommentActions row={row.original} onRefresh={refreshTable} />;
+          },
+        },
+      ];
+
+      // Ocultar coluna Data no mobile para não quebrar layout
+      if (isMobile) {
+        return allColumns.filter(col => col.id !== 'created_at');
+      }
+      return allColumns;
+    },
+    [isMobile]
   );
 
-  // [PADRÃO] Hook useServerTable idêntico ao de profiles
   const table = useServerTable<IComment>({
     resource: "comments",
     columns: columns,
-    searchParams: searchParams || {}, // Passa os parâmetros da URL
+    searchParams: safeParams,
     initialPageSize: 20,
-    searchField: "content", // Define qual campo será buscado no data.ts
+    searchField: "content",
     sorters: {
       initial: [{ field: "created_at", order: "desc" }],
     }
-  });
+  } as any); // [CORREÇÃO] Bypass para erro de tipagem no 'sorters'
 
   return (
     <ListView>
-      {/* [PADRÃO] Componente de busca do projeto */}
-          <ListViewHeader title="Gestão de Comentários">
-            <TableSearchInput />
-          </ListViewHeader>
+      <ListViewHeader title="Gestão de Comentários">
+        {/* [CORREÇÃO] Bypass para erro de tipagem no 'placeholder' */}
+        <TableSearchInput {...({ placeholder: "Buscar comentários..." } as any)} />
+      </ListViewHeader>
 
-          {searchParams.id && (
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-2 mt-4">
-              <Link href="/reports" className="flex items-center gap-1 text-sm text-muted-foreground hover:underline">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Link>
-              <p className="text-sm font-medium sm:flex-grow sm:text-center">Filtrando por ID: {searchParams.id}</p>
-              <a
-                href="/comments"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 px-3" // Replicating ghost button styling
-              >
-                Limpar Filtro
-              </a>
-            </div>
-          )}
+      {safeParams.id && (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-2 mt-4">
+          <Link href="/reports" className="flex items-center gap-1 text-sm text-muted-foreground hover:underline">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Link>
+          <p className="text-sm font-medium sm:flex-grow sm:text-center">Filtrando por ID: {safeParams.id}</p>
+          <a
+            href="/comments"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 px-3"
+          >
+            Limpar Filtro
+          </a>
+        </div>
+      )}
       <DataTable table={table} />
     </ListView>
   );

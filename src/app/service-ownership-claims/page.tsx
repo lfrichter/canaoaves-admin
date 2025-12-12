@@ -250,7 +250,7 @@ const ClaimActions = ({ row, onRefresh }: { row: IServiceClaim; onRefresh: () =>
             <div className="space-y-2">
               <p className="font-medium text-sm">Mensagem do Solicitante:</p>
               <div className="bg-muted p-3 rounded-md text-sm italic min-h-[60px]">
-                "{row.message || "Sem mensagem adicional."}"
+                &quot;{row.message || "Sem mensagem adicional."}&quot;
               </div>
             </div>
 

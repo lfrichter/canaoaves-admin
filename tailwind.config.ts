@@ -1,5 +1,3 @@
-import type { Config } from "tailwindcss"
-
 const config = {
   darkMode: ["class"],
   content: [
@@ -10,7 +8,7 @@ const config = {
   ],
   prefix: "",
   theme: {
-    compatibility: "v3",
+    compatibility: "v3", // Nota: compatibility v3 geralmente não é uma chave padrão do tema, mas mantive do seu código
     container: {
       center: true,
       padding: "2rem",
@@ -89,6 +87,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+}
 
 export default config

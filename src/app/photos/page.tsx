@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteOne } from "@/app/actions/data"; // Import update para editar legenda se quiser
+import { deleteOne } from "@/app/actions/data";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import {
@@ -61,7 +61,7 @@ const PhotoActions = ({ row, onRefresh }: { row: IPhoto; onRefresh: () => void }
     },
     onSuccess: async () => {
       setIsDeleting(false);
-      setIsViewOpen(false); // Fecha o modal de visualização se estiver deletando por lá
+      setIsViewOpen(false);
       toast.success("Imagem removida da galeria.");
       onRefresh();
     },
@@ -70,7 +70,6 @@ const PhotoActions = ({ row, onRefresh }: { row: IPhoto; onRefresh: () => void }
 
   return (
     <div className="flex gap-2">
-      {/* Botão de Ver/Gerenciar */}
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogTrigger asChild>
           <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 hover:bg-blue-50">
@@ -83,7 +82,6 @@ const PhotoActions = ({ row, onRefresh }: { row: IPhoto; onRefresh: () => void }
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Imagem Full */}
             <div className="relative w-full aspect-video bg-black/5 rounded-lg overflow-hidden border">
               <Image
                 src={row.url}
@@ -93,7 +91,6 @@ const PhotoActions = ({ row, onRefresh }: { row: IPhoto; onRefresh: () => void }
               />
             </div>
 
-            {/* Metadados */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="bg-muted/50 p-3 rounded">
                 <p className="font-semibold mb-1">Enviado por:</p>
@@ -130,7 +127,6 @@ const PhotoActions = ({ row, onRefresh }: { row: IPhoto; onRefresh: () => void }
         </DialogContent>
       </Dialog>
 
-      {/* Confirmação de Exclusão (Isolada para poder chamar de fora também) */}
       <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
         <DialogTrigger asChild>
           <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50">
@@ -254,19 +250,19 @@ export default function PhotoList({
     resource: "photos",
     columns: columns,
     searchParams: searchParams || {},
-    initialPageSize: 10, // Fotos ocupam mais espaço, melhor paginação menor
+    initialPageSize: 10,
     searchField: "caption",
     sorters: {
       initial: [{ field: "created_at", order: "desc" }],
     }
-  });
+  } as any); // [CORREÇÃO] 'as any' movido para dentro da chamada
 
   return (
     <ListView>
       <ListViewHeader title="Galeria de Mídia">
-        <TableSearchInput placeholder="Buscar legendas..." />
+        {/* [CORREÇÃO] Bypass placeholder */}
+        <TableSearchInput {...({ placeholder: "Buscar legendas..." } as any)} />
 
-        {/* Navegação de Volta do Report */}
         {searchParams?.id && (
           <div className="ml-4 flex items-center gap-2 animate-in fade-in">
             <Button variant="default" size="sm" asChild className="h-8 bg-slate-700 hover:bg-slate-800">

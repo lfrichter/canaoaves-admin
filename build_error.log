@@ -1,0 +1,40 @@
+
+> canaoaves-admin@0.1.0 build
+> refine build
+
+
+                                Update Available                                
+
+- Current: The version of the package that is currently installed
+- Wanted: The maximum version of the package that satisfies the semver range specified in `package.json`
+- Latest: The latest version of the package available on npm
+[90m┌─────────────────[39m[90m┬─────────[39m[90m┬─────────[39m[90m┬─────────[39m[90m┬──────────────────────────────┐[39m
+[90m│[39m[34m name            [39m[90m│[39m[34m current [39m[90m│[39m[34m wanted  [39m[90m│[39m[34m latest  [39m[90m│[39m[34m changelog                    [39m[90m│[39m
+[90m├─────────────────[39m[90m┼─────────[39m[90m┼─────────[39m[90m┼─────────[39m[90m┼──────────────────────────────┤[39m
+[90m│[39m @refinedev/core [90m│[39m 5.0.6   [90m│[39m 5.0.7   [90m│[39m 5.0.7   [90m│[39m https://c.refine.dev/core    [90m│[39m
+[90m└─────────────────[39m[90m┴─────────[39m[90m┴─────────[39m[90m┴─────────[39m[90m┴──────────────────────────────┘[39m
+                To update `Refine` packages with wanted version                
+- Getting package manager...
+                Run the following command: npm run refine update               
+
+
+
+  [1m[38;2;173;127;168m▲ Next.js 14.2.33[39m[22m
+  - Environments: .env.local, .env
+
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1m✓[22m[39m Compiled successfully
+ [37m[1m [22m[39m Linting and checking validity of types ...
+[31mFailed to compile.
+[39m
+[36m./src/app/comments/page.tsx[39m:[33m248[39m:[33m5[39m
+[31m[1mType error[22m[39m: Object literal may only specify known properties, and 'sorters' does not exist in type '{ resource: string; columns: ColumnDef<IComment>[]; searchParams: { [key: string]: string | undefined; }; initialPageSize?: number | undefined; searchField?: string | undefined; }'.
+
+[0m [90m 246 |[39m     initialPageSize[33m:[39m [35m20[39m[33m,[39m[0m
+[0m [90m 247 |[39m     searchField[33m:[39m [32m"content"[39m[33m,[39m [90m// Define qual campo será buscado no data.ts[39m[0m
+[0m[31m[1m>[22m[39m[90m 248 |[39m     sorters[33m:[39m {[0m
+[0m [90m     |[39m     [31m[1m^[22m[39m[0m
+[0m [90m 249 |[39m       initial[33m:[39m [{ field[33m:[39m [32m"created_at"[39m[33m,[39m order[33m:[39m [32m"desc"[39m }][33m,[39m[0m
+[0m [90m 250 |[39m     }[0m
+[0m [90m 251 |[39m   })[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

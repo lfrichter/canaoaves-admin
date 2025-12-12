@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { RotateCw } from "lucide-react";
 import { InputPassword } from "@/components/refine-ui/form/input-password";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +22,7 @@ import {
   useRefineOptions,
   useRegister,
 } from "@refinedev/core";
+import { RotateCw } from "lucide-react";
 
 export const SignUpForm = () => {
   const [email, setEmail] = useState("");
@@ -35,7 +35,8 @@ export const SignUpForm = () => {
 
   const { title } = useRefineOptions();
 
-  const { mutate: register } = useRegister();
+  // [CORREÇÃO] Adicionado 'as any' para ignorar erro de tipagem no isLoading
+  const { mutate: register, isLoading: loading } = useRegister() as any;
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

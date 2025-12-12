@@ -18,6 +18,7 @@ type RestoreButtonProps = {
   recordItemId: BaseKey;
   values?: Record<string, unknown>;
   onSuccess?: () => void;
+  hideText?: boolean; // [MELHORIA] Adicionado suporte oficial a hideText
 } & React.ComponentProps<typeof Button>;
 
 export const RestoreButton = React.forwardRef<
@@ -32,6 +33,7 @@ export const RestoreButton = React.forwardRef<
       onSuccess,
       children,
       onClick,
+      hideText = false, // Padrão false
       ...rest
     },
     ref
@@ -39,14 +41,13 @@ export const RestoreButton = React.forwardRef<
     const translate = useTranslate();
     const apiUrl = useApiUrl();
     const { resource: urlResource } = useParsed();
-    const invalidate = useInvalidate(); // <--- 2. Inicialize o hook
-    const router = useRouter(); // <--- Opcional: para garantir refresh do Next.js
+    const invalidate = useInvalidate();
+    const router = useRouter();
 
-    // Define o recurso e a URL manualmente para garantir o formato correto
     const resourceName = propResource ?? urlResource?.name;
 
-    // Usamos useCustomMutation para ter controle total sobre o Request
-    const { mutate, isLoading } = useCustomMutation();
+    // [CORREÇÃO] 'as any' para ignorar o erro de tipagem do isLoading
+    const { mutate, isLoading } = useCustomMutation() as any;
 
     const handleRestore = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (onClick) {
@@ -58,11 +59,8 @@ export const RestoreButton = React.forwardRef<
 
       mutate(
         {
-          // Forçamos a URL correta: apiUrl + recurso + ID
           url: `${apiUrl}/${resourceName}/${recordItemId}`,
-          // Forçamos o método PATCH (padrão para atualizações parciais)
           method: "patch",
-          // Enviamos apenas o objeto de valores, sem arrays estranhos
           values: values,
           successNotification: {
             message: translate("notifications.restoreSuccess", "Registro restaurado"),
@@ -72,17 +70,15 @@ export const RestoreButton = React.forwardRef<
         },
         {
           onSuccess: () => {
-            // Avisa o Refine que os dados de "list", "many" e "detail" desse recurso estão velhos
             invalidate({
               resource: resourceName,
               invalidates: ["list", "many", "detail"],
             });
 
-            // Opcional: Se sua lista depender de dados do servidor (Server Components)
             router.refresh();
 
             if (onSuccess) onSuccess();
-            // Opcional: Recarregar a página se o Refine não atualizar a lista automaticamente
+
             setTimeout(() => {
               window.location.reload();
             }, 2000);
@@ -98,13 +94,10 @@ export const RestoreButton = React.forwardRef<
         disabled={isLoading || rest.disabled}
         onClick={handleRestore}
         variant="outline"
+        title={translate("buttons.restore", "Restaurar")} // Tooltip nativo se não tiver texto
       >
-        {children ?? (
-          <div className="flex items-center gap-2 font-semibold">
-            <RotateCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            <span>{translate("buttons.restore", "Restaurar")}</span>
-          </div>
-        )}
+        <RotateCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""} ${!hideText && children ? "mr-2" : ""}`} />
+        {!hideText && (children ?? <span>{translate("buttons.restore", "Restaurar")}</span>)}
       </Button>
     );
   }

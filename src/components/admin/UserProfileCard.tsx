@@ -23,12 +23,9 @@ interface UserProfileCardProps {
   avatarUrl?: string | null;
   profileScore: number | null;
   profileCategoryName: string | null;
-  profileCategoryIcon?: string | null; // [NOVO] Suporte a ícone
+  profileCategoryIcon?: string | null;
   createdAt?: string | Date;
   locationLabel?: string;
-  // [NOVO] Variante para controlar o que é exibido
-  // 'default': Mostra tudo (usado em city/state descriptions)
-  // 'claim': Mostra versão compacta (sem contatos/datas, foco em reputação)
   variant?: "default" | "claim";
 }
 
@@ -46,10 +43,13 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString("pt-BR") : "-";
 
-  // --- LÓGICA DE GAMIFICAÇÃO (Reutilizada da ProfileList) ---
+  // --- LÓGICA DE GAMIFICAÇÃO ---
   const score = Number(profileScore || 0);
   const { name: statusName, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
-  const statusKey = normalizeStatusKey(statusName);
+
+  // [CORREÇÃO] Adicionado fallback para string vazia
+  const statusKey = normalizeStatusKey(statusName || "");
+
   const label = GAMIFICATION_LABELS[statusKey] || statusName;
   const gamificationIcon = GAMIFICATION_ICONS[statusKey] || '🏆';
   const color = GAMIFICATION_COLORS[statusKey] || '#64748b';
@@ -59,7 +59,6 @@ export function UserProfileCard({
   return (
     <div className="flex flex-wrap items-start gap-4 p-4 bg-muted/50 rounded-lg border transition-all hover:bg-muted/70">
 
-      {/* Avatar (Igual para todos) */}
       <Avatar className="h-12 w-12 border bg-white">
         <AvatarImage src={avatarUrl || undefined} />
         <AvatarFallback className="bg-muted text-muted-foreground font-bold">
@@ -67,23 +66,16 @@ export function UserProfileCard({
         </AvatarFallback>
       </Avatar>
 
-      {/* Informações Centrais */}
       <div className="space-y-1.5 min-w-0 flex-1">
-
-        {/* Nome */}
         <h4 className="font-semibold leading-none text-base">
           {displayName || "Usuário Desconhecido"}
         </h4>
 
-        {/* Email (Apenas Default) */}
         {!isCompact && email && (
           <p className="text-sm text-muted-foreground">{email}</p>
         )}
 
-        {/* Badges: Categoria + Gamificação */}
         <div className="flex flex-wrap items-center gap-2 mt-1">
-
-          {/* 1. CATEGORIA COM ÍCONE */}
           <Badge
             variant="outline"
             className="bg-background/50 border-dashed font-normal text-muted-foreground"
@@ -96,14 +88,13 @@ export function UserProfileCard({
             {profileCategoryName}
           </Badge>
 
-          {/* 2. GAMIFICAÇÃO (Visual Rico) */}
           <TooltipProvider>
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
                 <div className="flex flex-col items-start cursor-help">
                   <Badge
                     style={{
-                      backgroundColor: `${color}15`, // 15% opacidade
+                      backgroundColor: `${color}15`,
                       color: color,
                       borderColor: `${color}30`
                     }}
@@ -113,7 +104,6 @@ export function UserProfileCard({
                     {label}
                   </Badge>
 
-                  {/* Barra de Progresso (Mini) */}
                   <div className="w-full h-1 bg-muted rounded-full overflow-hidden mt-1 max-w-[100px]">
                     <div
                       className="h-full rounded-full transition-all duration-500"
@@ -149,7 +139,6 @@ export function UserProfileCard({
         </div>
       </div>
 
-      {/* Coluna Direita: Metadados (Escondido no modo Claim) */}
       {!isCompact && (
         <div className="w-full md:w-auto md:ml-auto md:text-right text-left text-xs text-muted-foreground space-y-1 mt-2 md:mt-0 pl-0 md:pl-4 border-l-0 md:border-l border-transparent md:border-border/40">
           <p className="flex items-center md:justify-end gap-1.5">

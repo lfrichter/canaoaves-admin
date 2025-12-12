@@ -45,29 +45,18 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
 // --- 1. COMPONENTE PAI (WRAPPER) ---
-// Apenas renderiza o formulário dentro do contexto de autenticação.
 export default function ServiceEdit() {
   return (
-    <Authenticated key="service-edit-page" v3LegacyAuthProviderCompatible={false}>
+    <Authenticated key="service-edit-page">
       <ServiceEditForm />
     </Authenticated>
   );
 }
 
-// --- 2. FORMULÁRIO REAL (AGORA AUTÔNOMO) ---
+// --- 2. FORMULÁRIO REAL ---
 function ServiceEditForm() {
   const params = useParams();
   const id = params?.id as string;
-
-  // A guarda de rota e validação do ID agora vivem aqui.
-  // Se não houver ID, o formulário nem tenta ser renderizado.
-  if (!id || id === "undefined") {
-    return (
-      <div className="flex h-[50vh] w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   const {
     refineCore: { query, onFinish },
@@ -79,25 +68,27 @@ function ServiceEditForm() {
       action: "edit",
       id: id,
       queryOptions: {
-        // Esta guarda é uma segurança extra, mas a verificação acima é a principal.
         enabled: !!id,
       },
     },
-  });
+  }) as any;
 
   const record = query?.data?.data;
   const isLoadingRecord = query?.isLoading;
 
-  // Sincroniza o formulário com os dados do backend quando eles chegam
   useEffect(() => {
     if (record) {
       form.reset(record);
     }
-  }, [record, form.reset]);
+  }, [record, form]);
 
-  // A view agora nos dá essa informação diretamente.
-  const isIndication = record?.created_by_user_id && (record?.owner_user_id !== record?.created_by_user_id);
-
+  if (!id || id === "undefined") {
+    return (
+      <div className="flex h-[50vh] w-full items-center justify-center">
+        <p className="text-sm text-muted-foreground">ID de serviço inválido.</p>
+      </div>
+    );
+  }
 
   if (isLoadingRecord) {
     return (
@@ -108,7 +99,6 @@ function ServiceEditForm() {
     );
   }
 
-  // Se terminou de carregar e não tem record, aí sim é 404
   if (!record) {
     return (
       <div className="p-8 text-center">
@@ -117,6 +107,8 @@ function ServiceEditForm() {
       </div>
     )
   }
+
+  const isIndication = record?.created_by_user_id && (record?.owner_user_id !== record?.created_by_user_id);
 
   return (
     <EditView>
@@ -145,7 +137,6 @@ function ServiceEditForm() {
                             <FormLabel>Status</FormLabel>
                             <Select
                               onValueChange={field.onChange}
-                              // Isso garante que o select atualize visualmente quando os dados chegarem
                               key={record.status}
                               value={field.value}
                               defaultValue={record.status}
@@ -210,11 +201,11 @@ function ServiceEditForm() {
                     />
 
                     <div className="flex justify-between items-center pt-4 border-t mt-4">
+                      {/* [CORREÇÃO] Bypass para confirmTitle e confirmOkText */}
                       <DeleteButton
                         recordItemId={id}
                         resource="services"
-                        confirmTitle="Excluir Serviço?"
-                        confirmOkText="Sim, excluir"
+                        {...({ confirmTitle: "Excluir Serviço?", confirmOkText: "Sim, excluir" } as any)}
                       />
                       <Button type="submit" size="sm">
                         {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -253,13 +244,13 @@ function ServiceEditForm() {
                       )}
                     </div>
                     <div className="overflow-hidden w-full">
-                        <>
-                          <p className="font-medium truncate text-foreground">
-                            {record.owner_full_name || record.owner_public_name || "Sem Dono (Sistema)"}
-                          </p>
-                          {record.owner_app_role && <Badge variant="outline" className="mt-1">{record.owner_app_role}</Badge>}
-                          <p className="text-[10px] text-muted-foreground truncate mt-1">{record.owner_email || "-"}</p>
-                        </>
+                      <>
+                        <p className="font-medium truncate text-foreground">
+                          {record.owner_full_name || record.owner_public_name || "Sem Dono (Sistema)"}
+                        </p>
+                        {record.owner_app_role && <Badge variant="outline" className="mt-1">{record.owner_app_role}</Badge>}
+                        <p className="text-[10px] text-muted-foreground truncate mt-1">{record.owner_email || "-"}</p>
+                      </>
                     </div>
                   </div>
                 </div>
@@ -275,7 +266,7 @@ function ServiceEditForm() {
 
                     <div className="mt-2 ml-2">
                       {record.creator_full_name ? (
-                        <div className="creator-card"> {/* <--- Classe Global */}
+                        <div className="creator-card">
                           <div className="flex items-start gap-3 mb-3">
                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-blue-200 overflow-hidden dark:bg-transparent dark:border-blue-700">
                               {record.creator_avatar_url ? (
@@ -287,7 +278,7 @@ function ServiceEditForm() {
                             </div>
                             <div className="flex-1 overflow-hidden">
 
-                              <span className="creator-name"> {/* <--- Classe Global */}
+                              <span className="creator-name">
                                 {record.creator_full_name || record.creator_public_name}
                               </span>
 
@@ -384,21 +375,19 @@ function ServiceEditForm() {
                       border border-yellow-200 dark:border-yellow-800/50
                       text-yellow-800 dark:text-yellow-200
                     ">
-                      "{record.mission}"
+                      &quot;{record.mission}&quot;
                     </p>
                   </div>
                 )}
 
                 {/* ÁREAS (Com verificação de vazio) */}
                 {(() => {
-                  // Limpa a string do Postgres e cria o array
                   const areas = String(record?.areas_of_operation || "")
                     .replace(/[{}"\\]/g, '')
                     .split(',')
                     .map((a) => a.trim())
-                    .filter(Boolean); // Remove itens vazios
+                    .filter(Boolean);
 
-                  // Se o array estiver vazio, não renderiza nada (nem o título)
                   if (areas.length === 0) return null;
 
                   return (
@@ -447,4 +436,3 @@ function ServiceEditForm() {
     </EditView>
   );
 }
-

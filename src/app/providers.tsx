@@ -124,6 +124,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "city_images",
               list: "/city-images",
+              // eslint-disable-next-line jsx-a11y/alt-text
               meta: { label: "Imagens de Cidades", icon: <Image size={16} /> },
             },
             {

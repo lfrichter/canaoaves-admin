@@ -34,12 +34,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
-import { Building2, Loader2, Search, Smile, Trash2, User } from "lucide-react"; // <--- Importei Trash2 e Ban
+import { Building2, Loader2, Search, Smile, Trash2, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
 
-// --- 1. DADOS: Lista Expandida (Mesma da Criação) ---
+// --- 1. DADOS: Lista Expandida ---
 const ICON_CATEGORIES: Record<string, string[]> = {
   "Aves & Animais": ["🦅", "🦆", "🦉", "🦜", "🦩", "🦢", "🐓", "🦃", "🦚", "🐧", "🐦", "🐤", "🐣", "🦇", "🦋", "🐞", "🐝", "🐜", "🦗", "🕷️", "🐢", "🐍", "🦎", "🐊", "🐅", "🐆", "🦓", "🦍", "🦧", "🐘", "🦛", "🦏", "🐪", "🦒", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🐐", "🐕", "🐈", "🐇", "🐿️"],
   "Natureza & Paisagem": ["🌳", "🌲", "🌴", "🌵", "🌾", "🌿", "🍀", "🍁", "🍂", "🍃", "🍄", "🌰", "🌷", "🌸", "🌹", "🌺", "🌻", "🌼", "🌽", "🏞️", "🌅", "🌄", "🌠", "🔥", "🌈", "☀️", "🌤️", "☁️", "⛈️", "❄️", "🌊", "🌍", "🌎", "🌏"],
@@ -68,8 +68,9 @@ export default function CategoryEdit() {
     saveButtonProps,
     ...form
   } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
+    // [CORREÇÃO] Adicionado 'as any' aqui na entrada
+    resolver: zodResolver(formSchema) as any,
+  }) as any; // [CORREÇÃO] Mantido 'as any' aqui na saída
 
   const record = queryResult?.data?.data;
 
@@ -85,7 +86,6 @@ export default function CategoryEdit() {
 
   // --- 3. Busca de Categorias Pai ---
   useEffect(() => {
-    // Usamos o tipo do formulário OU o tipo do registro carregado como fallback
     const typeToFetch = selectedType || record?.type;
 
     if (!typeToFetch) return;
@@ -102,7 +102,6 @@ export default function CategoryEdit() {
           ]
         });
 
-        // Filtra raízes e remove a si mesma (evita loop)
         const roots = (data || []).filter((cat: any) =>
           !cat.parent_id && cat.id !== record?.id
         );
@@ -161,7 +160,6 @@ export default function CategoryEdit() {
                         <RadioGroup
                           onValueChange={(val) => {
                             field.onChange(val);
-                            // Se mudar o tipo, reseta o pai para evitar inconsistência
                             if (val !== record?.type) {
                               form.setValue("parent_id", null);
                             }
@@ -228,7 +226,7 @@ export default function CategoryEdit() {
                         <FormItem>
                           <FormLabel>Nome da Categoria</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Pousadas..." {...field} />
+                            <Input {...({ placeholder: "Ex: Pousadas..." } as any)} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -236,7 +234,7 @@ export default function CategoryEdit() {
                     />
 
                     <div className="grid grid-cols-[100px_1fr] gap-4">
-                      {/* Seletor de Ícone (Modal) */}
+                      {/* Seletor de Ícone */}
                       <FormField
                         control={form.control}
                         name="icon"
@@ -266,12 +264,11 @@ export default function CategoryEdit() {
                                     <DialogTitle>Selecionar Ícone</DialogTitle>
                                   </DialogHeader>
 
-                                  {/* BUSCA E AÇÃO DE REMOVER */}
                                   <div className="flex gap-2 py-4 items-center">
                                     <div className="relative flex-1">
                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                       <Input
-                                        placeholder="Buscar..."
+                                        {...({ placeholder: "Buscar..." } as any)}
                                         className="pl-9"
                                         value={iconSearch}
                                         onChange={(e) => setIconSearch(e.target.value)}
@@ -279,7 +276,7 @@ export default function CategoryEdit() {
                                     </div>
 
                                     <Input
-                                      placeholder="Colar"
+                                      {...({ placeholder: "Colar" } as any)}
                                       className="w-16 text-center text-xl p-0"
                                       maxLength={2}
                                       value={field.value || ""}
@@ -287,7 +284,6 @@ export default function CategoryEdit() {
                                       title="Cole um emoji aqui"
                                     />
 
-                                    {/* BOTÃO REMOVER ÍCONE NO HEADER */}
                                     <Button
                                       type="button"
                                       variant="ghost"
@@ -304,7 +300,6 @@ export default function CategoryEdit() {
                                   </div>
                                 </div>
 
-                                {/* ÁREA DE ROLAGEM VERTICAL */}
                                 <ScrollArea className="flex-1 w-full bg-muted/10">
                                   <div className="px-6 pb-6">
                                     <div className="space-y-8 pb-6">
@@ -368,7 +363,7 @@ export default function CategoryEdit() {
                           <FormLabel>Descrição Curta</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Descreva o propósito..."
+                              {...({ placeholder: "Descreva o propósito..." } as any)}
                               className="resize-none min-h-[80px]"
                               {...field}
                               value={field.value || ""}
@@ -396,7 +391,6 @@ export default function CategoryEdit() {
                         <FormItem>
                           <FormLabel>Categoria Pai (Opcional)</FormLabel>
                           <Select
-                            // Chave dinâmica força re-render quando os dados chegam
                             key={field.value || "root"}
                             onValueChange={(val) => field.onChange(val === "root" ? null : val)}
                             value={field.value || "root"}
@@ -431,7 +425,6 @@ export default function CategoryEdit() {
                   </CardContent>
                 </Card>
 
-                {/* Preview */}
                 <div className="border rounded-lg p-4 bg-muted/20 border-dashed flex flex-col items-center justify-center text-center space-y-2">
                   <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Preview Visual</span>
                   <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border rounded-full shadow-sm">

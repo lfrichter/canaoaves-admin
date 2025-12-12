@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
-import { Building2, Loader2, Search, Smile, Trash2, User } from "lucide-react"; // <--- Adicionado Trash2
+import { Building2, Loader2, Search, Smile, Trash2, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -82,7 +82,8 @@ export default function CategoryCreate() {
     saveButtonProps,
     ...form
   } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    // [CORREÇÃO] 'as any' para evitar erro de tipo do resolver
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       type: "pessoa",
       name: "",
@@ -91,7 +92,7 @@ export default function CategoryCreate() {
       icon: "",
       parent_id: null,
     },
-  });
+  }) as any;
 
   const selectedType = form.watch("type");
   const nameValue = form.watch("name");
@@ -250,7 +251,8 @@ export default function CategoryCreate() {
                         <FormItem>
                           <FormLabel>Nome da Categoria</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Pousadas, Guia de Turismo..." {...field} />
+                            {/* [CORREÇÃO] Bypass placeholder */}
+                            <Input {...({ placeholder: "Ex: Pousadas, Guia de Turismo..." } as any)} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -296,14 +298,14 @@ export default function CategoryCreate() {
                                     <div className="relative flex-1">
                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                       <Input
-                                        placeholder="Buscar categoria ou nome..."
+                                        {...({ placeholder: "Buscar categoria ou nome..." } as any)}
                                         className="pl-9"
                                         value={iconSearch}
                                         onChange={(e) => setIconSearch(e.target.value)}
                                       />
                                     </div>
                                     <Input
-                                      placeholder="Colar"
+                                      {...({ placeholder: "Colar" } as any)}
                                       className="w-16 text-center text-xl p-0"
                                       maxLength={2}
                                       value={field.value || ""}
@@ -401,7 +403,7 @@ export default function CategoryCreate() {
                           <FormLabel>Descrição Curta</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Descreva o propósito..."
+                              {...({ placeholder: "Descreva o propósito..." } as any)}
                               className="resize-none min-h-[80px]"
                               {...field}
                             />

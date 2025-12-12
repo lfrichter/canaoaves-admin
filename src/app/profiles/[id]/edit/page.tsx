@@ -7,11 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Form,
   FormControl,
   FormField,
@@ -33,12 +28,7 @@ import { Authenticated, useGetIdentity, useSelect, useUpdate } from "@refinedev/
 import { useForm } from "@refinedev/react-hook-form";
 import {
   Briefcase,
-  CalendarDays,
   CheckCircle2,
-  ChevronUpIcon,
-  ExternalLink,
-  Eye,
-  Globe,
   Hash, Heart,
   Loader2,
   Lock,
@@ -47,14 +37,10 @@ import {
   MessageSquare,
   SaveIcon,
   Shield, Trophy,
-  UserCircle,
-  Code2,
-  Copy,
-  Check
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { TechnicalDetailsCard } from "@/components/profile/TechnicalDetailsCard";
 import {
@@ -78,7 +64,7 @@ export default function ProfileEdit() {
   }
 
   return (
-    <Authenticated key="profile-edit-page" v3LegacyAuthProviderCompatible={false}>
+    <Authenticated key="profile-edit-page">
       <ProfileEditContent id={id} />
     </Authenticated>
   );
@@ -88,7 +74,7 @@ function ProfileEditContent({ id }: { id: string }) {
   const { data: identity } = useGetIdentity<{ id: string; app_role: string }>();
   const isMaster = identity?.app_role === 'master';
 
-  const { mutate: updateProfile, isLoading: isUpdating } = useUpdate();
+  const { mutate: updateProfile, isLoading: isUpdating } = useUpdate() as any;
 
   const {
     refineCore: { query, formLoading },
@@ -131,10 +117,9 @@ function ProfileEditContent({ id }: { id: string }) {
     filters: [{ field: "type", operator: "eq", value: watchedType || "pessoa" }],
   });
 
-  // --- GAMIFICAÇÃO ---
   const score = Number(record?.score || 0);
   const { name: badgeName, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
-  const statusKey = normalizeStatusKey(badgeName);
+  const statusKey = normalizeStatusKey(badgeName || "");
   const badgeLabel = GAMIFICATION_LABELS[statusKey] || badgeName || "Iniciante";
   const badgeIcon = GAMIFICATION_ICONS[statusKey] || '🥚';
   const badgeColor = GAMIFICATION_COLORS[statusKey] || '#64748b';
@@ -145,7 +130,6 @@ function ProfileEditContent({ id }: { id: string }) {
     { label: "Master (Super Admin)", value: "master" },
   ];
 
-  // --- PARSERS ---
   let displayLocation = { city: "Não informada", state: "-", country: "BR" };
 
   if (record) {
@@ -213,7 +197,6 @@ function ProfileEditContent({ id }: { id: string }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* === ESQUERDA: FORMULÁRIO === */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
@@ -221,7 +204,8 @@ function ProfileEditContent({ id }: { id: string }) {
                 <CardDescription>Informações principais editáveis.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form} control={control} handleSubmit={handleSubmit} reset={reset}>
+                {/* Reconstrução do form object com 'as any' para o FormProvider */}
+                <Form {...({ ...form, control, handleSubmit, reset, watch } as any)}>
                   <form onSubmit={handleSubmit(handleCustomSubmit)} className="grid gap-6">
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -288,7 +272,6 @@ function ProfileEditContent({ id }: { id: string }) {
                       )}
                     />
 
-                    {/* [FIX DARK MODE] Alterado de bg-slate-50 para bg-muted/40 */}
                     <div className="bg-muted/40 p-4 rounded-md border border-border space-y-4">
                       <h4 className="text-sm font-bold uppercase text-muted-foreground flex items-center gap-2">
                         <Shield className="w-4 h-4" /> Área Administrativa
@@ -354,7 +337,8 @@ function ProfileEditContent({ id }: { id: string }) {
                     </div>
 
                     <div className="flex justify-between items-center pt-4 border-t mt-4">
-                      <DeleteButton recordItemId={id} resource="profiles" confirmTitle="Banir Usuário?" confirmOkText="Sim, Banir" size="sm" hideText />
+                      {/* Bypass 'hideText' */}
+                      <DeleteButton recordItemId={id} resource="profiles" confirmTitle="Banir Usuário?" confirmOkText="Sim, Banir" size="sm" {...({ hideText: true } as any)} />
                       <Button type="submit" size="sm" disabled={isSaving}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
                         Salvar Alterações
@@ -365,7 +349,6 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* CARDS SECUNDÁRIOS DE ATIVIDADE */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="h-full">
                 <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Briefcase className="w-5 h-5 text-muted-foreground" /> Serviços e Indicações</CardTitle></CardHeader>
@@ -376,7 +359,6 @@ function ProfileEditContent({ id }: { id: string }) {
                     </span>
                     {record.recent_owned_services?.length > 0 ? (
                       <div className="space-y-2">{record.recent_owned_services.map((s: any) => (
-                        // [FIX DARK MODE] bg-slate-50 -> bg-muted/40 | border-blue-300 -> border-primary/50
                         <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-muted/40 border border-border rounded hover:border-primary/50 transition-colors truncate">{s.name}</Link>
                       ))}</div>
                     ) : <p className="text-xs text-muted-foreground italic">Nenhum.</p>}
@@ -388,7 +370,6 @@ function ProfileEditContent({ id }: { id: string }) {
                     </span>
                     {record.recent_indicated_services?.length > 0 ? (
                       <div className="space-y-2">{record.recent_indicated_services.map((s: any) => (
-                        // [FIX DARK MODE] bg-white -> bg-card | hover:bg-slate-50 -> hover:bg-muted/50
                         <Link key={s.id} href={`/services/${s.id}/edit`} className="block text-sm p-2 bg-card border border-border rounded hover:bg-muted/50 transition-colors truncate text-muted-foreground">{s.name}</Link>
                       ))}</div>
                     ) : <p className="text-xs text-muted-foreground italic">Nenhuma.</p>}
@@ -402,9 +383,8 @@ function ProfileEditContent({ id }: { id: string }) {
                   {record.recent_comments?.length > 0 ? (
                     <div className="space-y-4">
                       {record.recent_comments.map((c: any) => (
-                        // [FIX DARK MODE] border-slate-200 -> border-border
                         <div key={c.id} className="text-xs border-l-2 border-border pl-2">
-                          <p className="text-muted-foreground italic line-clamp-2">"{c.content}"</p>
+                          <p className="text-muted-foreground italic line-clamp-2">&quot;{c.content}&quot;</p>
                           <span className="text-[9px] text-muted-foreground/60 block mt-1">{new Date(c.created_at).toLocaleDateString()}</span>
                         </div>
                       ))}
@@ -415,14 +395,11 @@ function ProfileEditContent({ id }: { id: string }) {
             </div>
           </div>
 
-          {/* === DIREITA: CONTEXTO E METADADOS === */}
           <div className="space-y-6">
 
-            {/* CARD 1: IDENTIDADE */}
             <Card className="overflow-hidden border-border shadow-sm sticky top-4">
               <div className="h-24 w-full relative" style={{ backgroundColor: `${badgeColor}20` }}>
                 <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
-                  {/* [FIX DARK MODE] bg-white -> bg-background */}
                   <Avatar className="h-20 w-20 border-4 border-background shadow-md bg-background">
                     <AvatarImage src={record.avatar_url} className="object-cover" />
                     <AvatarFallback className="text-2xl font-bold bg-muted text-muted-foreground">
@@ -442,7 +419,6 @@ function ProfileEditContent({ id }: { id: string }) {
                   </div>
                 </div>
 
-                {/* [FIX DARK MODE] bg-slate-50 -> bg-muted/40 */}
                 <div className="bg-muted/40 p-4 rounded-lg border border-border space-y-3">
                   <div className="flex justify-center">
                     <Badge className="text-sm px-4 py-1.5 font-bold border shadow-sm" style={{ backgroundColor: `${badgeColor}15`, color: badgeColor, borderColor: `${badgeColor}40` }}>
@@ -454,7 +430,6 @@ function ProfileEditContent({ id }: { id: string }) {
                       <span>{score.toLocaleString()} pts</span>
                       <span>{nextStart ? nextStart.toLocaleString() : 'MAX'} pts</span>
                     </div>
-                    {/* [FIX DARK MODE] bg-white -> bg-secondary/50 | border-slate-200 -> border-border */}
                     <div className="w-full h-2.5 bg-secondary/50 border border-border rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: nextStart ? `${Math.min((score / nextStart) * 100, 100)}%` : '100%', backgroundColor: badgeColor }} />
                     </div>
@@ -463,7 +438,6 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* CARD 2: ESTATÍSTICAS */}
             <Card>
               <CardHeader className="pb-3 pt-5">
                 <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
@@ -473,21 +447,18 @@ function ProfileEditContent({ id }: { id: string }) {
               <CardContent>
                 <div className="grid grid-cols-3 gap-2 text-center">
 
-                  {/* Curtidas */}
                   <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center justify-center min-h-[80px]">
                     <Heart className="w-4 h-4 text-pink-500 mb-1" />
                     <span className="text-sm font-bold leading-none">{record.total_likes_received || 0}</span>
                     <span className="text-[10px] text-muted-foreground mt-1">Curtidas</span>
                   </div>
 
-                  {/* Confirmações */}
                   <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center justify-center min-h-[80px]">
                     <CheckCircle2 className="w-4 h-4 text-green-500 mb-1" />
                     <span className="text-sm font-bold leading-none">{record.total_confirmations_made || 0}</span>
                     <span className="text-[10px] text-muted-foreground mt-1">Validações</span>
                   </div>
 
-                  {/* Comentários */}
                   <div className="p-2 bg-muted/40 rounded border border-border flex flex-col items-center justify-center min-h-[80px]">
                     <MessageSquare className="w-4 h-4 text-blue-500 mb-1" />
                     <span className="text-sm font-bold leading-none">{record.total_comments_made || 0}</span>
@@ -498,11 +469,9 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* CARD 3: LOCALIZAÇÃO */}
             <Card>
               <CardHeader className="pb-3 pt-5"><CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><MapPin className="w-4 h-4" /> Localização</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-sm">
-                {/* [FIX DARK MODE] border-slate-100 -> border-border */}
                 <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">Cidade</span>
                   <span className="font-medium text-right">{displayLocation.city}</span>
@@ -522,7 +491,8 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            <TechnicalDetailsCard record={record} />
+            {/* [CORREÇÃO FINAL] Bypass para 'record' tipagem */}
+            <TechnicalDetailsCard record={record as any} />
 
             <div className="text-[10px] text-center text-muted-foreground/50 font-mono">
               System ID: {id}

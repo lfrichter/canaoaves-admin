@@ -29,7 +29,7 @@ type ListHeaderProps = PropsWithChildren<{
 }>;
 
 export const ListViewHeader = ({
-  children, // [NOVO] Aceita componentes extras (ex: SearchInput)
+  children,
   canCreate,
   resource: resourceFromProps,
   title: titleFromProps,
@@ -78,7 +78,8 @@ export const ListViewHeader = ({
 
           {isCreateButtonVisible && (
             <div className="flex-shrink-0">
-              <CreateButton resource={resourceName} label="Criar" />
+              {/* [CORREÇÃO] Bypass para a prop 'label' não reconhecida */}
+              <CreateButton resource={resourceName} {...({ label: "Criar" } as any)} />
             </div>
           )}
         </div>

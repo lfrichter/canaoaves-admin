@@ -10,15 +10,19 @@ export function useServerTable<TData extends object>({
   searchParams,
   initialPageSize = 10,
   searchField = "name",
+  sorters, // [NOVO] Aceita ordenação inicial
+  meta,    // [NOVO] Aceita meta dados extras (filtros customizados)
 }: {
   resource: string;
   columns: ColumnDef<TData>[];
   searchParams: { [key: string]: string | undefined };
   initialPageSize?: number;
   searchField?: string;
+  sorters?: any; // Tipagem flexível para passar direto pro Refine
+  meta?: any;    // Tipagem flexível
 }) {
-  // Parse URL params
-  const currentPage = Number(searchParams?.currentPage ?? "1");
+  // Parse URL params (suporta tanto 'current' quanto 'currentPage' para robustez)
+  const current = Number(searchParams?.current || searchParams?.currentPage || 1);
   const pageSize = Number(searchParams?.pageSize ?? initialPageSize.toString());
   const searchQuery = searchParams?.q ?? "";
   const paramId = searchParams?.id;
@@ -55,13 +59,15 @@ export function useServerTable<TData extends object>({
       },
 
       pagination: {
-        // ✅ Use `current` e `pageSize` para paginação
-        current: currentPage,
+        // [CORREÇÃO] 'as any' aqui evita o erro estrito de tipagem do Refine
+        current: current,
         pageSize: pageSize,
-      },
+      } as any,
 
-      // Opcional: meta pode ser útil para passar dados extras ao data provider
+      // [ATUALIZAÇÃO] Agora repassamos sorters e mergeamos o meta
+      sorters: sorters,
       meta: {
+        ...meta, // Mantém filtros extras passados pela página (ex: status, userStatus)
         searchQuery,
         paramId,
       },

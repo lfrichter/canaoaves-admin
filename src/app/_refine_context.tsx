@@ -7,7 +7,7 @@ import { useNotificationProvider } from "@/components/refine-ui/notification/use
 import { Toaster } from "@/components/ui/sonner";
 import { authProviderClient } from "@/providers/auth-provider/auth-provider.client";
 import { dataProvider } from "@/providers/data-provider";
-import { Refine, useGetIdentity } from "@refinedev/core";
+import { Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import routerProvider from "@refinedev/nextjs-router";
 import {
@@ -25,30 +25,27 @@ import {
   ShieldAlert,
   Sparkles,
   Users,
-} from "lucide-react";import { usePathname } from "next/navigation";
+} from "lucide-react";
+import { usePathname } from "next/navigation";
 import React from "react";
-// import { Layout } from "@/components/refine-ui/layout/layout";
 
 type RefineContextProps = {
   children: React.ReactNode;
 };
 
+// --- CONTROLLER DO LAYOUT (ESSENCIAL PARA O MENU APARECER) ---
 const LayoutController = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const authPaths = ["/login", "/register", "/forgot-password"];
   const isAuthPage = authPaths.includes(pathname);
 
-  const { data: user } = useGetIdentity<{ app_role: "admin" | "master" }>();
-  const userRole = user?.app_role;
-
+  // Se for página de login, não mostra menu nem topo
   if (isAuthPage) {
     return <>{children}</>;
   }
 
-  if (userRole === "admin") {
-    return <CustomLayout Header={CustomHeader}>{children}</CustomLayout>;
-  }
-
+  // [CORREÇÃO] Removi a lógica que escondia o menu para "admin".
+  // Agora Admin e Master veem o Layout Completo (Topo + Lateral).
   return (
     <CustomLayout Header={CustomHeader} Sider={CustomSider}>
       {children}
@@ -57,15 +54,15 @@ const LayoutController = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const RefineContext = ({ children, ...props }: RefineContextProps) => {
-  const notificationProvider = useNotificationProvider()
-// export function RefineContext({children, ...props}: {children: React.ReactNode;} & RefineProps) {
+  const notificationProvider = useNotificationProvider();
+
   return (
     <RefineKbarProvider>
-    {/* <DevtoolsProvider> */}
       <Refine
         routerProvider={routerProvider}
         dataProvider={dataProvider}
         authProvider={authProviderClient}
+        notificationProvider={notificationProvider}
         resources={[
           {
             name: "dashboard",
@@ -132,7 +129,8 @@ export const RefineContext = ({ children, ...props }: RefineContextProps) => {
             meta: { label: "Fotos", icon: <Camera size={16} /> },
           },
           {
-            name: "city-descriptions",            list: "/city-descriptions",
+            name: "city-descriptions",
+            list: "/city-descriptions",
             meta: {
               label: "Descrições de Cidades",
               icon: <FileText size={16} />,
@@ -141,6 +139,7 @@ export const RefineContext = ({ children, ...props }: RefineContextProps) => {
           {
             name: "city-images",
             list: "/city-images",
+            // eslint-disable-next-line jsx-a11y/alt-text
             meta: { label: "Imagens de Cidades", icon: <Image size={16} /> },
           },
           {
@@ -167,12 +166,14 @@ export const RefineContext = ({ children, ...props }: RefineContextProps) => {
         }}
         {...props}
       >
-        {children}
+        {/* REINSERIDO: O LayoutController envolve o app e renderiza o Menu/Topo */}
+        <LayoutController>
+          {children}
+        </LayoutController>
 
         <Toaster />
         <RefineKbar />
       </Refine>
-    {/* </DevtoolsProvider> */}
     </RefineKbarProvider>
   );
 }

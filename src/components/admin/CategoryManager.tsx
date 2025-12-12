@@ -218,7 +218,7 @@ export function CategoryManager({ itemId, itemName, type, trigger }: CategoryMan
                     {/* Fallback se a busca não retornar nada */}
                     {rootCategories.length > 0 && renderGroups()?.every(x => x === null) && (
                       <p className="text-center text-xs text-muted-foreground py-8">
-                        Nenhuma opção encontrada para "{search}"
+                        Nenhuma opção encontrada para &quot;{search}&quot;
                       </p>
                     )}
                   </div>
