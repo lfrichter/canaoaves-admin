@@ -74,15 +74,16 @@ config:
   look: handDrawn
 ---
 flowchart TD
-    A["Admin (Browser)"] -- "1. Login (Email/Senha)" --> B(Supabase Auth);
-    B -- "2. Retorna Token JWT" --> A;
-    A -- "3. Ação: 'Aprovar Conteúdo'" --> C[Refine DataProvider];
-    C -- "4. Chama Server Action" --> D["Next.js Server Action (Servidor)"];
-    D -- "5. Usa SUPABASE_SERVICE_ROLE_KEY" --> E(Supabase DB);
-    E -- "6. Retorna dados (sem RLS)" --> D;
-    D -- "7. Retorna resultado" --> C;
-    C -- "8. Atualiza UI" --> A;
+    A["Admin (Browser)"] -- "1\. Login (Email/Senha)" --> B(Supabase Auth);
+    B -- "2\. Retorna Token JWT" --> A;
+    A -- "3\. Ação: 'Aprovar Conteúdo'" --> C[Refine DataProvider];
+    C -- "4\. Chama Server Action" --> D["Next.js Server Action (Servidor)"];
+    D -- "5\. Usa SUPABASE_SERVICE_ROLE_KEY" --> E(Supabase DB);
+    E -- "6\. Retorna dados (sem RLS)" --> D;
+    D -- "7\. Retorna resultado" --> C;
+    C -- "8\. Atualiza UI" --> A;
 ```
+
 
 ## 🚀 Começando
 
@@ -141,6 +142,7 @@ Abra [http://localhost:3000](https://www.google.com/search?q=http://localhost:30
   * `npm run build`: Gera o build de produção.
   * `npm run start`: Inicia um servidor de produção (requer `npm run build` primeiro).
   * `npm run lint`: Executa o linter (ESLint) para verificar o código.
+  * `npm run gen:types`: Atualiza todos os tipos da aplicação (`src/types/database.types.ts`) automaticamente conforme o banco de dados Supabase. Deve ser executado sempre que a estrutura do banco for alterada (ex: adicionar uma nova coluna, tabela, função RPC, etc.).
 
 ## 🌐 Deploy
 
