@@ -42,7 +42,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
 
 // --- 1. COMPONENTE PAI (WRAPPER) ---
 export default function ServiceEdit() {
@@ -75,12 +74,6 @@ function ServiceEditForm() {
 
   const record = query?.data?.data;
   const isLoadingRecord = query?.isLoading;
-
-  useEffect(() => {
-    if (record) {
-      form.reset(record);
-    }
-  }, [record, form]);
 
   if (!id || id === "undefined") {
     return (
