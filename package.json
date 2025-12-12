@@ -10,7 +10,8 @@
     "build": "refine build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "refine": "refine"
+    "refine": "refine",
+    "gen:types": "dotenv -- bash -c 'npx -y supabase gen types typescript --project-id ugbcqdrslppxgfqollvu > src/types/database.types.ts'"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -89,6 +90,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "cross-env": "^7.0.3",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8",
     "eslint-config-next": "^15.0.3",
     "postcss": "^8",
