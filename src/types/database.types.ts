@@ -218,6 +218,13 @@ export type Database = {
             foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
             columns: ["submitted_by_user_id"]
             isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -226,6 +233,13 @@ export type Database = {
             columns: ["submitted_by_user_id"]
             isOneToOne: false
             referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -276,6 +290,13 @@ export type Database = {
             foreignKeyName: "city_images_submitted_by_user_id_fkey"
             columns: ["submitted_by_user_id"]
             isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_images_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -284,6 +305,13 @@ export type Database = {
             columns: ["submitted_by_user_id"]
             isOneToOne: false
             referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_images_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -331,6 +359,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "service_comments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -342,6 +384,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -613,6 +662,13 @@ export type Database = {
             foreignKeyName: "reports_reporter_id_fkey"
             columns: ["reporter_id"]
             isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -624,6 +680,20 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reports_resolver_id_fkey"
+            columns: ["resolver_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "reports_resolver_id_fkey"
             columns: ["resolver_id"]
             isOneToOne: false
@@ -635,6 +705,13 @@ export type Database = {
             columns: ["resolver_id"]
             isOneToOne: false
             referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reports_resolver_id_fkey"
+            columns: ["resolver_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -664,6 +741,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_confirmations_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
             referencedColumns: ["id"]
           },
         ]
@@ -702,6 +786,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_events_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
             referencedColumns: ["id"]
           },
         ]
@@ -784,6 +875,13 @@ export type Database = {
             foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
             columns: ["claimant_user_id"]
             isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -795,10 +893,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "service_ownership_claims_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
             referencedColumns: ["id"]
           },
         ]
@@ -831,6 +943,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_projects_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
             referencedColumns: ["id"]
           },
         ]
@@ -871,6 +990,13 @@ export type Database = {
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "service_team_members_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
+            referencedColumns: ["id"]
+          },
         ]
       }
       service_to_amenities: {
@@ -901,6 +1027,13 @@ export type Database = {
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "service_to_amenities_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
+            referencedColumns: ["id"]
+          },
         ]
       }
       service_to_service_offerings: {
@@ -929,6 +1062,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_to_service_offerings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
             referencedColumns: ["id"]
           },
         ]
@@ -1053,6 +1193,13 @@ export type Database = {
             foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
             columns: ["submitted_by_user_id"]
             isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -1061,6 +1208,13 @@ export type Database = {
             columns: ["submitted_by_user_id"]
             isOneToOne: false
             referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1085,6 +1239,55 @@ export type Database = {
       }
     }
     Views: {
+      profile_users: {
+        Row: {
+          app_role: string | null
+          avatar_url: string | null
+          banned_until: string | null
+          category_id: string | null
+          city_id: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
+          document: string | null
+          email: string | null
+          email_confirmed_at: string | null
+          full_name: string | null
+          gender_details: Json | null
+          id: string | null
+          is_guide: boolean | null
+          life_list_url: string | null
+          location_details: Json | null
+          phone: string | null
+          profile_type: Database["public"]["Enums"]["profile_type"] | null
+          public_name: string | null
+          registration_number: number | null
+          score: number | null
+          show_full_name: boolean | null
+          slug: string | null
+          start_date: string | null
+          updated_at: string | null
+          user_deleted_at: string | null
+          user_id: string | null
+          website_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_city"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles_with_email: {
         Row: {
           avatar_url: string | null
@@ -1125,6 +1328,408 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_admin_categories_tree: {
+        Row: {
+          created_at: string | null
+          depth: number | null
+          icon: string | null
+          id: string | null
+          name: string | null
+          parent_id: string | null
+          path_ids: string[] | null
+          slug: string | null
+          sort_path: string | null
+          type: Database["public"]["Enums"]["profile_type"] | null
+        }
+        Relationships: []
+      }
+      view_admin_city_descriptions: {
+        Row: {
+          approved: boolean | null
+          category_icon: string | null
+          city_name: string | null
+          city_state: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          profile_avatar_url: string | null
+          profile_category_name: string | null
+          profile_full_name: string | null
+          profile_phone: string | null
+          profile_public_name: string | null
+          profile_score: number | null
+          submitted_by_user_id: string | null
+          user_email: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      view_admin_city_images: {
+        Row: {
+          approved: boolean | null
+          category_icon: string | null
+          city_name: string | null
+          city_state: string | null
+          created_at: string | null
+          id: string | null
+          image_url: string | null
+          profile_avatar_url: string | null
+          profile_category_name: string | null
+          profile_full_name: string | null
+          profile_phone: string | null
+          profile_public_name: string | null
+          profile_score: number | null
+          submitted_by_user_id: string | null
+          user_email: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_images_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_images_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_images_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "city_images_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      view_admin_comments: {
+        Row: {
+          author_avatar_url: string | null
+          author_email: string | null
+          author_full_name: string | null
+          author_id: string | null
+          author_public_name: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          likes: number | null
+          target_id: string | null
+          target_name: string | null
+          target_slug: string | null
+          target_type: Database["public"]["Enums"]["comment_target_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_comments_user_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_comments_user_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_comments_user_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_comments_user_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      view_admin_photos: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          id: string | null
+          target_id: string | null
+          target_name: string | null
+          target_slug: string | null
+          target_type: Database["public"]["Enums"]["photo_target_type"] | null
+          uploaded_by_user_id: string | null
+          uploader_avatar_url: string | null
+          uploader_email: string | null
+          uploader_full_name: string | null
+          uploader_public_name: string | null
+          url: string | null
+        }
+        Relationships: []
+      }
+      view_admin_profiles: {
+        Row: {
+          app_role: string | null
+          avatar_url: string | null
+          category_icon: string | null
+          category_id: string | null
+          category_name: string | null
+          city_id: string | null
+          city_name: string | null
+          city_state: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
+          document: string | null
+          email: string | null
+          full_name: string | null
+          gender_details: Json | null
+          id: string | null
+          is_guide: boolean | null
+          life_list_url: string | null
+          location_details: Json | null
+          phone: string | null
+          profile_type: Database["public"]["Enums"]["profile_type"] | null
+          public_name: string | null
+          recent_comments: Json | null
+          recent_indicated_services: Json | null
+          recent_owned_services: Json | null
+          registration_number: number | null
+          score: number | null
+          show_full_name: boolean | null
+          slug: string | null
+          start_date: string | null
+          total_comments_made: number | null
+          total_confirmations_made: number | null
+          total_likes_received: number | null
+          total_services_indicated: number | null
+          total_services_owned: number | null
+          updated_at: string | null
+          user_id: string | null
+          website_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_city"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_admin_service_claims: {
+        Row: {
+          claimant_user_id: string | null
+          created_at: string | null
+          document_url: string | null
+          form_email: string | null
+          form_name: string | null
+          form_phone: string | null
+          form_role: string | null
+          id: string | null
+          message: string | null
+          profile_avatar_url: string | null
+          profile_category_icon: string | null
+          profile_category_name: string | null
+          profile_full_name: string | null
+          profile_public_name: string | null
+          profile_score: number | null
+          service_already_authenticated: boolean | null
+          service_id: string | null
+          service_name: string | null
+          service_slug: string | null
+          status: Database["public"]["Enums"]["claim_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_ownership_claims_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_admin_services: {
+        Row: {
+          areas_of_operation: string[] | null
+          category_icon: string | null
+          category_id: string | null
+          category_name: string | null
+          city_id: string | null
+          city_name: string | null
+          city_state: string | null
+          created_at: string | null
+          created_by_user_id: string | null
+          creator_avatar_url: string | null
+          creator_email: string | null
+          creator_full_name: string | null
+          creator_public_name: string | null
+          description: string | null
+          email: string | null
+          featured_photo_url: string | null
+          id: string | null
+          is_authenticated: boolean | null
+          mission: string | null
+          name: string | null
+          owner_avatar_url: string | null
+          owner_email: string | null
+          owner_full_name: string | null
+          owner_public_name: string | null
+          owner_user_id: string | null
+          phone: string | null
+          slug: string | null
+          status: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_city"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      view_admin_state_descriptions: {
+        Row: {
+          approved: boolean | null
+          category_icon: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          profile_avatar_url: string | null
+          profile_category_name: string | null
+          profile_full_name: string | null
+          profile_phone: string | null
+          profile_public_name: string | null
+          profile_score: number | null
+          state_code: string | null
+          submitted_by_user_id: string | null
+          user_email: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "state_descriptions_submitted_by_user_id_fkey"
+            columns: ["submitted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1171,8 +1776,8 @@ export type Database = {
         }[]
       }
       get_city_page_data:
-        | { Args: { p_city_slug: string }; Returns: Json }
         | { Args: { p_city_name: string; p_state_code: string }; Returns: Json }
+        | { Args: { p_city_slug: string }; Returns: Json }
       get_confirmations_counts: {
         Args: { p_service_ids: string[] }
         Returns: Database["public"]["CompositeTypes"]["confirmation_count"][]
@@ -1280,6 +1885,9 @@ export type Database = {
       get_pending_reports_with_details: {
         Args: { p_current_page: number; p_page_size: number }
         Returns: {
+          comment_author_id: string
+          comment_context_slug: string
+          comment_context_type: string
           created_at: string
           description: string
           id: string
@@ -1295,7 +1903,9 @@ export type Database = {
           resolved_at: string
           resolver_id: string
           status: Database["public"]["Enums"]["report_status"]
+          target_avatar_url: string
           target_id: string
+          target_name: string
           target_slug: string
           target_type: Database["public"]["Enums"]["report_target_type"]
           total_count: number
@@ -1416,6 +2026,19 @@ export type Database = {
       }
       search_cities_with_previews:
         | {
+            Args: { p_search_term: string }
+            Returns: {
+              city_id: string
+              city_name: string
+              city_slug: string
+              profiles_preview: Json
+              services_preview: Json
+              state_name: string
+              total_profiles: number
+              total_services: number
+            }[]
+          }
+        | {
             Args: { p_page_num: number; p_search_term: string }
             Returns: {
               city_id: string
@@ -1425,19 +2048,6 @@ export type Database = {
               services_preview: Json
               state_name: string
               total_count: number
-              total_profiles: number
-              total_services: number
-            }[]
-          }
-        | {
-            Args: { p_search_term: string }
-            Returns: {
-              city_id: string
-              city_name: string
-              city_slug: string
-              profiles_preview: Json
-              services_preview: Json
-              state_name: string
               total_profiles: number
               total_services: number
             }[]
@@ -1541,9 +2151,48 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
       slugify: { Args: { value: string }; Returns: string }
       soft_delete_current_user: { Args: never; Returns: undefined }
+      sync_amenity_categories: {
+        Args: { p_amenity_id: string; p_category_ids: string[] }
+        Returns: undefined
+      }
+      sync_offering_categories: {
+        Args: { p_category_ids: string[]; p_offering_id: string }
+        Returns: undefined
+      }
       unaccent: { Args: { "": string }; Returns: string }
       update_location_stats: { Args: never; Returns: undefined }
       update_service_with_normalized_data:
+        | {
+            Args: {
+              p_amenities_ids: string[]
+              p_category_id: string
+              p_city_id: string
+              p_description: string
+              p_email: string
+              p_name: string
+              p_phone: string
+              p_service_id: string
+              p_services_offered_ids: string[]
+              p_website_url: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_amenities_ids: string[]
+              p_category_id: string
+              p_city_id: string
+              p_description: string
+              p_email: string
+              p_name: string
+              p_phone: string
+              p_service_id: string
+              p_services_offered_ids: string[]
+              p_status: string
+              p_website_url: string
+            }
+            Returns: undefined
+          }
         | {
             Args: {
               p_amenities_ids: string[]
@@ -1570,37 +2219,6 @@ export type Database = {
               p_description: string
               p_email: string
               p_mission: string
-              p_name: string
-              p_phone: string
-              p_service_id: string
-              p_services_offered_ids: string[]
-              p_status: string
-              p_website_url: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_amenities_ids: string[]
-              p_category_id: string
-              p_city_id: string
-              p_description: string
-              p_email: string
-              p_name: string
-              p_phone: string
-              p_service_id: string
-              p_services_offered_ids: string[]
-              p_website_url: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_amenities_ids: string[]
-              p_category_id: string
-              p_city_id: string
-              p_description: string
-              p_email: string
               p_name: string
               p_phone: string
               p_service_id: string
@@ -1772,4 +2390,3 @@ export const Constants = {
     },
   },
 } as const
-
