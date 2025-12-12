@@ -24,13 +24,13 @@ import {
   Image,
   LayoutDashboard,
   MapPin,
+  Megaphone, // Changed from ShieldAlert
   MessageSquare,
   Percent,
   Shapes,
-  ShieldAlert,
   ShieldCheck,
   Sparkles,
-  Users
+  Users,
 } from "lucide-react";
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const notificationProvider = useNotificationProvider();
@@ -54,7 +54,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               name: "reports",
               list: "/reports",
               show: "/reports/:id",
-              meta: { label: "Denúncias", icon: <ShieldAlert size={16} /> },
+              meta: { label: "Denúncias", icon: <Megaphone size={16} /> }, // Changed from ShieldAlert
             },
             {
               name: "profiles",

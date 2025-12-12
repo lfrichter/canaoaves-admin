@@ -146,10 +146,26 @@ export const authProviderClient: AuthProvider = {
 
     const { user } = data;
 
+    // Fetch profile data to get public_name and avatar_url
+    const { data: profileData, error: profileError } = await supabaseBrowserClient
+      .from("profiles")
+      .select("public_name, avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle(); // Use maybeSingle() to handle cases where no profile is found
+
+    if (profileError && profileError.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error("Error fetching profile for identity:", profileError);
+        // Optionally, handle error more gracefully, but for now, proceed with partial identity
+    }
+
     return {
-      ...user,
-      name: user.email,
+      ...user, // Keep all existing user properties from Supabase Auth
+      id: user.id, // Ensure id is explicitly set
+      name: user.email, // Fallback name from auth
+      email: user.email,
       app_role: user.user_metadata?.app_role,
+      public_name: profileData?.public_name || user.email, // Use public_name from profile or email as fallback
+      avatar: profileData?.avatar_url || undefined, // Use avatar_url from profile
     };
   },
   onError: async (error) => {

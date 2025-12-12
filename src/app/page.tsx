@@ -11,10 +11,10 @@ import {
   Globe,
   ImageIcon,
   MapPin,
+  Megaphone, // Changed from ShieldAlert
   MessageSquare,
-  ShieldAlert,
   ShieldCheck,
-  Users
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { getDashboardStats } from "./actions/dashboard";
@@ -28,8 +28,7 @@ export default async function DashboardPage() {
     {
       title: "Denúncias e Alertas",
       value: stats.pendingReports,
-      // Ajuste aqui: Usamos text-red-400 no dark para "acender" o ícone sobre o fundo escuro
-      icon: <ShieldAlert className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`} />,
+      icon: <Megaphone className={`h-6 w-6 ${stats.pendingReports > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`} />, // Changed from ShieldAlert
       href: "/reports",
       description: "Comentários, fotos e observadores reportados",
       alert: stats.pendingReports > 0,

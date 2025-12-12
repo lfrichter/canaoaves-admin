@@ -3,6 +3,7 @@
 import { Logo } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +17,19 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useGetIdentity, useLogout } from "@refinedev/core";
 import { createBrowserClient } from "@supabase/ssr"; // Vamos usar direto da fonte
-import { LogOut, User as UserIcon } from "lucide-react";
+import {
+  Globe,
+  ImageIcon,
+  LogOut,
+  MapPin,
+  Megaphone,
+  ShieldCheck,
+  User as UserIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { getPendingCounts } from "@/app/actions/dashboard";
 
 const getInitials = (name?: string) => {
   if (!name) return "U";
@@ -34,46 +45,52 @@ const UserDropdown = () => {
     avatar?: string;
   }>();
 
-  // Estado simples para guardar o ID do perfil
+  // Estado para guardar dados diversos
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [pendingReports, setPendingReports] = useState(0);
+  const [pendingClaims, setPendingClaims] = useState(0);
+  const [pendingCityDesc, setPendingCityDesc] = useState(0);
+  const [pendingCityImg, setPendingCityImg] = useState(0);
+  const [pendingStateDesc, setPendingStateDesc] = useState(0);
 
-  // Efeito "Bala de Prata": Busca direta sem passar pelo Refine Data Provider
+  // Efeito para buscar todos os dados assíncronos
   useEffect(() => {
-    const fetchProfileDirectly = async () => {
-      if (!user?.id) return;
+    if (!user?.id) return;
 
-      try {
-        // Cria cliente temporário apenas para essa busca (sem precisar de arquivos externos)
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+    const fetchInitialData = async () => {
+      // 1. Busca ID do Perfil (pode continuar no cliente se desejado)
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-        // Busca na tabela profiles onde user_id é igual ao do Auth
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (data?.id) {
-          console.log("Perfil encontrado via Direct Client:", data.id);
-          setProfileId(data.id);
-        } else {
-          console.warn("Perfil não encontrado no banco:", error);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar perfil:", err);
+      if (profileData?.id) {
+        setProfileId(profileData.id);
       }
+
+      // 2. Busca contagens via Server Action (para contornar RLS)
+      const counts = await getPendingCounts();
+      setPendingReports(counts.reports);
+      setPendingClaims(counts.claims);
+      setPendingCityDesc(counts.cityDescriptions);
+      setPendingCityImg(counts.cityImages);
+      setPendingStateDesc(counts.stateDescriptions);
     };
 
-    fetchProfileDirectly();
+    fetchInitialData();
   }, [user?.id]);
 
   const { mutate: logout, isPending } = useLogout();
 
   const displayName = user?.public_name || user?.name || "Usuário";
   const profileLink = profileId ? `/profiles/${profileId}/edit` : "#";
+  const showAdminLinks = pendingReports > 0 || pendingClaims > 0;
+  const showContentLinks = pendingCityDesc > 0 || pendingCityImg > 0 || pendingStateDesc > 0;
 
   return (
     <DropdownMenu>
@@ -102,7 +119,6 @@ const UserDropdown = () => {
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link
               href={profileLink}
-              // Se não tiver ID, deixa opaco mas permite clicar (melhor que travar tudo)
               className={cn("flex items-center w-full", !profileId && "opacity-50")}
               onClick={(e) => !profileId && e.preventDefault()}
             >
@@ -111,6 +127,72 @@ const UserDropdown = () => {
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+
+        {/* Links de Moderação de Alertas */}
+        {(showAdminLinks || showContentLinks) && <DropdownMenuSeparator />}
+
+        {pendingReports > 0 && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/reports" className="flex items-center justify-between w-full">
+              <div className="flex items-center">
+                <Megaphone className="mr-2 h-4 w-4 text-destructive" />
+                <span className="text-destructive">Denúncias</span>
+              </div>
+              <Badge variant="destructive">{pendingReports}</Badge>
+            </Link>
+          </DropdownMenuItem>
+        )}
+
+        {pendingClaims > 0 && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/service-ownership-claims" className="flex items-center justify-between w-full">
+              <div className="flex items-center">
+                <ShieldCheck className="mr-2 h-4 w-4 text-amber-600" />
+                <span>Reivindicações</span>
+              </div>
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700">{pendingClaims}</Badge>
+            </Link>
+          </DropdownMenuItem>
+        )}
+
+        {/* Links de Moderação de Conteúdo */}
+        {showContentLinks && (
+          <>
+            {pendingCityDesc > 0 && (
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/city-descriptions" className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <MapPin className="mr-2 h-4 w-4 text-blue-500" />
+                    <span>Descrições</span>
+                  </div>
+                  <Badge variant="secondary">{pendingCityDesc}</Badge>
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {pendingCityImg > 0 && (
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/city-images" className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <ImageIcon className="mr-2 h-4 w-4 text-purple-500" />
+                    <span>Imagens</span>
+                  </div>
+                  <Badge variant="secondary">{pendingCityImg}</Badge>
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {pendingStateDesc > 0 && (
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/state-descriptions" className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Globe className="mr-2 h-4 w-4 text-green-500" />
+                    <span>Estados</span>
+                  </div>
+                  <Badge variant="secondary">{pendingStateDesc}</Badge>
+                </Link>
+              </DropdownMenuItem>
+            )}
+          </>
+        )}
 
         <DropdownMenuSeparator />
 
