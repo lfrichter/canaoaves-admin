@@ -47,12 +47,16 @@ import {
   MessageSquare,
   SaveIcon,
   Shield, Trophy,
-  UserCircle
+  UserCircle,
+  Code2,
+  Copy,
+  Check
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { TechnicalDetailsCard } from "@/components/profile/TechnicalDetailsCard";
 import {
   GAMIFICATION_COLORS,
   GAMIFICATION_ICONS,
@@ -81,10 +85,8 @@ export default function ProfileEdit() {
 }
 
 function ProfileEditContent({ id }: { id: string }) {
-  const { data: identity } = useGetIdentity<{ app_role: string }>();
+  const { data: identity } = useGetIdentity<{ id: string; app_role: string }>();
   const isMaster = identity?.app_role === 'master';
-
-  const [isOpenDetails, setIsOpenDetails] = useState(false);
 
   const { mutate: updateProfile, isLoading: isUpdating } = useUpdate();
 
@@ -168,17 +170,6 @@ function ProfileEditContent({ id }: { id: string }) {
         console.error("Erro ao ler location_details", e);
       }
     }
-  }
-
-  let displayGender = "Não informado";
-  if (record?.gender_details) {
-    try {
-      const genderObj = typeof record.gender_details === 'string'
-        ? JSON.parse(record.gender_details)
-        : record.gender_details;
-      displayGender = genderObj.main || "Não informado";
-      displayGender = displayGender.charAt(0).toUpperCase() + displayGender.slice(1);
-    } catch (e) { }
   }
 
   const handleCustomSubmit = (values: any) => {
@@ -531,56 +522,7 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* CARD 4: DETALHES TÉCNICOS */}
-            <Card className="w-full pb-0">
-              <Collapsible open={isOpenDetails} onOpenChange={setIsOpenDetails}>
-                <div className="flex items-center justify-between px-6 py-4">
-                  <CardTitle className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> Detalhes Técnicos
-                  </CardTitle>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <span className="sr-only">Toggle</span>
-                      <ChevronUpIcon className={`h-4 w-4 transition-transform duration-200 ${isOpenDetails ? "" : "rotate-180"}`} />
-                    </Button>
-                  </CollapsibleTrigger>
-                </div>
-                <CollapsibleContent>
-                  <CardContent className="space-y-4 pt-0 text-sm">
-                    {/* [FIX DARK MODE] border-slate-100 -> border-border */}
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground flex items-center gap-2"><UserCircle className="w-3 h-3" /> Gênero</span>
-                      <span className="font-medium">{displayGender}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground flex items-center gap-2"><CalendarDays className="w-3 h-3" /> Início</span>
-                      <span className="font-medium">{record.start_date ? new Date(record.start_date).toLocaleDateString('pt-BR') : "-"}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground flex items-center gap-2"><Eye className="w-3 h-3" /> Exibe Nome Completo?</span>
-                      <Badge variant={record.show_full_name ? "default" : "secondary"} className="h-5">{record.show_full_name ? "Sim" : "Não"}</Badge>
-                    </div>
-
-                    {record.website_url && (
-                      <div className="flex justify-between py-2 border-b border-border items-center">
-                        <span className="text-muted-foreground flex items-center gap-2"><Globe className="w-3 h-3" /> Website</span>
-                        <a href={record.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
-                          Link Externo <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-                    )}
-                    {record.life_list_url && (
-                      <div className="flex justify-between py-2 items-center">
-                        <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="w-3 h-3" /> Life List</span>
-                        <a href={record.life_list_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-xs truncate max-w-[150px]">
-                          Ver Lista <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-                    )}
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
+            <TechnicalDetailsCard record={record} />
 
             <div className="text-[10px] text-center text-muted-foreground/50 font-mono">
               System ID: {id}
