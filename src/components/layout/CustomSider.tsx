@@ -21,7 +21,9 @@ export const CustomSider = () => {
     app_role: "admin" | "master";
   }>();
   const { menuItems, selectedKey } = useMenu();
-  const { open } = useSidebar();
+
+  // Pegamos setOpenMobile para fechar o menu no celular
+  const { open, setOpenMobile } = useSidebar();
 
   useEffect(() => {
     setIsMounted(true);
@@ -33,8 +35,8 @@ export const CustomSider = () => {
     isMounted && userRole === "master"
       ? "border-r-4 border-yellow-500"
       : isMounted && userRole === "admin"
-      ? "border-r-4 border-gray-400"
-      : "";
+        ? "border-r-4 border-gray-400"
+        : "";
 
   return (
     <Sidebar collapsible={(userRole === "master" || userRole === "admin") ? "icon" : undefined} className={cn(borderColorClass)}>
@@ -45,12 +47,24 @@ export const CustomSider = () => {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.key}>
-              <Link href={item.route || "/"}>
-                <SidebarMenuButton isActive={selectedKey === item.key}>
+              {/* CORREÇÃO:
+                1. 'asChild' no botão faz ele repassar o estilo para o Link filho.
+                2. O 'onClick' fica NO LINK. É ele quem recebe o clique real do usuário.
+                3. Chamamos setOpenMobile(false) sempre. No desktop não faz mal, no mobile fecha o menu.
+              */}
+              <SidebarMenuButton
+                asChild
+                isActive={selectedKey === item.key}
+                tooltip={item.label}
+              >
+                <Link
+                  href={item.route || "/"}
+                  onClick={() => setOpenMobile(false)}
+                >
                   {item.icon}
                   <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

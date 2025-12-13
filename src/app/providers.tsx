@@ -7,8 +7,9 @@ import routerProvider from "@refinedev/nextjs-router/app";
 import React from "react";
 
 import "@/app/globals.css";
+import { CustomSider } from "@/components/layout/CustomSider";
 import { Layout } from "@/components/refine-ui/layout/layout";
-import { Sidebar } from "@/components/refine-ui/layout/sidebar";
+
 import { Toaster } from "@/components/refine-ui/notification/toaster";
 import { useNotificationProvider } from "@/components/refine-ui/notification/use-notification-provider";
 import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
@@ -178,7 +179,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Layout
-      Sider={(userRole === "master" || userRole === "admin") ? Sidebar : undefined}
+      Sider={(userRole === "master" || userRole === "admin") ? CustomSider : undefined}
     >
       {children}
     </Layout>
