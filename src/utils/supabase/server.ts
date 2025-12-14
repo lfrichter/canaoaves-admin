@@ -4,6 +4,12 @@ import { SUPABASE_KEY, SUPABASE_URL } from "./constants";
 
 export const createSupabaseServerClient = async () => {
   const cookieStore = await cookies();
+  const cookieOptions = {
+    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  };
 
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookies: {
@@ -12,7 +18,7 @@ export const createSupabaseServerClient = async () => {
       },
       set(name: string, value: string, options: CookieOptions) {
         try {
-          cookieStore.set({ name, value, ...options });
+          cookieStore.set({ name, value, ...options, ...cookieOptions });
         } catch (error) {
           // The `set` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
@@ -21,7 +27,7 @@ export const createSupabaseServerClient = async () => {
       },
       remove(name: string, options: CookieOptions) {
         try {
-          cookieStore.set({ name, value: "", ...options });
+          cookieStore.set({ name, value: "", ...options, ...cookieOptions });
         } catch (error) {
           // The `delete` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing

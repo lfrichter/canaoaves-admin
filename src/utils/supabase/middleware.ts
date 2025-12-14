@@ -9,6 +9,13 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
+  const cookieOptions = {
+    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  };
+
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookies: {
       get(name: string) {
@@ -29,6 +36,7 @@ export async function updateSession(request: NextRequest) {
           name,
           value,
           ...options,
+          ...cookieOptions,
         });
       },
       remove(name: string, options: CookieOptions) {
@@ -46,6 +54,7 @@ export async function updateSession(request: NextRequest) {
           name,
           value: "",
           ...options,
+          ...cookieOptions,
         });
       },
     },
