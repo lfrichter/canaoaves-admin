@@ -62,13 +62,12 @@ export const authProviderClient: AuthProvider = {
   // ... (o resto do seu provider: logout, register, check, etc.)
 
   logout: async () => {
-    const { error } = await supabaseBrowserClient.auth.signOut();
-
-    if (error) {
-      return {
-        success: false,
-        error,
-      };
+    try {
+      await supabaseBrowserClient.auth.signOut();
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      // Mesmo se o signOut falhar, redirecionamos para o login
+      // para quebrar qualquer loop de autenticação.
     }
 
     return {
