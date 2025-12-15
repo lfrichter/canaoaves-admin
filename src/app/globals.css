@@ -252,4 +252,15 @@
   :is(.dark) .creator-btn:hover {
     background-color: rgba(30, 58, 138, 0.5);
   }
+
+  .warning-card {
+    @apply relative w-full rounded-lg border px-4 py-3 text-sm flex gap-3 items-start;
+    /* Modo Claro: Amarelo vibrante, sem transparência */
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+  }
+
+  /* Modo Escuro: Fundo escuro com tom amarelado e texto claro */
+  .dark .warning-card {
+    @apply bg-yellow-950/30 border-yellow-900/50 text-yellow-200;
+  }
 }

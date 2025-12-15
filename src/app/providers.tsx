@@ -24,6 +24,7 @@ import {
   Globe,
   Image,
   LayoutDashboard,
+  Mail, // Adicionado o ícone Mail
   MapPin,
   Megaphone, // Changed from ShieldAlert
   MessageSquare,
@@ -136,6 +137,11 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
                 label: "Descrições de Estados",
                 icon: <Globe size={16} />,
               },
+            },
+            {
+              name: "communications",
+              list: "/communications",
+              meta: { label: "Comunicados", icon: <Mail size={16} /> }, // Adicionado o item "Comunicados"
             },
             // {
             //   name: "static_content",

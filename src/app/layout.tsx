@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function RootLayout({
             {/* <ThemeProvider> */}
               {/* <RefineContext> */}
                 {children}
+                <Toaster />
               {/* </RefineContext> */}
             {/* </ThemeProvider> */}
           </Providers>
