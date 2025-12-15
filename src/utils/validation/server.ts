@@ -18,6 +18,8 @@ const ALLOWED_RESOURCES = [
   "view_admin_services",
   "view_admin_profiles",
   "view_admin_categories_tree",
+  "profile_users",
+  "communications",
   'statuses',
   "likes",
 ];
