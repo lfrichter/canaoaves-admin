@@ -103,6 +103,7 @@ function ProfileEditContent({ id }: { id: string }) {
         phone: record.phone || "",
         description: record.description || "",
         app_role: record.app_role || "user",
+        profile_type: record.profile_type || "pessoa", // Fundamental para o filtro
         category_id: record.category_id ? String(record.category_id) : undefined,
         score: Number(record.score || 0),
       });
