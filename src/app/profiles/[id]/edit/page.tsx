@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileCategorySelect } from "@/components/admin/ProfileCategorySelect";
 import { DeleteButton } from "@/components/refine-ui/buttons";
 import { EditView, EditViewHeader } from "@/components/refine-ui/views/edit-view";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Authenticated, useGetIdentity, useSelect, useUpdate } from "@refinedev/core";
+import { Authenticated, useGetIdentity, useUpdate } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import {
   Briefcase,
@@ -92,7 +93,7 @@ function ProfileEditContent({ id }: { id: string }) {
   });
 
   const record = query?.data?.data;
-  const watchedType = watch("profile_type");
+  // const watchedType = watch("profile_type");
 
   useEffect(() => {
     if (record) {
@@ -109,14 +110,6 @@ function ProfileEditContent({ id }: { id: string }) {
       });
     }
   }, [record, reset]);
-
-  const { options: categoryOptions } = useSelect({
-    resource: "categories",
-    optionLabel: "name",
-    optionValue: "id",
-    pagination: { pageSize: 100 },
-    filters: [{ field: "type", operator: "eq", value: watchedType || "pessoa" }],
-  });
 
   const score = Number(record?.score || 0);
   const { name: badgeName, nextStart } = getStatusDetails(score, GAMIFICATION_LEVELS);
@@ -300,18 +293,14 @@ function ProfileEditContent({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
-                        <FormField
+                        <ProfileCategorySelect
                           control={control}
-                          name="category_id"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Categoria</FormLabel>
-                              <Select onValueChange={field.onChange} key={field.value} value={field.value ? String(field.value) : undefined}>
-                                <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                                <SelectContent>{categoryOptions.map((opt) => <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>)}</SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
+                          disabled={!isMaster && false}
+                          initialData={
+                            record?.category_id
+                              ? { id: String(record.category_id), name: record.category_name || "Categoria Atual" }
+                              : undefined
+                          }
                         />
                         <FormField
                           control={control}
