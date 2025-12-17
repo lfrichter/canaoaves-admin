@@ -515,7 +515,7 @@ export const getMany = async (resource: string, ids: string[]) => {
   const supabase = createSupabaseServiceRoleClient();
 
   const { data, error } = await supabase
-    .from(resource)
+    .from(resource as any)
     .select("*")
     .in("id", ids);
 
