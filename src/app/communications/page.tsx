@@ -76,12 +76,12 @@ export default function CommunicationsPage() {
 
   const handleSend = async () => {
     if (!subject.trim() || !message.trim()) {
-      open({ type: "error", message: "Erro", description: "Preencha assunto e mensagem." });
+      open?.({ type: "error", message: "Erro", description: "Preencha assunto e mensagem." });
       return;
     }
 
     if (!sendToAll && selectedEmails.length === 0) {
-      open({ type: "error", message: "Erro", description: "Selecione pelo menos um usuário." });
+      open?.({ type: "error", message: "Erro", description: "Selecione pelo menos um usuário." });
       return;
     }
 
@@ -105,7 +105,7 @@ export default function CommunicationsPage() {
       const result = await sendBroadcastAction(subject, message, user?.id, targets);
 
       if (result.success) {
-        open({
+        open?.({
           type: "success",
           message: "Envio Concluído!",
           description: `Mensagem enviada para ${result.count} usuários.`,
@@ -118,7 +118,7 @@ export default function CommunicationsPage() {
         throw new Error(result.message);
       }
     } catch (error: any) {
-      open({ type: "error", message: "Erro no envio", description: error.message });
+      open?.({ type: "error", message: "Erro no envio", description: error.message });
     } finally {
       setIsLoading(false);
     }
