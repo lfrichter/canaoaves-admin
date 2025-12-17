@@ -1,5 +1,6 @@
 "use client";
 
+import { ImpersonateButton } from "@/components/admin/ImpersonateButton";
 import { ProfileCategorySelect } from "@/components/admin/ProfileCategorySelect";
 import { DeleteButton } from "@/components/refine-ui/buttons";
 import { EditView, EditViewHeader } from "@/components/refine-ui/views/edit-view";
@@ -73,7 +74,14 @@ export default function ProfileEdit() {
 
 function ProfileEditContent({ id }: { id: string }) {
   const { data: identity } = useGetIdentity<{ id: string; app_role: string }>();
+
+  // [LÓGICA DE PERMISSÃO]
   const isMaster = identity?.app_role === 'master';
+  const isAdmin = identity?.app_role === 'admin';
+
+  // Master pode tudo. Admin pode editar dados, mas não mudar permissões ou impersonar.
+  const canEditSensitive = isMaster; // Role, Impersonate
+  const canEditOperational = isMaster || isAdmin; // Score, Categoria, Dados gerais
 
   const { mutate: updateProfile, isLoading: isUpdating } = useUpdate() as any;
 
@@ -93,7 +101,6 @@ function ProfileEditContent({ id }: { id: string }) {
   });
 
   const record = query?.data?.data;
-  // const watchedType = watch("profile_type");
 
   useEffect(() => {
     if (record) {
@@ -104,7 +111,7 @@ function ProfileEditContent({ id }: { id: string }) {
         phone: record.phone || "",
         description: record.description || "",
         app_role: record.app_role || "user",
-        profile_type: record.profile_type || "pessoa", // Fundamental para o filtro
+        profile_type: record.profile_type || "pessoa",
         category_id: record.category_id ? String(record.category_id) : undefined,
         score: Number(record.score || 0),
       });
@@ -151,23 +158,35 @@ function ProfileEditContent({ id }: { id: string }) {
   }
 
   const handleCustomSubmit = (values: any) => {
+    const cleanUuid = (value: any) => {
+      if (!value || value === "" || value === "null") {
+        return null;
+      }
+      return value;
+    };
+
     const payload = {
       full_name: values.full_name,
       public_name: values.public_name,
       document: values.document,
       phone: values.phone,
       description: values.description,
-      app_role: values.app_role,
-      category_id: values.category_id,
+
+      // Se não for master, mantém o role original para evitar hacking via request manual
+      app_role: canEditSensitive ? values.app_role : record?.app_role,
+
+      category_id: cleanUuid(values.category_id),
       score: values.score,
     };
 
     updateProfile({
       resource: "profiles",
-      id: id,
+      id,
       values: payload,
-      successNotification: { message: "Perfil atualizado com sucesso", type: "success" },
-      invalidates: ['all']
+    }, {
+      onError: (error: any) => {
+        console.error("Erro ao salvar:", error);
+      }
     });
   };
 
@@ -198,7 +217,6 @@ function ProfileEditContent({ id }: { id: string }) {
                 <CardDescription>Informações principais editáveis.</CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Reconstrução do form object com 'as any' para o FormProvider */}
                 <Form {...({ ...form, control, handleSubmit, reset, watch } as any)}>
                   <form onSubmit={handleSubmit(handleCustomSubmit)} className="grid gap-6">
 
@@ -278,14 +296,15 @@ function ProfileEditContent({ id }: { id: string }) {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2">
                                 Permissão
-                                {!isMaster && <Lock className="w-3 h-3 text-muted-foreground" />}
+                                {/* Apenas MASTER edita role */}
+                                {!canEditSensitive && <Lock className="w-3 h-3 text-muted-foreground" />}
                               </FormLabel>
                               <Select
                                 onValueChange={field.onChange}
                                 key={field.value}
                                 value={field.value || "user"}
                                 defaultValue={record.app_role || "user"}
-                                disabled={!isMaster}
+                                disabled={!canEditSensitive}
                               >
                                 <FormControl><SelectTrigger className="bg-background"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>{roleOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
@@ -293,15 +312,20 @@ function ProfileEditContent({ id }: { id: string }) {
                             </FormItem>
                           )}
                         />
+
                         <ProfileCategorySelect
+                          key={id}
                           control={control}
-                          disabled={!isMaster && false}
+                          // Master ou Admin podem editar categoria
+                          disabled={!canEditOperational}
+                          defaultProfileType={record?.profile_type}
                           initialData={
                             record?.category_id
                               ? { id: String(record.category_id), name: record.category_name || "Categoria Atual" }
                               : undefined
                           }
                         />
+
                         <FormField
                           control={control}
                           name="score"
@@ -309,7 +333,8 @@ function ProfileEditContent({ id }: { id: string }) {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2">
                                 Pontuação
-                                {!isMaster && <Lock className="w-3 h-3 text-muted-foreground" />}
+                                {/* Master ou Admin podem editar score */}
+                                {!canEditOperational && <Lock className="w-3 h-3 text-muted-foreground" />}
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -317,7 +342,7 @@ function ProfileEditContent({ id }: { id: string }) {
                                   className="bg-background"
                                   {...field}
                                   onChange={e => field.onChange(Number(e.target.value))}
-                                  disabled={!isMaster}
+                                  disabled={!canEditOperational}
                                 />
                               </FormControl>
                             </FormItem>
@@ -327,8 +352,19 @@ function ProfileEditContent({ id }: { id: string }) {
                     </div>
 
                     <div className="flex justify-between items-center pt-4 border-t mt-4">
-                      {/* Bypass 'hideText' */}
+                      {/* Admin pode banir/deletar? Se sim, mantenha. Se não, use canEditSensitive */}
                       <DeleteButton recordItemId={id} resource="profiles" confirmTitle="Banir Usuário?" confirmOkText="Sim, Banir" size="sm" {...({ hideText: true } as any)} />
+
+                      <div className="flex justify-end pt-0">
+                        {/* Apenas MASTER pode impersonar */}
+                        {canEditSensitive && record?.email && (
+                          <ImpersonateButton
+                            email={record.email}
+                            name={record.full_name}
+                          />
+                        )}
+                      </div>
+
                       <Button type="submit" size="sm" disabled={isSaving}>
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
                         Salvar Alterações
@@ -340,6 +376,7 @@ function ProfileEditContent({ id }: { id: string }) {
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* ... Cards informativos (Serviços, Comentários) mantidos iguais ... */}
               <Card className="h-full">
                 <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Briefcase className="w-5 h-5 text-muted-foreground" /> Serviços e Indicações</CardTitle></CardHeader>
                 <CardContent className="space-y-6">
@@ -386,6 +423,7 @@ function ProfileEditContent({ id }: { id: string }) {
           </div>
 
           <div className="space-y-6">
+            {/* ... Cards laterais (Gamification, Engajamento, Location) mantidos iguais ... */}
 
             <Card className="overflow-hidden border-border shadow-sm sticky top-4">
               <div className="h-24 w-full relative" style={{ backgroundColor: `${badgeColor}20` }}>
@@ -481,7 +519,6 @@ function ProfileEditContent({ id }: { id: string }) {
               </CardContent>
             </Card>
 
-            {/* [CORREÇÃO FINAL] Bypass para 'record' tipagem */}
             <TechnicalDetailsCard record={record as any} />
 
             <div className="text-[10px] text-center text-muted-foreground/50 font-mono">

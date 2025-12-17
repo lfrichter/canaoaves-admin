@@ -5,6 +5,7 @@ import {
   custom,
   deleteOne,
   getList,
+  getMany as getManyAction,
   getOne,
   update,
 } from "@/app/actions/data";
@@ -65,8 +66,11 @@ export const dataProvider: DataProvider = {
   },
 
   getMany: async ({ resource, ids }) => {
-    // Implement getMany if needed, or throw an error if not supported
-    throw new Error("getMany not implemented.");
+    const response = await getManyAction(resource, ids.map(String));
+
+    return {
+        data: response.data,
+    } as any;
   },
 
   createMany: async ({ resource, variables }) => {

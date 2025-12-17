@@ -97,6 +97,7 @@ export const DeleteButton = React.forwardRef<
       <PopoverTrigger asChild>
         <span>
           <Button
+            type="button"
             variant="destructive"
             {...rest}
             ref={ref}
@@ -116,10 +117,11 @@ export const DeleteButton = React.forwardRef<
         <div className="flex flex-col gap-2">
           <p className="text-sm">{confirmTitle}</p>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
               {confirmCancelText}
             </Button>
             <Button
+              type="button"
               variant="destructive"
               size="sm"
               disabled={loading}

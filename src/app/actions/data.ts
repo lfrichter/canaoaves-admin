@@ -509,3 +509,21 @@ export async function custom(data: any) {
     return Promise.reject(err);
   }
 }
+
+
+export const getMany = async (resource: string, ids: string[]) => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { data, error } = await supabase
+    .from(resource)
+    .select("*")
+    .in("id", ids);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    data: data || [],
+  };
+};
