@@ -51,7 +51,11 @@ export default function CommunicationsPage() {
         if (result.success && result.data) {
           setProfiles(result.data);
         } else {
-          open({ type: "error", message: "Erro ao carregar usuários", description: result.error });
+          open?.({
+            type: "error",
+            message: "Erro ao carregar usuários",
+            description: typeof result.error === 'string' ? result.error : JSON.stringify(result.error)
+          });
         }
         setIsLoadingProfiles(false);
       };
