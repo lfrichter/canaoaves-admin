@@ -1,5 +1,5 @@
 import type { AuthProvider } from "@refinedev/core";
-import { createSupabaseServerClient } from "@utils/supabase/server";
+import { createClient } from "@utils/supabase/server";
 
 export const authProviderServer: AuthProvider = {
   login: async () => {
@@ -18,7 +18,7 @@ export const authProviderServer: AuthProvider = {
     };
   },
   check: async () => {
-    const client = await createSupabaseServerClient();
+    const client = await createClient();
     const { data, error } = await client.auth.getUser();
 
     if (error || !data?.user) {
@@ -35,7 +35,7 @@ export const authProviderServer: AuthProvider = {
     };
   },
   getPermissions: async () => {
-    const client = await createSupabaseServerClient();
+    const client = await createClient();
     const { data, error } = await client.auth.getUser();
 
     if (error || !data?.user) {
@@ -45,7 +45,7 @@ export const authProviderServer: AuthProvider = {
     return data.user?.user_metadata.app_role ?? null;
   },
   getIdentity: async () => {
-    const client = await createSupabaseServerClient();
+    const client = await createClient();
     const { data, error } = await client.auth.getUser();
 
     if (error || !data?.user) {
@@ -65,7 +65,7 @@ export const authProviderServer: AuthProvider = {
     return {};
   },
   logout: async () => {
-    const client = await createSupabaseServerClient();
+    const client = await createClient();
     const { error } = await client.auth.signOut();
 
     if (error) {

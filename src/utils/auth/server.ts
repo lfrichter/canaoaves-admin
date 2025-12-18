@@ -1,10 +1,10 @@
 import { type User } from "@supabase/supabase-js";
-import { createSupabaseServerClient } from "@utils/supabase/server";
+import { createClient } from "@utils/supabase/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 export async function verifyUserRole(allowedRoles: string[]): Promise<User> {
   // [CORREÇÃO]: Voltamos a usar 'await' aqui, pois cookies() é assíncrono
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

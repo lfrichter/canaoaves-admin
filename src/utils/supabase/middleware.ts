@@ -1,66 +1,59 @@
-import { type CookieOptions, createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
-import { SUPABASE_KEY, SUPABASE_URL } from "./constants";
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Criamos uma resposta inicial
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
-  });
+  })
 
-  const cookieOptions = {
-    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  };
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        // Agora o TypeScript reconhecerá o getAll (após o update do npm)
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          // 1. Atualizar o REQUEST
+          // Isso garante que o Server Component/Action que roda DEPOIS do middleware
+          // veja os cookies atualizados (incluindo as options como path/domain).
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set({
+              name,
+              value,
+              ...options,
+            })
+          )
 
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
-    cookies: {
-      get(name: string) {
-        return request.cookies.get(name)?.value;
+          // 2. Atualizar o RESPONSE
+          // Precisamos recriar a resposta para "carregar" as alterações do request
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+
+          // 3. Persistir no BROWSER
+          // Copiamos os cookies para a resposta final que vai para o navegador
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set({
+              name,
+              value,
+              ...options,
+            })
+          )
+        },
       },
-      set(name: string, value: string, options: CookieOptions) {
-        request.cookies.set({
-          name,
-          value,
-          ...options,
-        });
-        response = NextResponse.next({
-          request: {
-            headers: request.headers,
-          },
-        });
-        response.cookies.set({
-          name,
-          value,
-          ...options,
-          ...cookieOptions,
-        });
-      },
-      remove(name: string, options: CookieOptions) {
-        request.cookies.set({
-          name,
-          value: "",
-          ...options,
-        });
-        response = NextResponse.next({
-          request: {
-            headers: request.headers,
-          },
-        });
-        response.cookies.set({
-          name,
-          value: "",
-          ...options,
-          ...cookieOptions,
-        });
-      },
-    },
-  });
+    }
+  )
 
-  await supabase.auth.getUser();
+  // Atualiza a sessão
+  await supabase.auth.getUser()
 
-  return response;
+  return response
 }

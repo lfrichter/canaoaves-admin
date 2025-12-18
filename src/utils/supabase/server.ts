@@ -1,32 +1,30 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { SUPABASE_KEY, SUPABASE_URL } from "./constants";
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-export const createSupabaseServerClient = async () => {
-  // O cookieStore deve ser aguardado em versões modernas do Next.js
-  const cookieStore = await cookies();
+export async function createClient() {
+  const cookieStore = await cookies()
 
   return createServerClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        // Apenas repasse a lista de cookies.
-        // A biblioteca @supabase/ssr fará a remontagem dos chunks automaticamente.
+        // O PULO DO GATO: Usar getAll() permite ler cookies divididos (chunks)
         getAll() {
-          return cookieStore.getAll();
+          return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
-            );
+            )
           } catch {
             // O método setAll foi chamado de um Server Component.
-            // Isso pode ser ignorado se você tiver middleware atualizando a sessão.
+            // Isso pode ser ignorado se você tiver um middleware atualizando
+            // as sessões de usuário.
           }
         },
       },
     }
-  );
-};
+  )
+}
