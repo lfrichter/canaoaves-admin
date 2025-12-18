@@ -23,25 +23,23 @@ export const Logo: React.FC<LogoProps> = ({
 
   const logoSize = isLogin ? 80 : 30;
 
-  // [CORREÇÃO 3]: Aumentei o tamanho do logo no modo colapsado.
-  // Antes era h-[24px], agora é h-[40px] w-[40px] para ficar mais visível.
+  // [CORREÇÃO TAMANHO]:
+  // - Aberto: h-[30px] (discreto, alinhado com texto)
+  // - Fechado: h-[45px] (Maior, para ser o protagonista da sidebar fechada)
   const logoSizeClass = isLogin
     ? 'w-[80px] h-[80px]'
     : showText
       ? 'h-[30px] w-auto object-contain'
-      : 'h-[40px] w-[40px] object-contain';
-
-  const textSizeClass = isLogin ? 'text-lg' : 'text-xs';
+      : 'h-[31px] w-[31px] object-contain';
 
   const containerLayoutClass = isLogin
     ? 'flex flex-col items-center gap-2'
     : showText
       ? 'flex items-center gap-2'
-      : 'flex w-full items-center justify-center'; // Mantém centralizado SE estiver fechado
+      : 'flex w-full items-center justify-center'; // Garante centro absoluto
 
   return (
     <div className={cn(containerLayoutClass, className)}>
-      {/* Link ocupa largura total se estiver fechado para garantir o clique */}
       <Link href="/" className={cn(!showText && "flex justify-center w-full")}>
         <Image
           src={logoImg}
@@ -58,7 +56,8 @@ export const Logo: React.FC<LogoProps> = ({
           className={cn(
             "font-bold whitespace-nowrap",
             "text-foreground",
-            textSizeClass,
+            // Ajuste fino: Se o logo é pequeno (30px), texto xs ou sm fica melhor alinhado
+            "text-sm",
             "transition-opacity duration-200",
             {
               "opacity-100": showText,

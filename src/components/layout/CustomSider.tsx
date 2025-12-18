@@ -22,7 +22,6 @@ export const CustomSider = () => {
   }>();
   const { menuItems, selectedKey } = useMenu();
 
-  // Pegamos setOpenMobile para fechar o menu no celular
   const { open, setOpenMobile } = useSidebar();
 
   useEffect(() => {
@@ -43,10 +42,14 @@ export const CustomSider = () => {
       collapsible={(userRole === "master" || userRole === "admin") ? "icon" : undefined}
       className={cn(borderColorClass)}
     >
-      {/* [CORREÇÃO 1]: Removido 'justify-center'.
-        Adicionado 'pl-3' para alinhar à esquerda, na mesma linha visual dos ícones.
+      {/* [CORREÇÃO CRÍTICA]:
+          - Se aberto: 'pl-3' para alinhar à esquerda junto com os itens.
+          - Se fechado: 'justify-center px-0' para centralizar exato e remover padding que empurrava o logo.
       */}
-      <SidebarHeader className="flex items-center py-4 pl-3">
+      <SidebarHeader className={cn(
+        "flex items-center py-4 transition-all",
+        open ? "pl-3 justify-start" : "justify-center px-0"
+      )}>
         <Logo showText={open} />
       </SidebarHeader>
 
@@ -59,20 +62,21 @@ export const CustomSider = () => {
                 isActive={selectedKey === item.key}
                 tooltip={item.label}
               >
-                {/* [CORREÇÃO 2]: Adicionado lógica (!open && "justify-center")
-                   Isso força o ícone a centralizar PERFEITAMENTE quando a sidebar fecha.
+                {/* [CORREÇÃO ÍCONES]:
+                    - !open: Adicionado 'justify-center' E 'p-0'.
+                    Muitas vezes o padding padrão do botão atrapalha a centralização do ícone sozinho.
                 */}
                 <Link
                   href={item.route || "/"}
                   onClick={() => setOpenMobile(false)}
                   className={cn(
                     "flex items-center gap-2 w-full",
-                    !open && "justify-center px-0"
+                    !open && "justify-center ml-2"
                   )}
                 >
                   {item.icon}
-                  {/* O span é ocultado automaticamente pelo CSS do Sidebar group-data-[collapsible=icon] */}
-                  <span>{item.label}</span>
+                  {/* Renderizamos o span apenas se aberto para garantir que não ocupe espaço fantasma */}
+                  {open && <span>{item.label}</span>}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
