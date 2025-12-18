@@ -32,14 +32,11 @@ function deleteCookie(name: string) {
 }
 
 // 3. O Storage Inteligente (Chunking)
-// Esse objeto intercepta a gravação do token. Se for muito grande, ele fatia.
 const customCookieStorage = {
   getItem: (key: string) => {
-    // Tenta pegar o cookie inteiro
     const item = fetchCookie(key);
     if (item) return item;
 
-    // Se não achou, tenta reconstruir dos pedaços (.0, .1, .2...)
     let value = '';
     let i = 0;
     while (true) {
@@ -52,15 +49,13 @@ const customCookieStorage = {
   },
 
   setItem: (key: string, value: string) => {
-    const chunkSize = 3000; // Margem de segurança (Browser limit ~4096)
+    const chunkSize = 3000;
 
-    // Se couber num só, grava normal
     if (value.length <= chunkSize) {
       setCookie(key, value);
       return;
     }
 
-    // Se for grande, limpa o principal e grava os pedaços
     deleteCookie(key);
     const chunkCount = Math.ceil(value.length / chunkSize);
 
@@ -72,20 +67,19 @@ const customCookieStorage = {
 
   removeItem: (key: string) => {
     deleteCookie(key);
-    // Remove possíveis sobras de chunks
     for (let i = 0; i < 10; i++) deleteCookie(`${key}.${i}`);
   },
 };
 
 // 4. Criação do Cliente com o Storage Customizado
-export const supabaseBrowserClient = createBrowserClient(
+// [CORREÇÃO] Renomeado para 'supabase' para satisfazer o logger.ts e outros arquivos
+export const supabase = createBrowserClient(
   SUPABASE_URL,
   SUPABASE_KEY,
   {
     db: {
       schema: "public",
     },
-    // Aqui injetamos nossa lógica de fatiamento
     auth: {
       storage: customCookieStorage,
       autoRefreshToken: true,
