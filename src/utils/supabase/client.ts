@@ -4,7 +4,7 @@ import { SUPABASE_KEY, SUPABASE_URL } from "./constants";
 // 1. Definições de Cookie
 const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN;
 
-// 2. Funções Auxiliares para Manipular Cookies no Navegador
+// 2. Funções Auxiliares
 function fetchCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
   const nameEQ = name + "=";
@@ -21,7 +21,6 @@ function setCookie(name: string, value: string) {
   if (typeof document === 'undefined') return;
   const domainAttr = COOKIE_DOMAIN ? `; domain=${COOKIE_DOMAIN}` : '';
   const secureAttr = process.env.NODE_ENV === "production" ? '; Secure' : '';
-  // Expira em 1 ano (persistente)
   document.cookie = `${name}=${encodeURIComponent(value)}${domainAttr}; path=/; max-age=31536000; SameSite=Lax${secureAttr}`;
 }
 
@@ -31,7 +30,7 @@ function deleteCookie(name: string) {
   document.cookie = `${name}=${domainAttr}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }
 
-// 3. O Storage Inteligente (Chunking)
+// 3. Storage Inteligente
 const customCookieStorage = {
   getItem: (key: string) => {
     const item = fetchCookie(key);
@@ -71,8 +70,7 @@ const customCookieStorage = {
   },
 };
 
-// 4. Criação do Cliente com o Storage Customizado
-// [CORREÇÃO] Renomeado para 'supabase' para satisfazer o logger.ts e outros arquivos
+// 4. Criação do Cliente
 export const supabase = createBrowserClient(
   SUPABASE_URL,
   SUPABASE_KEY,
@@ -88,3 +86,6 @@ export const supabase = createBrowserClient(
     }
   }
 );
+
+// [CORREÇÃO FINAL]: Exportamos TAMBÉM com o nome antigo para não quebrar os outros arquivos
+export const supabaseBrowserClient = supabase;
