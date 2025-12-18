@@ -1,11 +1,11 @@
-"use server";
-
 import { type User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@utils/supabase/server";
 import { createSupabaseServiceRoleClient } from "@utils/supabase/serverClient";
 
 export async function verifyUserRole(allowedRoles: string[]): Promise<User> {
+  // [CORREÇÃO]: Voltamos a usar 'await' aqui, pois cookies() é assíncrono
   const supabase = await createSupabaseServerClient();
+
   const {
     data: { user },
     error: authError,
@@ -15,7 +15,7 @@ export async function verifyUserRole(allowedRoles: string[]): Promise<User> {
     throw new Error("Authentication required. User not found.");
   }
 
-  // Use the service role client to fetch the profile, as RLS might prevent the user from reading their own profile.
+  // ... (o restante do código permanece igual)
   const serviceRoleSupabase = createSupabaseServiceRoleClient();
   const { data: profile, error: profileError } = await serviceRoleSupabase
     .from("profiles")
@@ -28,7 +28,8 @@ export async function verifyUserRole(allowedRoles: string[]): Promise<User> {
   }
 
   const userRole = profile.app_role;
-  if (!userRole || !allowedRoles.includes(userRole)) {
+
+  if (allowedRoles.length > 0 && (!userRole || !allowedRoles.includes(userRole))) {
     throw new Error(`Permission denied. User role '${userRole}' is not one of '${allowedRoles.join(", ")}'.`);
   }
 

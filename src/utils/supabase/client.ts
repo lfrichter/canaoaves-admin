@@ -1,76 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { SUPABASE_KEY, SUPABASE_URL } from "./constants";
 
-// 1. Definições de Cookie
-const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN;
-
-// 2. Funções Auxiliares
-function fetchCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-  }
-  return null;
-}
-
-function setCookie(name: string, value: string) {
-  if (typeof document === 'undefined') return;
-  const domainAttr = COOKIE_DOMAIN ? `; domain=${COOKIE_DOMAIN}` : '';
-  const secureAttr = process.env.NODE_ENV === "production" ? '; Secure' : '';
-  document.cookie = `${name}=${encodeURIComponent(value)}${domainAttr}; path=/; max-age=31536000; SameSite=Lax${secureAttr}`;
-}
-
-function deleteCookie(name: string) {
-  if (typeof document === 'undefined') return;
-  const domainAttr = COOKIE_DOMAIN ? `; domain=${COOKIE_DOMAIN}` : '';
-  document.cookie = `${name}=${domainAttr}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-}
-
-// 3. Storage Inteligente
-const customCookieStorage = {
-  getItem: (key: string) => {
-    const item = fetchCookie(key);
-    if (item) return item;
-
-    let value = '';
-    let i = 0;
-    while (true) {
-      const chunk = fetchCookie(`${key}.${i}`);
-      if (!chunk) break;
-      value += chunk;
-      i++;
-    }
-    return value || null;
-  },
-
-  setItem: (key: string, value: string) => {
-    const chunkSize = 3000;
-
-    if (value.length <= chunkSize) {
-      setCookie(key, value);
-      return;
-    }
-
-    deleteCookie(key);
-    const chunkCount = Math.ceil(value.length / chunkSize);
-
-    for (let i = 0; i < chunkCount; i++) {
-      const chunk = value.slice(i * chunkSize, (i + 1) * chunkSize);
-      setCookie(`${key}.${i}`, chunk);
-    }
-  },
-
-  removeItem: (key: string) => {
-    deleteCookie(key);
-    for (let i = 0; i < 10; i++) deleteCookie(`${key}.${i}`);
-  },
-};
-
-// 4. Criação do Cliente
 export const supabase = createBrowserClient(
   SUPABASE_URL,
   SUPABASE_KEY,
@@ -78,8 +8,16 @@ export const supabase = createBrowserClient(
     db: {
       schema: "public",
     },
+    // Removido o customCookieStorage manual.
+    // Usamos cookieOptions para lidar com o domínio e segurança.
+    cookieOptions: {
+      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN, // Define o domínio se existir
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      // O @supabase/ssr lida automaticamente com chunking se o cookie for muito grande
+    },
     auth: {
-      storage: customCookieStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
@@ -87,5 +25,4 @@ export const supabase = createBrowserClient(
   }
 );
 
-// [CORREÇÃO FINAL]: Exportamos TAMBÉM com o nome antigo para não quebrar os outros arquivos
 export const supabaseBrowserClient = supabase;
