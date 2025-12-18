@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import logoImg from '../../../public/Logo-Canaoaves-small.png';
 
 type LogoProps = {
   className?: string;
@@ -21,24 +22,33 @@ export const Logo: React.FC<LogoProps> = ({
   const showText = isLogin ? true : showTextProp;
 
   const logoSize = isLogin ? 80 : 30;
-  const logoSizeClass = isLogin ? 'w-[80px] h-[80px]' : 'h-[30px] w-auto';
+
+  // [CORREÇÃO 3]: Aumentei o tamanho do logo no modo colapsado.
+  // Antes era h-[24px], agora é h-[40px] w-[40px] para ficar mais visível.
+  const logoSizeClass = isLogin
+    ? 'w-[80px] h-[80px]'
+    : showText
+      ? 'h-[30px] w-auto object-contain'
+      : 'h-[40px] w-[40px] object-contain';
+
   const textSizeClass = isLogin ? 'text-lg' : 'text-xs';
 
   const containerLayoutClass = isLogin
     ? 'flex flex-col items-center gap-2'
     : showText
       ? 'flex items-center gap-2'
-      : 'flex items-center justify-center';
+      : 'flex w-full items-center justify-center'; // Mantém centralizado SE estiver fechado
 
   return (
     <div className={cn(containerLayoutClass, className)}>
-      <Link href="/">
+      {/* Link ocupa largura total se estiver fechado para garantir o clique */}
+      <Link href="/" className={cn(!showText && "flex justify-center w-full")}>
         <Image
-          src="/logo.png"
+          src={logoImg}
           alt="Canaoaves Logo"
           width={logoSize}
           height={logoSize}
-          className={logoSizeClass}
+          className={cn(logoSizeClass, "transition-all duration-200")}
           priority
         />
       </Link>
@@ -47,8 +57,6 @@ export const Logo: React.FC<LogoProps> = ({
         <span
           className={cn(
             "font-bold whitespace-nowrap",
-            // [CORREÇÃO] Substituído cores fixas por semânticas
-            // 'text-foreground' garante legibilidade perfeita em qualquer tema
             "text-foreground",
             textSizeClass,
             "transition-opacity duration-200",

@@ -39,29 +39,39 @@ export const CustomSider = () => {
         : "";
 
   return (
-    <Sidebar collapsible={(userRole === "master" || userRole === "admin") ? "icon" : undefined} className={cn(borderColorClass)}>
-      <SidebarHeader>
+    <Sidebar
+      collapsible={(userRole === "master" || userRole === "admin") ? "icon" : undefined}
+      className={cn(borderColorClass)}
+    >
+      {/* [CORREÇÃO 1]: Removido 'justify-center'.
+        Adicionado 'pl-3' para alinhar à esquerda, na mesma linha visual dos ícones.
+      */}
+      <SidebarHeader className="flex items-center py-4 pl-3">
         <Logo showText={open} />
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.key}>
-              {/* CORREÇÃO:
-                1. 'asChild' no botão faz ele repassar o estilo para o Link filho.
-                2. O 'onClick' fica NO LINK. É ele quem recebe o clique real do usuário.
-                3. Chamamos setOpenMobile(false) sempre. No desktop não faz mal, no mobile fecha o menu.
-              */}
               <SidebarMenuButton
                 asChild
                 isActive={selectedKey === item.key}
                 tooltip={item.label}
               >
+                {/* [CORREÇÃO 2]: Adicionado lógica (!open && "justify-center")
+                   Isso força o ícone a centralizar PERFEITAMENTE quando a sidebar fecha.
+                */}
                 <Link
                   href={item.route || "/"}
                   onClick={() => setOpenMobile(false)}
+                  className={cn(
+                    "flex items-center gap-2 w-full",
+                    !open && "justify-center px-0"
+                  )}
                 >
                   {item.icon}
+                  {/* O span é ocultado automaticamente pelo CSS do Sidebar group-data-[collapsible=icon] */}
                   <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>

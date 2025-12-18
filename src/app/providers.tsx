@@ -17,16 +17,15 @@ import { dataProvider } from "@providers/data-provider";
 import { useGetIdentity } from "@refinedev/core";
 import { usePathname } from "next/navigation";
 
-// --- MUDANÇA 1: Importar os ícones do 'lucide-react' ---
 import {
   Camera,
   Coffee,
   Globe,
-  Image,
+  Image as ImageIcon, // Renomeado para evitar conflito com 'next/image' se necessário
   LayoutDashboard,
-  Mail, // Adicionado o ícone Mail
+  Mail,
   MapPin,
-  Megaphone, // Changed from ShieldAlert
+  Megaphone,
   MessageSquare,
   Percent,
   Shapes,
@@ -34,6 +33,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const notificationProvider = useNotificationProvider();
 
@@ -45,7 +45,6 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
           dataProvider={dataProvider}
           notificationProvider={notificationProvider}
           routerProvider={routerProvider}
-          // --- MUDANÇA 2: Adicionar a prop 'icon' em cada 'meta' ---
           resources={[
             {
               name: "dashboard",
@@ -56,7 +55,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               name: "reports",
               list: "/reports",
               show: "/reports/:id",
-              meta: { label: "Denúncias", icon: <Megaphone size={16} /> }, // Changed from ShieldAlert
+              meta: { label: "Denúncias", icon: <Megaphone size={16} /> },
             },
             {
               name: "profiles",
@@ -126,8 +125,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "city_images",
               list: "/city-images",
-              // eslint-disable-next-line jsx-a11y/alt-text
-              meta: { label: "Imagens de Cidades", icon: <Image size={16} /> },
+              meta: { label: "Imagens de Cidades", icon: <ImageIcon size={16} /> },
             },
             {
               name: "state_descriptions",
@@ -141,17 +139,8 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             {
               name: "communications",
               list: "/communications",
-              meta: { label: "Comunicados", icon: <Mail size={16} /> }, // Adicionado o item "Comunicados"
+              meta: { label: "Comunicados", icon: <Mail size={16} /> },
             },
-            // {
-            //   name: "static_content",
-            //   list: "/static-content",
-            //   edit: "/static-content/:id/edit",
-            //   meta: {
-            //     label: "Conteúdo Estático",
-            //     icon: <ClipboardList size={16} />,
-            //   },
-            // },
           ]}
           options={{
             syncWithLocation: true,
