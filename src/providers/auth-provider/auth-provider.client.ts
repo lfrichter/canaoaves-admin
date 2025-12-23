@@ -118,19 +118,28 @@ export const authProviderClient: AuthProvider = {
     };
   },
   check: async () => {
-    const { data, error } = await supabaseBrowserClient.auth.getUser();
+    try {
+      const { data, error } = await supabaseBrowserClient.auth.getUser();
 
-    if (error || !data?.user) {
+      // Se tiver erro ou não tiver usuário, chuta para o login
+      if (error || !data?.user) {
+        return {
+          authenticated: false,
+          redirectTo: "/login",
+          logout: true, // Força o Refine a limpar o estado dele
+        };
+      }
+
+      return {
+        authenticated: true,
+      };
+    } catch (error) {
       return {
         authenticated: false,
         redirectTo: "/login",
         logout: true,
       };
     }
-
-    return {
-      authenticated: true,
-    };
   },
   getPermissions: async () => {
     const { data: userData } = await supabaseBrowserClient.auth.getUser();
@@ -168,9 +177,24 @@ export const authProviderClient: AuthProvider = {
     };
   },
   onError: async (error) => {
-    if (error?.code === "PGRST301" || error?.code === 401) {
+    console.error("Auth Error Detectado:", error);
+
+    const status = error?.status || error?.statusCode || error?.code;
+
+    // Adicionado status 400 (Bad Request) e 403 (Forbidden)
+    // O erro 400 acontece quando o refresh token está corrompido/inválido
+    if (status === 400 || status === 401 || status === 403 || status === "PGRST301") {
+
+      // Força a limpeza do Supabase no navegador
+      await supabaseBrowserClient.auth.signOut();
+
       return {
         logout: true,
+        redirectTo: "/login",
+        error: {
+            message: "Sessão expirada. Faça login novamente.",
+            name: "Session Error"
+        }
       };
     }
 
