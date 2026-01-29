@@ -42,6 +42,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import { ServiceFeaturedPhotoUpload } from "@/components/admin/service-featured-photo-upload";
 
 // --- 1. COMPONENTE PAI (WRAPPER) ---
 export default function ServiceEdit() {
@@ -56,6 +58,7 @@ export default function ServiceEdit() {
 function ServiceEditForm() {
   const params = useParams();
   const id = params?.id as string;
+  const [featuredPhotoFile, setFeaturedPhotoFile] = useState<File | null>(null);
 
   const {
     refineCore: { query, onFinish },
@@ -71,6 +74,40 @@ function ServiceEditForm() {
       },
     },
   }) as any;
+
+  const handleImageSelect = (file: File | null) => {
+    setFeaturedPhotoFile(file);
+    // Trick to make the form dirty and enable the save button
+    if(file){
+        form.setValue("featured_photo_url", `temp_url_for_dirty_check_${Date.now()}`, { shouldDirty: true });
+    }
+  };
+
+  const handleFormSubmit = async (values: any) => {
+    const newValues = { ...values };
+
+    if (featuredPhotoFile) {
+        const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = error => reject(error);
+        });
+
+        try {
+            const base64 = await toBase64(featuredPhotoFile);
+            newValues.featured_photo_url = {
+                base64,
+                fileName: featuredPhotoFile.name,
+            };
+        } catch (error) {
+            console.error("Error converting file to base64", error);
+            return;
+        }
+    }
+    
+    await onFinish(newValues);
+  };
 
   const record = query?.data?.data;
   const isLoadingRecord = query?.isLoading;
@@ -119,7 +156,7 @@ function ServiceEditForm() {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onFinish)} className="grid gap-6">
+                  <form onSubmit={form.handleSubmit(handleFormSubmit)} className="grid gap-6">
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -321,16 +358,11 @@ function ServiceEditForm() {
               </CardHeader>
               <CardContent className="space-y-6 text-sm">
 
-                {/* FOTO */}
-                {record?.featured_photo_url && (
-                  <div className="aspect-square relative rounded-md overflow-hidden bg-slate-100 border group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={record.featured_photo_url} alt="Capa" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center shadow-sm">
-                      <Camera className="w-3 h-3 mr-1" /> Capa
-                    </div>
-                  </div>
-                )}
+                <ServiceFeaturedPhotoUpload
+                  currentImageUrl={record?.featured_photo_url}
+                  onImageSelect={handleImageSelect}
+                  isSaving={form.formState.isSubmitting}
+                />
 
                 {/* CATEGORIA E LOCAL */}
                 <div className="grid grid-cols-2 gap-4">
