@@ -19,33 +19,29 @@ export function ServiceFeaturedPhotoUpload({
   isSaving,
 }: ServiceFeaturedPhotoUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
       onImageSelect(file);
+    } else {
+      setPreviewUrl(null);
+      onImageSelect(null);
     }
   };
 
   const handleRemoveImage = () => {
-    setSelectedFile(null);
     setPreviewUrl(null);
     onImageSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
   };
 
   const effectiveImageUrl = previewUrl || currentImageUrl;
@@ -84,20 +80,20 @@ export function ServiceFeaturedPhotoUpload({
           )}
 
           <div className="grid grid-cols-1 gap-2">
-             <Button
-              variant="outline"
-              onClick={triggerFileInput}
-              disabled={isSaving}
-            >
-              {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadCloud className="w-4 h-4 mr-2" />}
-              {currentImageUrl ? "Trocar Imagem" : "Enviar Imagem"}
+             <Button asChild variant="outline" disabled={isSaving}>
+              <label htmlFor="featured-photo-file-input" className="cursor-pointer flex items-center justify-center w-full h-full">
+                {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadCloud className="w-4 h-4 mr-2" />}
+                {currentImageUrl ? "Trocar Imagem" : "Enviar Imagem"}
+              </label>
             </Button>
             <Input
               ref={fileInputRef}
+              id="featured-photo-file-input"
               type="file"
               className="hidden"
               onChange={handleFileChange}
               accept="image/png, image/jpeg, image/webp"
+              disabled={isSaving}
             />
           </div>
         </div>
