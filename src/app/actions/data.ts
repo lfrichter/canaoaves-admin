@@ -281,13 +281,88 @@ export async function getOne(
   return { data };
 }
 
+async function uploadServiceImage(
+  supabaseService: any,
+  photoData: any,
+  serviceIdPrefix: string = 'new'
+): Promise<string | null> {
+
+  // 1. Sanitização: Se vier como string JSON, faz o parse
+  if (typeof photoData === 'string' && photoData.trim().startsWith('{')) {
+    try {
+      photoData = JSON.parse(photoData);
+    } catch (e) {
+      console.warn("Falha ao parsear JSON da imagem, ignorando.", e);
+      return null;
+    }
+  }
+
+  // 2. Validação: Verifica se é um objeto de imagem válido vindo do componente
+  if (typeof photoData === 'object' && photoData !== null && photoData.base64) {
+    try {
+      // Extrai o base64 puro (remove "data:image/png;base64,")
+      const base64Content = photoData.base64.split(',')[1] || photoData.base64;
+      const fileBuffer = Buffer.from(base64Content, 'base64');
+
+      // Define extensão e nome
+      const fileType = photoData.type || 'image/jpeg';
+      const fileExtension = fileType.split('/')[1] || 'jpg';
+
+      // Caminho no bucket 'photos'
+      // Ex: admin-uploads/service-123-featured-17150000.jpg
+      const fileName = `service-${serviceIdPrefix}-featured-${Date.now()}.${fileExtension}`;
+      const filePath = `admin-uploads/${fileName}`;
+
+      // 3. Upload para o bucket 'photos'
+      const { error: uploadError } = await supabaseService.storage
+        .from("photos") // <--- BUCKET CORRETO
+        .upload(filePath, fileBuffer, {
+          contentType: fileType,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error("Erro Supabase Storage:", uploadError);
+        throw new Error(`Erro no upload: ${uploadError.message}`);
+      }
+
+      // 4. Obter URL Pública
+      const { data: publicUrlData } = supabaseService.storage
+        .from("photos")
+        .getPublicUrl(filePath);
+
+      return publicUrlData.publicUrl;
+
+    } catch (e: any) {
+      console.error("Falha crítica no processamento da imagem:", e);
+      throw e; // Lança o erro para o usuário ver
+    }
+  }
+
+  return null; // Não era uma imagem nova, retorna null
+}
+
 // =========================================================
 // CREATE
 // =========================================================
 export async function create(resource: string, variables: any) {
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
+  const supabase = createSupabaseServiceRoleClient();
 
+  // --- LÓGICA DE UPLOAD (CREATE) ---
+  if (resource === "services" && variables.featured_photo_url) {
+    const publicUrl = await uploadServiceImage(supabase, variables.featured_photo_url, crypto.randomUUID());
+
+    if (publicUrl) {
+      variables.featured_photo_url = publicUrl;
+    } else {
+      // Se não conseguiu processar (ex: não era base64 válido), remove o campo para não dar erro
+      delete variables.featured_photo_url;
+    }
+  }
+
+  // Sanitização de Profiles
   if (resource === "profiles") {
     // Sanitização de View
     delete variables.email;
@@ -309,17 +384,18 @@ export async function create(resource: string, variables: any) {
     delete variables.recent_comments;
   }
 
-  const supabase = createSupabaseServiceRoleClient();
   const { data, error } = await supabase
     .from(resource as TableName)
     .insert(variables)
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Supabase Insert Error:", error);
+    throw error;
+  }
 
   revalidatePath(`/${resource}`);
-
   return { data };
 }
 
@@ -330,6 +406,23 @@ export async function update(resource: string, id: string, variables: any) {
   // 1. Permite entrada para Admin e Master
   await verifyUserRole(["admin", "master"]);
   validateResource(resource);
+  const supabaseService = createSupabaseServiceRoleClient();
+
+  // --- LÓGICA DE UPLOAD (UPDATE) ---
+  if (resource === "services" && variables.featured_photo_url) {
+    const publicUrl = await uploadServiceImage(supabaseService, variables.featured_photo_url, id);
+
+    if (publicUrl) {
+      variables.featured_photo_url = publicUrl;
+    } else {
+       // Se retornou null, significa que não é uma NOVA imagem base64.
+       // Pode ser que o usuário não trocou a imagem (manteve a URL antiga string).
+       // Nesse caso, verificamos: se for objeto inválido, deleta. Se for string URL, mantém.
+       if (typeof variables.featured_photo_url === 'object') {
+          delete variables.featured_photo_url;
+       }
+    }
+  }
 
   // 2. Descobre se é Master usando a própria função de verificação
   let isMaster = false;
@@ -369,7 +462,6 @@ export async function update(resource: string, id: string, variables: any) {
     delete variables.recent_comments;
   }
 
-  const supabaseService = createSupabaseServiceRoleClient();
   const { data, error } = await supabaseService
     .from(resource as TableName)
     .update(variables)
@@ -377,10 +469,12 @@ export async function update(resource: string, id: string, variables: any) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Supabase Update Error:", error);
+    throw error;
+  }
 
   revalidatePath(`/${resource}`);
-
   return { data };
 }
 
