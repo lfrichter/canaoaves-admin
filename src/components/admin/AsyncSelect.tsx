@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import { useFormContext } from "react-hook-form";
-// Ajuste o import conforme seu projeto (src/utils... ou @/utils...)
+// Cliente Supabase do Browser
 import { supabase } from "@/utils/supabase/client";
 
-import { cn } from "@/lib/utils";
 import {
   FormControl,
   FormField,
@@ -20,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// Certifique-se que o hook existe
 import { useDebounce } from "@/hooks/use-debounce";
 
 interface AsyncSelectProps {
@@ -44,15 +42,16 @@ export function AsyncSelect({
   selectColumns = "*",
   renderOption,
 }: AsyncSelectProps) {
+  // 'watch' monitora o valor para garantir que o label sempre apareça
   const { control, watch } = useFormContext();
   const [options, setOptions] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
 
-  // --- 1. ESTADO DA BUSCA (Correção do erro TS) ---
+  // Busca simples
   const [inputValue, setInputValue] = React.useState("");
   const debouncedInputValue = useDebounce(inputValue, 500);
 
-  // Monitora o valor atual para o "Rescue"
+  // Valor atual do formulário
   const currentValue = watch(name);
 
   React.useEffect(() => {
@@ -61,14 +60,13 @@ export function AsyncSelect({
     const fetchOptions = async () => {
       setLoading(true);
       try {
-        // --- 2. ORDEM ALFABÉTICA ---
+        // 1. ORDEM ALFABÉTICA (A-Z)
         let query = supabase
           .from(resource as any)
           .select(selectColumns)
           .order(optionLabel, { ascending: true })
-          .limit(50);
+          .limit(50); // Traz os primeiros 50
 
-        // Filtro de busca
         if (debouncedInputValue) {
           query = query.ilike(optionLabel, `%${debouncedInputValue}%`);
         }
@@ -78,14 +76,16 @@ export function AsyncSelect({
 
         let finalOptions = listData || [];
 
-        // --- 3. FIX DO BUG DE SELEÇÃO (Lógica de Resgate) ---
-        if (currentValue && finalOptions.length > 0) {
+        // 2. LÓGICA DE RESGATE (Salva o Label Vazio)
+        // Se temos um valor selecionado...
+        if (currentValue) {
+          // Verifica se ele está na lista (convertendo tudo para String para evitar bug de tipo)
           const isSelectedInList = finalOptions.some(
-            (item) => item[optionValue] === currentValue
+            (item) => String(item[optionValue]) === String(currentValue)
           );
 
+          // Se NÃO estiver na lista, buscamos ele individualmente no banco
           if (!isSelectedInList) {
-            // Se o item selecionado não está na lista (ex: está na pag 2), busca ele
             const { data: singleItem } = await supabase
               .from(resource as any)
               .select(selectColumns)
@@ -93,19 +93,21 @@ export function AsyncSelect({
               .maybeSingle();
 
             if (singleItem) {
+              // Adiciona ele no topo da lista
               finalOptions = [singleItem, ...finalOptions];
             }
           }
         }
 
         if (isMounted) {
-            // Remove duplicatas
-            const unique = Array.from(new Map(finalOptions.map(item => [item[optionValue], item])).values());
-            setOptions(unique);
+          // Remove duplicatas (pelo ID) para garantir lista limpa
+          const unique = Array.from(
+            new Map(finalOptions.map((item) => [item[optionValue], item])).values()
+          );
+          setOptions(unique);
         }
-
       } catch (err) {
-        console.error(err);
+        console.error("Erro AsyncSelect:", err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -114,6 +116,7 @@ export function AsyncSelect({
     fetchOptions();
 
     return () => { isMounted = false; };
+    // Roda novamente se o valor mudar, garantindo o resgate do label
   }, [debouncedInputValue, resource, selectColumns, optionLabel, currentValue]);
 
   return (
@@ -121,22 +124,26 @@ export function AsyncSelect({
       control={control}
       name={name}
       render={({ field }) => {
-        const selectedItem = options.find((item) => item[optionValue] === field.value);
+        // 3. FIX DE TIPO (String vs Number)
+        // Garante que encontramos o item mesmo se o banco devolver número e o form for string
+        const selectedItem = options.find(
+          (item) => String(item[optionValue]) === String(field.value)
+        );
 
         const displayLabel = selectedItem
-            ? (renderOption && typeof renderOption(selectedItem) === 'string'
-                ? renderOption(selectedItem)
-                : selectedItem[optionLabel])
-            : undefined;
+          ? (renderOption && typeof renderOption(selectedItem) === 'string'
+            ? renderOption(selectedItem)
+            : selectedItem[optionLabel])
+          : undefined;
 
         return (
           <FormItem>
             <FormLabel>{label}</FormLabel>
             <Select
               onValueChange={field.onChange}
-              defaultValue={field.value}
+              defaultValue={String(field.value || "")} // Garante string
+              value={String(field.value || "")} // Controlled component
               disabled={loading}
-              value={field.value} // Controlled component
             >
               <FormControl>
                 <SelectTrigger>
@@ -146,13 +153,12 @@ export function AsyncSelect({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {/* --- 4. CAMPO DE BUSCA DENTRO DO SELECT --- */}
+                {/* Campo de busca fixo no topo */}
                 <div className="p-2 sticky top-0 bg-popover z-10">
                     <input
                       className="w-full border rounded px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring bg-background"
-                      placeholder="Digitar para buscar..."
+                      placeholder="Buscar..."
                       onChange={(e) => setInputValue(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
                       onKeyDown={(e) => e.stopPropagation()}
                     />
                 </div>
@@ -164,7 +170,7 @@ export function AsyncSelect({
                 )}
 
                 {options.map((item) => (
-                  <SelectItem key={item[optionValue]} value={item[optionValue]}>
+                  <SelectItem key={item[optionValue]} value={String(item[optionValue])}>
                     {renderOption ? renderOption(item) : item[optionLabel]}
                   </SelectItem>
                 ))}
