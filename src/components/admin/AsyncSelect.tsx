@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useFormContext } from "react-hook-form";
-import { supabase } from "@utils/supabase/client";
+// Ajuste o import conforme seu projeto (src/utils... ou @/utils...)
+import { supabase } from "@/utils/supabase/client";
 
 import { cn } from "@/lib/utils";
 import {
@@ -19,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+// Certifique-se que o hook existe
 import { useDebounce } from "@/hooks/use-debounce";
 
 interface AsyncSelectProps {
@@ -39,50 +41,88 @@ export function AsyncSelect({
   optionLabel = "name",
   optionValue = "id",
   placeholder,
-  selectColumns = "*", // Tenta buscar colunas extras se o RLS permitir
+  selectColumns = "*",
   renderOption,
 }: AsyncSelectProps) {
-  const { control } = useFormContext();
+  const { control, watch } = useFormContext();
   const [options, setOptions] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
 
-  // Efeito simplificado para carregar dados ao montar
+  // --- 1. ESTADO DA BUSCA (Correção do erro TS) ---
+  const [inputValue, setInputValue] = React.useState("");
+  const debouncedInputValue = useDebounce(inputValue, 500);
+
+  // Monitora o valor atual para o "Rescue"
+  const currentValue = watch(name);
+
   React.useEffect(() => {
+    let isMounted = true;
+
     const fetchOptions = async () => {
       setLoading(true);
       try {
-        // Busca direta segura
-        const { data, error } = await supabase
+        // --- 2. ORDEM ALFABÉTICA ---
+        let query = supabase
           .from(resource as any)
           .select(selectColumns)
           .order(optionLabel, { ascending: true })
-          .limit(100); // Limite seguro
+          .limit(50);
 
-        if (!error && data) {
-          setOptions(data);
-        } else {
-          console.log("AsyncSelect (Silencioso):", error?.message);
+        // Filtro de busca
+        if (debouncedInputValue) {
+          query = query.ilike(optionLabel, `%${debouncedInputValue}%`);
         }
+
+        const { data: listData, error } = await query;
+        if (error) throw error;
+
+        let finalOptions = listData || [];
+
+        // --- 3. FIX DO BUG DE SELEÇÃO (Lógica de Resgate) ---
+        if (currentValue && finalOptions.length > 0) {
+          const isSelectedInList = finalOptions.some(
+            (item) => item[optionValue] === currentValue
+          );
+
+          if (!isSelectedInList) {
+            // Se o item selecionado não está na lista (ex: está na pag 2), busca ele
+            const { data: singleItem } = await supabase
+              .from(resource as any)
+              .select(selectColumns)
+              .eq(optionValue, currentValue)
+              .maybeSingle();
+
+            if (singleItem) {
+              finalOptions = [singleItem, ...finalOptions];
+            }
+          }
+        }
+
+        if (isMounted) {
+            // Remove duplicatas
+            const unique = Array.from(new Map(finalOptions.map(item => [item[optionValue], item])).values());
+            setOptions(unique);
+        }
+
       } catch (err) {
-        // Ignora erros críticos para não travar a tela
         console.error(err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchOptions();
-  }, [resource, selectColumns]);
+
+    return () => { isMounted = false; };
+  }, [debouncedInputValue, resource, selectColumns, optionLabel, currentValue]);
 
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => {
-        // Encontra o item para mostrar no label fechado
         const selectedItem = options.find((item) => item[optionValue] === field.value);
 
-        // Define o texto de exibição
         const displayLabel = selectedItem
             ? (renderOption && typeof renderOption(selectedItem) === 'string'
                 ? renderOption(selectedItem)
@@ -95,8 +135,8 @@ export function AsyncSelect({
             <Select
               onValueChange={field.onChange}
               defaultValue={field.value}
-              // Se estiver carregando, desabilita visualmente mas não trava
               disabled={loading}
+              value={field.value} // Controlled component
             >
               <FormControl>
                 <SelectTrigger>
@@ -106,17 +146,25 @@ export function AsyncSelect({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {/* Fallback se estiver vazio */}
-                {options.length === 0 && (
+                {/* --- 4. CAMPO DE BUSCA DENTRO DO SELECT --- */}
+                <div className="p-2 sticky top-0 bg-popover z-10">
+                    <input
+                      className="w-full border rounded px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring bg-background"
+                      placeholder="Digitar para buscar..."
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    />
+                </div>
+
+                {options.length === 0 && !loading && (
                   <div className="p-2 text-sm text-muted-foreground text-center">
-                    {loading ? "Carregando..." : "Nenhum item disponível"}
+                    Nenhum item encontrado
                   </div>
                 )}
 
-                {/* Lista de Opções */}
                 {options.map((item) => (
                   <SelectItem key={item[optionValue]} value={item[optionValue]}>
-                    {/* Renderiza com UF se a função for passada, ou só o nome */}
                     {renderOption ? renderOption(item) : item[optionLabel]}
                   </SelectItem>
                 ))}
