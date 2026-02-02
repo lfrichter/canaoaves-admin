@@ -32,6 +32,7 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
+  Map,
 } from "lucide-react";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
@@ -90,6 +91,49 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               meta: { label: "Comodidades", icon: <Sparkles size={16} /> },
             },
             {
+              name: "cities",
+                  meta: {
+                    label: "Cidades (API)",
+                    hide: true, // Esconde do menu lateral, pois é só para o select funcionar
+                },
+            },
+            {
+                name: "geografia",
+                meta: {
+                    label: "Geografia",
+                    icon: <Map size={16} />,
+                },
+            },
+            {
+              name: "city_descriptions",
+              list: "/city-descriptions",
+              create: "/city-descriptions/create",
+              edit: "/city-descriptions/:id",
+              show: "/city-descriptions/:id",
+              meta: {
+                label: "Descrições de Cidades",
+                icon: <MapPin size={16} />,
+                parent: "geografia",
+              },
+            },
+            {
+              name: "city_images",
+              list: "/city-images",
+              meta: { label: "Imagens de Cidades", icon: <ImageIcon size={16} />, parent: "geografia" },
+            },
+            {
+              name: "state_descriptions",
+              list: "/state-descriptions",
+              create: "/state-descriptions/create",
+              edit: "/state-descriptions/:id",
+              show: "/state-descriptions/:id",
+              meta: {
+                label: "Descrições de Estados",
+                icon: <Globe size={16} />,
+                parent: "geografia",
+              },
+            },
+            {
               name: "service_offerings",
               list: "/service-offerings",
               create: "/service-offerings/create",
@@ -112,29 +156,6 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
               list: "/service-ownership-claims",
               show: "/service-ownership-claims/:id",
               meta: { label: "Reivindicações", icon: <ShieldCheck size={16} /> },
-            },
-            {
-              name: "city_descriptions",
-              list: "/city-descriptions",
-              show: "/city-descriptions/:id",
-              meta: {
-                label: "Descrições de Cidades",
-                icon: <MapPin size={16} />,
-              },
-            },
-            {
-              name: "city_images",
-              list: "/city-images",
-              meta: { label: "Imagens de Cidades", icon: <ImageIcon size={16} /> },
-            },
-            {
-              name: "state_descriptions",
-              list: "/state-descriptions",
-              show: "/state-descriptions/:id",
-              meta: {
-                label: "Descrições de Estados",
-                icon: <Globe size={16} />,
-              },
             },
             {
               name: "communications",

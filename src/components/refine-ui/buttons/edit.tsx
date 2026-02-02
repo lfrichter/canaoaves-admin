@@ -2,82 +2,62 @@
 
 import { Button } from "@/components/ui/button";
 import { type BaseKey, useEditButton } from "@refinedev/core";
-import { Pencil } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
 type EditButtonProps = {
-  /**
-   * Resource name for API data interactions. `identifier` of the resource can be used instead of the `name` of the resource.
-   * @default Inferred resource name from the route
-   */
-  resource?: string;
-  /**
-   * Data item identifier for the actions with the API
-   * @default Reads `:id` from the URL
-   */
+  resource?: BaseKey;
   recordItemId?: BaseKey;
-  /**
-   * Access Control configuration for the button
-   * @default `{ enabled: true, hideIfUnauthorized: false }`
-   */
   accessControl?: {
     enabled?: boolean;
     hideIfUnauthorized?: boolean;
   };
-  /**
-   * `meta` property is used when creating the URL for the related action and path.
-   */
   meta?: Record<string, unknown>;
 } & React.ComponentProps<typeof Button>;
 
 export const EditButton = React.forwardRef<
   React.ComponentRef<typeof Button>,
   EditButtonProps
->(
-  (
-    { resource, recordItemId, accessControl, meta, children, onClick, ...rest },
-    ref
-  ) => {
-    const router = useRouter();
-    const { hidden, disabled, to, label } = useEditButton({
-      resource,
-      id: recordItemId,
-      accessControl,
-      meta,
-    });
+>(({ resource, recordItemId, accessControl, meta, children, onClick, ...rest }, ref) => {
+  const router = useRouter();
+  const { hidden, disabled, to } = useEditButton({
+    resource,
+    id: recordItemId,
+    accessControl,
+    meta,
+  });
 
-    const isDisabled = disabled || rest.disabled;
-    const isHidden = hidden || rest.hidden;
+  const isDisabled = disabled || rest.disabled;
+  const isHidden = hidden || rest.hidden;
 
-    if (isHidden) return null;
+  if (isHidden) return null;
 
-    return (
-      <Button
-        {...rest}
-        ref={ref}
-        disabled={isDisabled}
-        onClick={(e) => {
-          if (isDisabled) {
-            e.preventDefault();
-            return;
-          }
-          if (onClick) {
-            onClick(e);
-          } else {
-            router.push(to);
-          }
-        }}
-      >
-        {children ?? (
-          <div className="flex items-center gap-2 font-semibold">
-            <Pencil className="h-4 w-4" />
-            <span>Editar</span>
-          </div>
-        )}
-      </Button>
-    );
-  }
-);
+  return (
+    <Button
+      {...rest}
+      ref={ref}
+      disabled={isDisabled}
+      onClick={(e) => {
+        if (isDisabled) {
+          e.preventDefault();
+          return;
+        }
+        if (onClick) {
+          onClick(e);
+        } else {
+          router.push(to);
+        }
+      }}
+    >
+      {children ?? (
+        <div className="flex items-center gap-2 font-semibold">
+          <Edit className="w-4 h-4" />
+          <span>Editar</span>
+        </div>
+      )}
+    </Button>
+  );
+});
 
 EditButton.displayName = "EditButton";

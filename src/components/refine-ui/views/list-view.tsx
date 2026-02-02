@@ -65,14 +65,14 @@ export const ListViewHeader = ({
       {/* Cabeçalho Responsivo */}
       <div
         className={cn(
-          "flex flex-col w-full gap-4 md:flex-row md:items-center md:justify-between",
+          "flex flex-wrap items-center justify-between gap-4",
           headerClassName
         )}
       >
         <h2 className="text-2xl font-bold">{title}</h2>
 
         {/* Container de Ações (Search + Create) */}
-        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto items-stretch sm:items-center">
+        <div className="flex items-center gap-2">
           {/* Renderiza o SearchInput ou outros filtros aqui */}
           {children}
 

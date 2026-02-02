@@ -121,16 +121,18 @@ const StateDescriptionActions = ({
   return (
     <div className="flex flex-wrap gap-2">
       {/* Botões Rápidos */}
-      <Button
-        size="icon"
-        variant="outline"
-        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-        onClick={() => approveMutate()}
-        disabled={isApproving}
-        title="Aprovar Rápido"
-      >
-        <Check className="h-4 w-4" />
-      </Button>
+      {!row.approved && (
+        <Button
+          size="icon"
+          variant="outline"
+          className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+          onClick={() => approveMutate()}
+          disabled={isApproving}
+          title="Aprovar Rápido"
+        >
+          <Check className="h-4 w-4" />
+        </Button>
+      )}
 
       <Button
         size="icon"

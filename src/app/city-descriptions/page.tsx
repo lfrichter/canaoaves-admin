@@ -241,13 +241,15 @@ const CityDescriptionActions = ({
             >
               {isRejecting ? "Rejeitando..." : "Rejeitar Conteúdo"}
             </Button>
-            <Button
-              onClick={() => approveMutate()}
-              disabled={isRejecting || isApproving}
-              className="bg-green-600 hover:bg-green-700 ml-2"
-            >
-              {isApproving ? "Aprovando..." : "Aprovar e Publicar"}
-            </Button>
+            {!row.approved && (
+              <Button
+                onClick={() => approveMutate()}
+                disabled={isRejecting || isApproving}
+                className="bg-green-600 hover:bg-green-700 ml-2"
+              >
+                {isApproving ? "Aprovando..." : "Aprovar e Publicar"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -327,7 +329,7 @@ export default function CityDescriptionList() {
 
   return (
     <ListView>
-      <ListViewHeader title="Moderação de Descrições" />
+      <ListViewHeader title="Moderação de Descrições" canCreate={true} />
       <DataTable table={table} />
     </ListView>
   );
