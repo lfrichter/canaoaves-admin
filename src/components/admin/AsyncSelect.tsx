@@ -55,6 +55,7 @@ export function AsyncSelect({
         const { data, error } = await supabase
           .from(resource as any)
           .select(selectColumns)
+          .order(optionLabel, { ascending: true })
           .limit(100); // Limite seguro
 
         if (!error && data) {
