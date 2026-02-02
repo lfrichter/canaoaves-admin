@@ -316,6 +316,39 @@ export type Database = {
           },
         ]
       }
+      client_errors: {
+        Row: {
+          created_at: string | null
+          error_code: string | null
+          error_details: Json | null
+          error_message: string | null
+          id: string
+          page_url: string | null
+          user_agent: string | null
+          user_email: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          page_url?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          page_url?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -389,6 +422,123 @@ export type Database = {
           {
             foreignKeyName: "service_comments_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "view_admin_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      communications: {
+        Row: {
+          created_at: string | null
+          filter_criteria: Json | null
+          id: string
+          message_body: string
+          recipient_count: number
+          sent_by_user_id: string | null
+          subject: string
+        }
+        Insert: {
+          created_at?: string | null
+          filter_criteria?: Json | null
+          id?: string
+          message_body: string
+          recipient_count: number
+          sent_by_user_id?: string | null
+          subject: string
+        }
+        Update: {
+          created_at?: string | null
+          filter_criteria?: Json | null
+          id?: string
+          message_body?: string
+          recipient_count?: number
+          sent_by_user_id?: string | null
+          subject?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          city_id: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          event_type: Database["public"]["Enums"]["event_type"]
+          id: string
+          is_free: boolean
+          marketing_link: string | null
+          promoter_link: string | null
+          slug: string | null
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          city_id?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          id?: string
+          is_free?: boolean
+          marketing_link?: string | null
+          promoter_link?: string | null
+          slug?: string | null
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          city_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          id?: string
+          is_free?: boolean
+          marketing_link?: string | null
+          promoter_link?: string | null
+          slug?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profile_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_email"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "view_admin_profiles"
             referencedColumns: ["user_id"]
@@ -525,6 +675,7 @@ export type Database = {
         Row: {
           app_role: string
           avatar_url: string | null
+          birth_date: string | null
           category_id: string | null
           city_id: string | null
           created_at: string
@@ -552,6 +703,7 @@ export type Database = {
         Insert: {
           app_role?: string
           avatar_url?: string | null
+          birth_date?: string | null
           category_id?: string | null
           city_id?: string | null
           created_at?: string
@@ -579,6 +731,7 @@ export type Database = {
         Update: {
           app_role?: string
           avatar_url?: string | null
+          birth_date?: string | null
           category_id?: string | null
           city_id?: string | null
           created_at?: string
@@ -754,30 +907,36 @@ export type Database = {
       }
       service_events: {
         Row: {
+          address: string | null
           created_at: string
           description: string | null
-          event_date: string | null
+          event_url: string | null
           id: string
-          location: string | null
+          promoter_url: string | null
           service_id: string
+          start_date: string | null
           title: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
           description?: string | null
-          event_date?: string | null
+          event_url?: string | null
           id?: string
-          location?: string | null
+          promoter_url?: string | null
           service_id: string
+          start_date?: string | null
           title: string
         }
         Update: {
+          address?: string | null
           created_at?: string
           description?: string | null
-          event_date?: string | null
+          event_url?: string | null
           id?: string
-          location?: string | null
+          promoter_url?: string | null
           service_id?: string
+          start_date?: string | null
           title?: string
         }
         Relationships: [
@@ -1075,6 +1234,7 @@ export type Database = {
       }
       services: {
         Row: {
+          allow_image_uploads: boolean
           areas_of_operation: string[] | null
           category_id: string | null
           city_id: string | null
@@ -1095,6 +1255,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          allow_image_uploads?: boolean
           areas_of_operation?: string[] | null
           category_id?: string | null
           city_id?: string | null
@@ -1115,6 +1276,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          allow_image_uploads?: boolean
           areas_of_operation?: string[] | null
           category_id?: string | null
           city_id?: string | null
@@ -1221,16 +1383,22 @@ export type Database = {
       }
       statuses: {
         Row: {
+          color: string
+          icon: string | null
           id: number
           name: string
           start_score: number
         }
         Insert: {
+          color: string
+          icon?: string | null
           id?: number
           name: string
           start_score: number
         }
         Update: {
+          color?: string
+          icon?: string | null
           id?: number
           name?: string
           start_score?: number
@@ -1755,6 +1923,13 @@ export type Database = {
       email_exists: { Args: { user_email: string }; Returns: boolean }
       f_unaccent: { Args: { "": string }; Returns: string }
       get_admin_dashboard_stats: { Args: never; Returns: Json }
+      get_age_distribution: {
+        Args: never
+        Returns: {
+          age_range: string
+          count: number
+        }[]
+      }
       get_categories_with_counts: {
         Args: { p_type: string }
         Returns: {
@@ -1840,6 +2015,7 @@ export type Database = {
           state: string
         }[]
       }
+      get_monthly_email_usage: { Args: never; Returns: number }
       get_or_create_city: {
         Args: { city_name: string; country_code?: string; state_code: string }
         Returns: string
@@ -2016,6 +2192,18 @@ export type Database = {
         }[]
       }
       get_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      get_user_score: { Args: { p_user_id: string }; Returns: number }
+      global_search: {
+        Args: { search_term: string }
+        Returns: {
+          id: string
+          image_url: string
+          slug: string
+          subtitle: string
+          title: string
+          type: string
+        }[]
+      }
       increment_user_score: {
         Args: { p_points_to_add: number; p_user_id: string }
         Returns: undefined
@@ -2232,6 +2420,7 @@ export type Database = {
     Enums: {
       claim_status: "pending" | "approved" | "rejected"
       comment_target_type: "profile" | "service"
+      event_type: "presencial" | "online" | "hibrido"
       like_target_type: "profile" | "service" | "city" | "comment"
       photo_target_type: "profile" | "service" | "city"
       profile_type: "pessoa" | "empresa"
@@ -2375,6 +2564,7 @@ export const Constants = {
     Enums: {
       claim_status: ["pending", "approved", "rejected"],
       comment_target_type: ["profile", "service"],
+      event_type: ["presencial", "online", "hibrido"],
       like_target_type: ["profile", "service", "city", "comment"],
       photo_target_type: ["profile", "service", "city"],
       profile_type: ["pessoa", "empresa"],
