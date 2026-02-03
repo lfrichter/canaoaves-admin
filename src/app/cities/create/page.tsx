@@ -1,16 +1,22 @@
 "use client";
 
-import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetIdentity } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
-import { FormProvider } from "react-hook-form"; // Importante para o Contexto do form
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { FormProvider } from "react-hook-form"; // Importante para o Contexto do form
+import { toast } from "sonner";
+import * as z from "zod";
 
 // Componentes de UI
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -19,13 +25,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 // Componente Customizado (Importação Nomeada com chaves {})
 import { AsyncSelect } from "@/components/admin/AsyncSelect";
@@ -82,18 +81,18 @@ export default function CityDescriptionCreate() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="max-w-md">
-                 {/* O AsyncSelect atualizado que usa o Supabase direto */}
-                 <AsyncSelect
-                    name="city_id"
-                    label="Cidade"
-                    resource="cities"
-                    selectColumns="id, name, state"
-                    optionLabel="name"
-                    optionValue="id"
-                    renderOption={(item) => `${item.name} - ${item.state}`}
-                 />
-               </div>
+              <div className="max-w-md">
+                {/* O AsyncSelect atualizado que usa o Supabase direto */}
+                <AsyncSelect
+                  name="city_id"
+                  label="Cidade"
+                  resource="cities"
+                  selectColumns="id, name, state"
+                  optionLabel="name"
+                  optionValue="id"
+                  renderOption={(item) => `${item.name} - ${item.state}`}
+                />
+              </div>
             </div>
 
             <FormField
@@ -116,10 +115,10 @@ export default function CityDescriptionCreate() {
             />
 
             <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={formLoading} size="lg">
-                  <Save className="mr-2 h-5 w-5" />
-                  {formLoading ? "Salvando..." : "Salvar e Publicar"}
-                </Button>
+              <Button type="submit" disabled={formLoading} size="lg">
+                <Save className="mr-2 h-5 w-5" />
+                {formLoading ? "Salvando..." : "Salvar e Publicar"}
+              </Button>
             </div>
           </form>
         </CardContent>

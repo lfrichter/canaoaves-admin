@@ -18,6 +18,7 @@ const ALLOWED_RESOURCES = [
   "view_admin_services",
   "view_admin_profiles",
   "view_admin_categories_tree",
+  "view_admin_city_descriptions",
   "profile_users",
   "communications",
   'statuses',

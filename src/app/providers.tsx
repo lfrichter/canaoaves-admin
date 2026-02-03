@@ -92,10 +92,12 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
             },
             {
               name: "cities",
-                  meta: {
-                    label: "Cidades (API)",
-                    hide: true, // Esconde do menu lateral, pois é só para o select funcionar
-                },
+              list: "/cities", // Habilita a rota de listagem
+              edit: "/cities/edit/:id", // Habilita a rota de edição da cidade (se houver)
+              meta: {
+                label: "Cidades",
+                icon: <MapPin />, // Importe do lucide-react
+              },
             },
             {
                 name: "geografia",
