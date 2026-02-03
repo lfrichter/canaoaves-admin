@@ -30,6 +30,7 @@ interface AsyncSelectProps {
   placeholder?: string;
   selectColumns?: string;
   renderOption?: (item: any) => React.ReactNode;
+  disabled?: boolean;
 }
 
 export function AsyncSelect({
@@ -41,6 +42,7 @@ export function AsyncSelect({
   placeholder,
   selectColumns = "*",
   renderOption,
+  disabled = false,
 }: AsyncSelectProps) {
   // 'watch' monitora o valor para garantir que o label sempre apareça
   const { control, watch } = useFormContext();
@@ -143,7 +145,7 @@ export function AsyncSelect({
               onValueChange={field.onChange}
               defaultValue={String(field.value || "")} // Garante string
               value={String(field.value || "")} // Controlled component
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <FormControl>
                 <SelectTrigger>

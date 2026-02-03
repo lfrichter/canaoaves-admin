@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigation, useList } from "@refinedev/core";
+import { useNavigation } from "@refinedev/core";
+import { useForm } from "@refinedev/react-hook-form";
 import { useParams } from "next/navigation";
-import { FormProvider, useForm } from "react-hook-form";
+import Link from "next/link";
+import { FormProvider } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -27,21 +29,24 @@ const CityDescriptionEditSchema = z.object({
   city_id: z.string(),
 });
 
-// --- COMPONENTE INTERNO DO FORMULÁRIO ---
-function CityDescriptionEditForm({ descriptionRecord }: { descriptionRecord: any }) {
+export default function CityDescriptionEditPage() {
   const { list } = useNavigation();
+  const params = useParams();
+  const descriptionId = params?.id as string;
 
   const methods = useForm({
     resolver: zodResolver(CityDescriptionEditSchema),
-    values: {
-      description: descriptionRecord?.description || "",
-      city_id: descriptionRecord?.cities?.id || "",
-    },
     refineCoreProps: {
       resource: "city_descriptions",
       action: "edit",
-      id: descriptionRecord.id, // ID é garantido aqui pelo Wrapper
+      id: descriptionId,
       redirect: false,
+      meta: {
+        select: `
+          *,
+          cities (id, name, state)
+        `
+      },
       onMutationSuccess: () => {
         toast.success("Descrição salva com sucesso!");
       },
@@ -52,17 +57,40 @@ function CityDescriptionEditForm({ descriptionRecord }: { descriptionRecord: any
   });
 
   const {
-    refineCore: { onFinish, formLoading }, // Agora seguro para desestruturar
+    refineCore: { onFinish, formLoading, query },
     handleSubmit,
     control,
+    saveButtonProps,
   } = methods;
 
   const onSubmit = (data: any) => {
     onFinish({
       description: data.description,
       approved: true,
-    });
+    } as any);
   };
+
+  const isLoading = formLoading || query?.isLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Se o carregamento terminou mas não temos dados (erro ou ID inválido)
+  if (!query?.data?.data) {
+     return (
+        <div className="flex flex-col items-center justify-center h-96 gap-4">
+            <p className="text-muted-foreground">Nenhuma descrição encontrada com este ID.</p>
+            <Button variant="outline" asChild>
+                <Link href="/cities">Voltar para a lista</Link>
+            </Button>
+        </div>
+    )
+  }
 
   return (
     <FormProvider {...methods}>
@@ -91,10 +119,12 @@ function CityDescriptionEditForm({ descriptionRecord }: { descriptionRecord: any
                   name="city_id"
                   label="Cidade"
                   resource="cities"
-                  selectColumns="id, name, state"
                   optionLabel="name"
                   optionValue="id"
+                  selectColumns="id, name, state"
                   renderOption={(item: any) => `${item.name} - ${item.state}`}
+                  // Desabilitado pois estamos editando uma descrição específica
+                  // Se quiser permitir mudar a cidade, remova o disabled
                   disabled={true}
                 />
               </div>
@@ -129,51 +159,4 @@ function CityDescriptionEditForm({ descriptionRecord }: { descriptionRecord: any
       </div>
     </FormProvider>
   );
-}
-
-
-// --- COMPONENTE WRAPPER (PÁGINA EXPORTADA) ---
-export default function CityDescriptionEditPage() {
-    const params = useParams();
-    const descriptionId = params?.id as string;
-
-    const { data, isLoading } = useList({
-      resource: "city_descriptions",
-      filters: [
-        { field: "id", operator: "eq", value: "ecb5407b-d949-46e4-ae71-d3fbedc4df6e" }
-      ],
-      meta: {
-        select: `
-          *,
-          cities (id, name, state)
-        `
-      },
-      pagination: { mode: "off" },
-    });
-
-    const descriptionRecord = data?.data?.[0];
-  
-    // 1. Mostra o spinner enquanto carrega
-    if (isLoading) {
-      return (
-          <div className="flex items-center justify-center h-96">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-      );
-    }
-
-    // 2. Mostra mensagem de erro se não encontrar o registro
-    if (!descriptionRecord) {
-        return (
-            <div className="flex flex-col items-center justify-center h-96 gap-4">
-                <p className="text-muted-foreground">Nenhuma descrição encontrada com este ID.</p>
-                <Button variant="outline" asChild>
-                    <a href="/cities">Voltar para a lista</a>
-                </Button>
-            </div>
-        )
-    }
-
-    // 3. Renderiza o formulário apenas quando `descriptionRecord` é válido
-    return <CityDescriptionEditForm descriptionRecord={descriptionRecord} />;
 }
