@@ -1,10 +1,8 @@
 "use client";
-import { useGetIdentity, useOne } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -20,9 +18,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useNavigation } from "@refinedev/core";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useParams } from "next/navigation";
 
 const brStateNames: { [key: string]: string } = {
@@ -41,12 +40,11 @@ const StateDescriptionSchema = z.object({
 
 export default function StateDescriptionEdit() {
   const router = useRouter();
+  const { list } = useNavigation();
   const params = useParams<{ id: string }>();
-  const { data: identity } = useGetIdentity<{ id: string }>();
 
   const {
-    refineCore: { onFinish, formLoading, queryResult },
-    register,
+    refineCore: { onFinish, formLoading, query },
     handleSubmit,
     control,
     formState: { errors },
@@ -59,7 +57,7 @@ export default function StateDescriptionEdit() {
       redirect: false,
       onMutationSuccess: () => {
         toast.success("Descrição do estado atualizada com sucesso!");
-        router.push("/state-descriptions");
+        list("state-descriptions");
       },
       onMutationError: (error) => {
         toast.error("Erro ao atualizar: " + error.message);
@@ -67,50 +65,64 @@ export default function StateDescriptionEdit() {
     },
   });
 
-  const stateCode = queryResult?.data?.data?.state_code;
+  const stateCode = query?.data?.data?.state_code;
   const stateName = stateCode ? brStateNames[stateCode] || stateCode : "";
+  const isLoading = formLoading || query?.isLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
-    <Card className="max-w-2xl mx-auto mt-8">
-      <CardHeader>
-        <CardTitle>Editar Descrição: {stateName}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...{ control, errors, handleSubmit, onSubmit: onFinish }}>
-          <form onSubmit={handleSubmit(onFinish)} className="space-y-6">
-            <FormItem>
-              <FormLabel>Estado</FormLabel>
-              <FormControl>
-                <Input value={stateName} disabled />
-              </FormControl>
-            </FormItem>
-            
-            <FormField
-              control={control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      rows={8}
-                      placeholder="Escreva a descrição detalhada do estado..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end">
-                <Button type="submit" disabled={formLoading}>
-                  <Save className="mr-2 h-4 w-4" />
-                  {formLoading ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <div className="max-w-3xl mx-auto py-6 space-y-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold tracking-tight">Editar Descrição: {stateName}</h1>
+        <div className="flex">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => list("state-descriptions")}
+              type="button"
+              className="-ml-3 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar para lista de descrições
+            </Button>
+        </div>
+      </div>
+      <Card>
+        <CardContent className="pt-6">
+            <form onSubmit={handleSubmit(onFinish)} className="space-y-6">
+              <FormField
+                control={control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        rows={8}
+                        placeholder="Escreva a descrição detalhada do estado..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end">
+                  <Button type="submit" disabled={formLoading}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {formLoading ? "Salvando..." : "Salvar Alterações"}
+                  </Button>
+              </div>
+            </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

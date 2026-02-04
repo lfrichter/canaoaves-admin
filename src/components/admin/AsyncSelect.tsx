@@ -83,7 +83,7 @@ export function AsyncSelect({
         if (currentValue) {
           // Verifica se ele está na lista (convertendo tudo para String para evitar bug de tipo)
           const isSelectedInList = finalOptions.some(
-            (item) => String(item[optionValue]) === String(currentValue)
+            (item: Record<string, any>) => String(item[optionValue]) === String(currentValue)
           );
 
           // Se NÃO estiver na lista, buscamos ele individualmente no banco
@@ -104,7 +104,7 @@ export function AsyncSelect({
         if (isMounted) {
           // Remove duplicatas (pelo ID) para garantir lista limpa
           const unique = Array.from(
-            new Map(finalOptions.map((item) => [item[optionValue], item])).values()
+            new Map(finalOptions.map((item: Record<string, any>) => [item[optionValue], item])).values()
           );
           setOptions(unique);
         }
@@ -129,9 +129,8 @@ export function AsyncSelect({
         // 3. FIX DE TIPO (String vs Number)
         // Garante que encontramos o item mesmo se o banco devolver número e o form for string
         const selectedItem = options.find(
-          (item) => String(item[optionValue]) === String(field.value)
+            (item: Record<string, any>) => String(item[optionValue]) === String(field.value)
         );
-
         const displayLabel = selectedItem
           ? (renderOption && typeof renderOption(selectedItem) === 'string'
             ? renderOption(selectedItem)
@@ -171,12 +170,11 @@ export function AsyncSelect({
                   </div>
                 )}
 
-                {options.map((item) => (
-                  <SelectItem key={item[optionValue]} value={String(item[optionValue])}>
-                    {renderOption ? renderOption(item) : item[optionLabel]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+                {options.map((item: Record<string, any>) => (
+                    <SelectItem key={item[optionValue]} value={String(item[optionValue])}>
+                        {renderOption ? renderOption(item) : item[optionLabel]}
+                    </SelectItem>
+                ))}              </SelectContent>
             </Select>
             <FormMessage />
           </FormItem>

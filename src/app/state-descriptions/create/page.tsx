@@ -1,10 +1,9 @@
 "use client";
-import { useGetIdentity } from "@refinedev/core";
+import { useGetIdentity, useNavigation } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -26,7 +25,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
 
@@ -54,14 +52,12 @@ const StateDescriptionSchema = z.object({
 
 export default function StateDescriptionCreate() {
   const { data: user } = useGetIdentity<{ id: string }>();
-  const router = useRouter();
+  const { list } = useNavigation();
 
   const {
     refineCore: { onFinish, formLoading },
-    register,
     handleSubmit,
     control,
-    formState: { errors },
   } = useForm({
     resolver: zodResolver(StateDescriptionSchema),
     refineCoreProps: {
@@ -70,7 +66,7 @@ export default function StateDescriptionCreate() {
       redirect: false, // Redirect manually after success
       onMutationSuccess: () => {
         toast.success("Descrição do estado criada com sucesso!");
-        router.push("/state-descriptions");
+        list("state_descriptions");
       },
       onMutationError: (error) => {
         toast.error("Erro ao criar: " + error.message);
@@ -93,7 +89,6 @@ export default function StateDescriptionCreate() {
         <CardTitle>Nova Descrição de Estado</CardTitle>
       </CardHeader>
       <CardContent>
-        <Form {...{ control, errors, handleSubmit, onSubmit }}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={control}
@@ -143,7 +138,6 @@ export default function StateDescriptionCreate() {
                 </Button>
             </div>
           </form>
-        </Form>
       </CardContent>
     </Card>
   );
