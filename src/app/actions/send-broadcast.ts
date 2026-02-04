@@ -4,13 +4,6 @@ import { getBroadcastHtml } from "@/templates/broadcast-email";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function sendBroadcastAction(
   subject: string,
   message: string,
@@ -18,6 +11,24 @@ export async function sendBroadcastAction(
   targetEmails?: string[]
 ) {
   try {
+    // 2. Environment Variables Check
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is missing");
+      return { success: false, message: "Erro de configuração: RESEND_API_KEY não encontrada." };
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("Supabase credentials are missing");
+      return { success: false, message: "Erro de configuração: Credenciais do Supabase não encontradas." };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
     let query = supabaseAdmin
       .from("profile_users")
       .select("email, full_name")
@@ -79,7 +90,10 @@ export async function sendBroadcastAction(
     return { success: true, count: sentCount };
 
   } catch (err: any) {
-    console.error("Erro crítico:", err);
-    return { success: false, message: err.message };
+    console.error("Erro crítico no envio de broadcast:", err);
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : "Ocorreu um erro desconhecido ao enviar o broadcast."
+    };
   }
 }
