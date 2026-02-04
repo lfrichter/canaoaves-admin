@@ -34,28 +34,6 @@ export default function CityDescriptionEditPage() {
   const params = useParams();
   const descriptionId = params?.id as string;
 
-  // const methods = useForm({
-  //   resolver: zodResolver(CityDescriptionEditSchema),
-  //   refineCoreProps: {
-  //     resource: "city_descriptions",
-  //     action: "edit",
-  //     id: descriptionId,
-  //     redirect: false,
-  //     meta: {
-  //       select: `
-  //         *,
-  //         cities:city_descriptions_city_id_fkey (id, name, state)
-  //       `
-  //     },
-  //     onMutationSuccess: () => {
-  //       toast.success("Descrição salva com sucesso!");
-  //     },
-  //     onMutationError: (error) => {
-  //       toast.error(`Erro ao salvar: ${error.message}`);
-  //     },
-  //   },
-  // });
-
   const methods = useForm({
     resolver: zodResolver(CityDescriptionEditSchema),
     refineCoreProps: {
@@ -65,15 +43,6 @@ export default function CityDescriptionEditPage() {
       redirect: false,
     },
   });
-
-
-
-  // const {
-  //   refineCore: { onFinish, formLoading, query },
-  //   handleSubmit,
-  //   control,
-  //   saveButtonProps,
-  // } = methods;
 
   const {
     refineCore: { query, onFinish, formLoading },
@@ -91,13 +60,6 @@ export default function CityDescriptionEditPage() {
       });
     }
   }, [query?.data?.data, reset]);
-
-
-  // useEffect(() => {
-  //   if (query?.data?.data?.city_id) {
-  //     setValue("city_id", query.data.data.city_id);
-  //   }
-  // }, [query?.data?.data?.city_id, setValue]);
 
 
   const onSubmit = (data: any) => {
