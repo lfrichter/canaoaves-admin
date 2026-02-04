@@ -71,7 +71,6 @@ export default function CityDescriptionEditPage() {
 
   const isLoading = formLoading || query?.isLoading;
 
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -79,8 +78,6 @@ export default function CityDescriptionEditPage() {
       </div>
     );
   }
-
-  console.log(query?.data?.data);
 
   // Se o carregamento terminou mas não temos dados (erro ou ID inválido)
   if (!query?.data?.data) {
@@ -127,8 +124,6 @@ export default function CityDescriptionEditPage() {
                   optionValue="id"
                   selectColumns="id, name, state"
                   renderOption={(item: any) => `${item.name} - ${item.state}`}
-                  // Desabilitado pois estamos editando uma descrição específica
-                  // Se quiser permitir mudar a cidade, remova o disabled
                   disabled={true}
                 />
               </div>
