@@ -8,7 +8,13 @@ import { CircleXIcon, LoaderCircleIcon, SearchIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-export function TableSearchInput({ className }: { className?: string }) {
+export function TableSearchInput({
+  className,
+  placeholder = "Buscar...",
+}: {
+  className?: string;
+  placeholder?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -67,7 +73,7 @@ export function TableSearchInput({ className }: { className?: string }) {
 
       <Input
         ref={inputRef}
-        placeholder="Buscar..."
+        placeholder={placeholder}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         // Adicionamos pr-9 para dar espaço para o ícone da direita

@@ -47,7 +47,7 @@ export default function CityDescriptionContextualCreate() {
       redirect: false,
       onMutationSuccess: () => {
         toast.success("Descrição da cidade criada com sucesso!");
-        router.push(`/cities/${cityId}`);
+        router.push("/cities");
       },
       onMutationError: (error) => {
         toast.error("Erro ao criar: " + error.message);

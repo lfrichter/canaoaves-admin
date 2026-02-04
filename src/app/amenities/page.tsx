@@ -144,13 +144,12 @@ export default function AmenityList({
     sorters: {
       initial: [{ field: "name", order: "asc" }]
     }
-  } as any); // [CORREÇÃO 2] Bypass sorters
+  } as any);
 
   return (
     <ListView>
       <ListViewHeader title="Comodidades" canCreate>
-        {/* [CORREÇÃO 3] Bypass placeholder */}
-        <TableSearchInput {...({ placeholder: "Buscar comodidade..." } as any)} />
+        <TableSearchInput placeholder="Buscar comodidade..." />
       </ListViewHeader>
       <DataTable table={table} />
     </ListView>

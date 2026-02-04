@@ -50,16 +50,32 @@ export default function CityDescriptionEditPage() {
     control,
     saveButtonProps,
     reset,
+    setValue, // <--- Importante: Precisamos do setValue para o "reforço"
   } = methods;
 
   useEffect(() => {
-    if (query?.data?.data) {
+    const record = query?.data?.data;
+
+    if (record) {
+      // 1. Reset Inicial (Preenche o formulário assim que os dados chegam)
       reset({
-        description: query.data.data.description,
-        city_id: query.data.data.city_id,
+        description: record.description,
+        city_id: record.city_id,
       });
+
+      // 2. Reforço com Delay (Correção do Dropdown)
+      // Às vezes o AsyncSelect não detecta o reset inicial se estiver renderizando.
+      // Forçamos o valor novamente após 500ms para garantir que a busca do Label dispare.
+      const timer = setTimeout(() => {
+        setValue("city_id", record.city_id, {
+            shouldValidate: true,
+            shouldDirty: false // Não marca como "modificado" pelo usuário
+        });
+      }, 500);
+
+      return () => clearTimeout(timer);
     }
-  }, [query?.data?.data, reset]);
+  }, [query?.data?.data, reset, setValue]);
 
 
   const onSubmit = (data: any) => {
@@ -110,8 +126,6 @@ export default function CityDescriptionEditPage() {
           </div>
         </div>
 
-
-
         <Card>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -124,6 +138,7 @@ export default function CityDescriptionEditPage() {
                   optionValue="id"
                   selectColumns="id, name, state"
                   renderOption={(item: any) => `${item.name} - ${item.state}`}
+                  // Desabilitado pois estamos editando a descrição de uma cidade específica
                   disabled={true}
                 />
               </div>

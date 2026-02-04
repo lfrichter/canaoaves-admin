@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useServerTable } from "@/hooks/useServerTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Plus } from "lucide-react";
+import { MapPin, Pencil, Plus } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -19,6 +20,7 @@ interface ICity {
   name: string;
   state: string;
   city_descriptions?: { id: string; approved: boolean }[];
+  city_images?: { image_url: string }[];
 }
 
 export default function CityList({
@@ -33,9 +35,29 @@ export default function CityList({
         id: "name",
         enableColumnFilter: true,
         header: "Nome",
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.name}</span>
-        ),
+        cell: ({ row }) => {
+          const city = row.original;
+          // Pega a primeira imagem disponível (se houver)
+          const photo = city.city_images?.[0]?.image_url;
+
+          return (
+            <div className="flex items-center gap-3">
+              <div className="relative h-12 w-12 min-w-[3rem] rounded-md overflow-hidden border bg-muted flex items-center justify-center">
+                {photo ? (
+                  <Image
+                    src={photo}
+                    alt={city.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <MapPin className="w-6 h-6 text-muted-foreground/50" />
+                )}
+              </div>
+              <span className="font-medium">{city.name}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "state",
@@ -109,7 +131,7 @@ export default function CityList({
       initial: [{ field: "name", order: "asc" }],
     },
     meta: {
-      select: "*, city_descriptions(id, approved)"
+      select: "*, city_descriptions(id, approved), city_images(image_url)"
     }
   } as any);
 

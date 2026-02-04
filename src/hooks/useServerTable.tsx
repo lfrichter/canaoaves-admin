@@ -3,6 +3,7 @@
 import { CrudFilters } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { useEffect } from "react";
 
 export function useServerTable<TData extends object>({
   resource,
@@ -75,6 +76,27 @@ export function useServerTable<TData extends object>({
 
     columns,
   });
+
+  // [NOVO] Sincroniza filtros quando os parâmetros da URL mudam (navegação client-side)
+  useEffect(() => {
+    const filters: CrudFilters = [];
+
+    // Filtro de Busca Geral
+    filters.push({
+      field: searchField,
+      operator: "contains",
+      value: searchQuery || undefined,
+    });
+
+    // Filtro por ID (se houver)
+    filters.push({
+      field: "id",
+      operator: "eq",
+      value: paramId || undefined,
+    });
+
+    table.refineCore.setFilters(filters, "merge");
+  }, [searchQuery, paramId, searchField, table.refineCore.setFilters]);
 
   return table;
 }
