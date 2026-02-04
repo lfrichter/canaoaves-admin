@@ -85,7 +85,7 @@ export default function CityList() {
 
           return (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/cities/create?city_id=${row.original.id}`}>
+              <Link href={`/cities/${row.original.id}/descriptions/create`}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar
               </Link>
