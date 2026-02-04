@@ -329,7 +329,7 @@ export default function CityDescriptionList() {
 
   return (
     <ListView>
-      <ListViewHeader title="Moderação de Descrições" canCreate={true} />
+      <ListViewHeader title="Moderação de Descrições" />
       <DataTable table={table} />
     </ListView>
   );
