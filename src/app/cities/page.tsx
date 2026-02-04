@@ -1,14 +1,14 @@
 "use client";
 
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import { TableSearchInput } from "@/components/refine-ui/data-table/table-search-input";
 import {
   ListView,
   ListViewHeader,
 } from "@/components/refine-ui/views/list-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useTable } from "@refinedev/react-table";
+import { useServerTable } from "@/hooks/useServerTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +21,11 @@ interface ICity {
   city_descriptions?: { id: string; approved: boolean }[];
 }
 
-export default function CityList() {
+export default function CityList({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | undefined };
+}) {
   const columns = React.useMemo<ColumnDef<ICity>[]>(
     () => [
       {
@@ -95,55 +99,28 @@ export default function CityList() {
     []
   );
 
-  const table = useTable<ICity>({
-    columns,
-    refineCoreProps: {
-      resource: "cities",
-      meta: {
-        select: "*, city_descriptions(id, approved)"
-      },
-      pagination: { pageSize: 20 },
-      sorters: {
-        initial: [{ field: "name", order: "asc" }],
-      },
-      filters: {
-        initial: [],
-      }
+  const table = useServerTable<ICity>({
+    resource: "cities",
+    columns: columns,
+    searchParams: searchParams || {},
+    searchField: "name",
+    initialPageSize: 20,
+    sorters: {
+      initial: [{ field: "name", order: "asc" }],
     },
-  });
-
-  // SOLUÇÃO DA BUSCA:
-  // Extraímos setFilters diretamente do refineCore.
-  // Isso é garantido de existir e funcionar, pois é a API do Refine,
-  // ignorando as idiossincrasias da versão do TanStack Table.
-  const {
-    refineCore: { setFilters }
-  } = table;
+    meta: {
+      select: "*, city_descriptions(id, approved)"
+    }
+  } as any);
 
   return (
     <ListView>
       <ListViewHeader
         title="Cadastro de Cidades"
-        canCreate={false}
-      />
-
-      <div className="p-4 bg-background border-b">
-        <Input
-          placeholder="Buscar cidade por nome..."
-          className="max-w-sm"
-          onChange={(e) => {
-            // Filtro direto no Refine (Supabase)
-            setFilters([
-              {
-                field: "name",
-                operator: "contains",
-                // Se estiver vazio, passamos undefined para limpar o filtro
-                value: e.target.value ? e.target.value : undefined,
-              },
-            ]);
-          }}
-        />
-      </div>
+        canCreate={true}
+      >
+        <TableSearchInput placeholder="Buscar cidade por nome..." />
+      </ListViewHeader>
 
       <DataTable table={table} />
     </ListView>
