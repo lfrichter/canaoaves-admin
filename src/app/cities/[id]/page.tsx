@@ -3,10 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigation } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
-import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { FormProvider } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 
 // Componentes de UI
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { useEffect } from "react";
 
 // Schema de Validação
 const CityDescriptionEditSchema = z.object({
@@ -34,6 +34,28 @@ export default function CityDescriptionEditPage() {
   const params = useParams();
   const descriptionId = params?.id as string;
 
+  // const methods = useForm({
+  //   resolver: zodResolver(CityDescriptionEditSchema),
+  //   refineCoreProps: {
+  //     resource: "city_descriptions",
+  //     action: "edit",
+  //     id: descriptionId,
+  //     redirect: false,
+  //     meta: {
+  //       select: `
+  //         *,
+  //         cities:city_descriptions_city_id_fkey (id, name, state)
+  //       `
+  //     },
+  //     onMutationSuccess: () => {
+  //       toast.success("Descrição salva com sucesso!");
+  //     },
+  //     onMutationError: (error) => {
+  //       toast.error(`Erro ao salvar: ${error.message}`);
+  //     },
+  //   },
+  // });
+
   const methods = useForm({
     resolver: zodResolver(CityDescriptionEditSchema),
     refineCoreProps: {
@@ -41,27 +63,42 @@ export default function CityDescriptionEditPage() {
       action: "edit",
       id: descriptionId,
       redirect: false,
-      meta: {
-        select: `
-          *,
-          cities (id, name, state)
-        `
-      },
-      onMutationSuccess: () => {
-        toast.success("Descrição salva com sucesso!");
-      },
-      onMutationError: (error) => {
-        toast.error(`Erro ao salvar: ${error.message}`);
-      },
     },
   });
 
+
+
+  // const {
+  //   refineCore: { onFinish, formLoading, query },
+  //   handleSubmit,
+  //   control,
+  //   saveButtonProps,
+  // } = methods;
+
   const {
-    refineCore: { onFinish, formLoading, query },
+    refineCore: { query, onFinish, formLoading },
     handleSubmit,
     control,
     saveButtonProps,
+    reset,
   } = methods;
+
+  useEffect(() => {
+    if (query?.data?.data) {
+      reset({
+        description: query.data.data.description,
+        city_id: query.data.data.city_id,
+      });
+    }
+  }, [query?.data?.data, reset]);
+
+
+  // useEffect(() => {
+  //   if (query?.data?.data?.city_id) {
+  //     setValue("city_id", query.data.data.city_id);
+  //   }
+  // }, [query?.data?.data?.city_id, setValue]);
+
 
   const onSubmit = (data: any) => {
     onFinish({
@@ -72,6 +109,7 @@ export default function CityDescriptionEditPage() {
 
   const isLoading = formLoading || query?.isLoading;
 
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -79,6 +117,8 @@ export default function CityDescriptionEditPage() {
       </div>
     );
   }
+
+  console.log(query?.data?.data);
 
   // Se o carregamento terminou mas não temos dados (erro ou ID inválido)
   if (!query?.data?.data) {
@@ -110,6 +150,8 @@ export default function CityDescriptionEditPage() {
             </Button>
           </div>
         </div>
+
+
 
         <Card>
           <CardContent className="pt-6">
