@@ -11,7 +11,6 @@ import { TableName } from "../../types/app";
 // GET LIST
 // =========================================================
 export async function getList(resource: string, params: any) {
-  console.log(`[getList Action] Resource: ${resource}, Params:`, JSON.stringify(params, null, 2));
 
   try {
     await verifyUserRole(["admin", "master"]);
