@@ -25,6 +25,7 @@ import {
   User
 } from "lucide-react";
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 
 const getTypeBadge = (type: string) => {
   switch (type) {
@@ -43,6 +44,7 @@ export default function CategoryList({
   searchParams?: { [key: string]: string | undefined };
 }) {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
 
   const columns = useMemo<ColumnDef<Category>[]>(
     () => {
@@ -170,7 +172,7 @@ export default function CategoryList({
           {/* [CORREÇÃO] Bypass placeholder */}
           <TableSearchInput {...({ placeholder: "Buscar categoria..." } as any)} />
         </ListViewHeader>
-        <DataTable table={table} />
+        <DataTable key={pathname} table={table} />
       </ListView>
     </div>
   );

@@ -253,7 +253,7 @@ export default function ServiceList({
           </div>
         </div>
       </ListViewHeader>
-      <DataTable table={table} />
+      <DataTable key={pathname} table={table} />
     </ListView>
   );
 }

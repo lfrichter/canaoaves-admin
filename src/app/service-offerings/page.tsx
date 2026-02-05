@@ -18,6 +18,7 @@ import { ServiceOffering } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import { Briefcase, Calendar, Tags } from "lucide-react";
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 
 export default function ServiceOfferingList({
   searchParams,
@@ -25,6 +26,7 @@ export default function ServiceOfferingList({
   searchParams?: { [key: string]: string | undefined };
 }) {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
 
   const columns = useMemo<ColumnDef<ServiceOffering>[]>(
     () => {
@@ -144,7 +146,7 @@ export default function ServiceOfferingList({
         {/* [CORREÇÃO] Bypass placeholder */}
         <TableSearchInput {...({ placeholder: "Buscar ofertas..." } as any)} />
       </ListViewHeader>
-      <DataTable table={table} />
+      <DataTable key={pathname} table={table} />
     </ListView>
   );
 }

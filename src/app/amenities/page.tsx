@@ -18,6 +18,7 @@ import { Amenity } from "@/types/app";
 import { ColumnDef } from "@tanstack/react-table";
 import { Calendar, Sparkles, Tags } from "lucide-react";
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 
 export default function AmenityList({
   searchParams,
@@ -25,6 +26,7 @@ export default function AmenityList({
   searchParams?: { [key: string]: string | undefined };
 }) {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
 
   const columns = useMemo<ColumnDef<Amenity>[]>(
     () => {
@@ -151,7 +153,7 @@ export default function AmenityList({
       <ListViewHeader title="Comodidades" canCreate>
         <TableSearchInput placeholder="Buscar comodidade..." />
       </ListViewHeader>
-      <DataTable table={table} />
+      <DataTable key={pathname} table={table} />
     </ListView>
   );
 }

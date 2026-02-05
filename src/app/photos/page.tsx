@@ -33,6 +33,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
 interface IPhoto {
@@ -158,6 +159,7 @@ export default function PhotoList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
+  const pathname = usePathname();
   const columns = React.useMemo<ColumnDef<IPhoto>[]>(
     () => [
       {

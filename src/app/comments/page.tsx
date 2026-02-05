@@ -34,6 +34,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
 interface IComment {
@@ -146,6 +147,7 @@ export default function CommentList({
 }) {
   // [MELHORIA] Adicionado hook para responsividade (caso precise no futuro)
   const isMobile = useIsMobile();
+  const pathname = usePathname();
 
   // Garantir que searchParams existe
   const safeParams = searchParams || {};
@@ -273,7 +275,7 @@ export default function CommentList({
           </a>
         </div>
       )}
-      <DataTable table={table} />
+      <DataTable key={pathname} table={table} />
     </ListView>
   );
 }

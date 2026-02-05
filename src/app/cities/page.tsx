@@ -14,6 +14,7 @@ import { MapPin, Pencil, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { usePathname } from "next/navigation";
 
 interface ICity {
   id: string;
@@ -28,6 +29,7 @@ export default function CityList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
+  const pathname = usePathname();
   const columns = React.useMemo<ColumnDef<ICity>[]>(
     () => [
       {
@@ -144,7 +146,7 @@ export default function CityList({
         <TableSearchInput placeholder="Buscar cidade por nome..." />
       </ListViewHeader>
 
-      <DataTable table={table} />
+      <DataTable key={pathname} table={table} />
     </ListView>
   );
 }

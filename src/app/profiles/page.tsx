@@ -280,7 +280,7 @@ export default function ProfileList({
           </div>
         </div>
       </ListViewHeader>
-      <DataTable table={table} />
+      <DataTable key={pathname} table={table} />
     </ListView>
   );
 }
