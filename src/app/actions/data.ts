@@ -89,6 +89,14 @@ export async function getList(resource: string, params: any) {
     if (activeFilters.length > 0) {
       activeFilters.forEach((filter: CrudFilter) => {
         if ("field" in filter) {
+          // Proteção contra filtros inválidos
+          if (
+            filter.value === undefined ||
+            filter.value === null ||
+            filter.value === ""
+          ) {
+            return; // Pula este filtro
+          }
 
           if (resource === 'profiles' && filter.field === 'status') return;
 
