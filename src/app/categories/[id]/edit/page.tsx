@@ -258,7 +258,7 @@ export default function CategoryEdit() {
                                   </Button>
                                 </FormControl>
                               </DialogTrigger>
-                              <DialogContent className="max-w-3xl h-[80vh] flex flex-col overflow-hidden p-0">
+                              <DialogContent className="max-w-3xl h-[80vh] flex flex-col overflow-y-auto p-0">
                                 <div className="px-6 pt-6 pb-2 shrink-0">
                                   <DialogHeader>
                                     <DialogTitle>Selecionar Ícone</DialogTitle>
