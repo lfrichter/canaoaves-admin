@@ -1,101 +1,107 @@
 "use client";
 
-import { CrudFilters } from "@refinedev/core";
+import { CrudFilters, HttpError } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export function useServerTable<TData extends object>({
   resource,
   columns,
-  searchParams,
+  // searchParams ignorado pois agora usamos o hook direto (pode remover a prop das Pages depois)
   initialPageSize = 10,
   searchField = "name",
-  sorters, // [NOVO] Aceita ordenação inicial
-  meta,    // [NOVO] Aceita meta dados extras (filtros customizados)
+  sorters,
+  meta,
 }: {
   resource: string;
   columns: ColumnDef<TData>[];
-  searchParams: { [key: string]: string | undefined };
+  searchParams?: { [key: string]: string | undefined };
   initialPageSize?: number;
   searchField?: string;
-  sorters?: any; // Tipagem flexível para passar direto pro Refine
-  meta?: any;    // Tipagem flexível
+  sorters?: any;
+  meta?: any;
 }) {
-  // Parse URL params (suporta tanto 'current' quanto 'currentPage' para robustez)
-  const current = Number(searchParams?.current || searchParams?.currentPage || 1);
-  const pageSize = Number(searchParams?.pageSize ?? initialPageSize.toString());
-  const searchQuery = searchParams?.q ?? "";
-  const paramId = searchParams?.id;
+  // 1. Hook reativo do Next.js (Crucial para Client-Side Nav)
+  const searchParamsHook = useSearchParams();
 
-  // Build server-side filters
-  const initialFilters: CrudFilters = [];
+  const current = Number(searchParamsHook.get("current") || searchParamsHook.get("currentPage") || 1);
+  const pageSize = Number(searchParamsHook.get("pageSize") || initialPageSize);
+  const searchQuery = searchParamsHook.get("q") || "";
+  const paramId = searchParamsHook.get("id");
 
-  if (searchQuery) {
-    initialFilters.push({
-      field: searchField,
-      operator: "contains",
-      value: searchQuery,
-    });
-  }
-
-  if (paramId) {
-    initialFilters.push({
-      field: "id",
-      operator: "eq",
-      value: paramId,
-    });
-  }
-
-  // Pass filters + pagination via refineCoreProps
-  const table = useTable<TData>({
+  // 2. Configuração do Refine
+  const table = useTable<TData, HttpError>({
     refineCoreProps: {
       resource,
+      // syncWithLocation: true é ótimo, mas como temos lógica customizada para 'q' -> 'searchField',
+      // vamos gerenciar os filtros via useEffect para garantir consistência.
       syncWithLocation: true,
 
-      filters: {
-        mode: "server",
-        // ✅ Use `initial` para definir os filtros INICIAIS (a partir da URL)
-        initial: initialFilters,
-      },
-
       pagination: {
-        // [CORREÇÃO] 'as any' aqui evita o erro estrito de tipagem do Refine
-        current: current,
-        pageSize: pageSize,
+        current,
+        pageSize,
       } as any,
 
-      // [ATUALIZAÇÃO] Agora repassamos sorters e mergeamos o meta
-      sorters: sorters,
+      sorters,
+
+      // Meta data para passar filtros extras para o DataProvider (Supabase)
       meta: {
-        ...meta, // Mantém filtros extras passados pela página (ex: status, userStatus)
-        searchQuery,
+        ...meta,
+        searchQuery, // Passamos explícito para garantir que o DataProvider veja
         paramId,
       },
-    },
 
+      // QueryOptions: Remove cache agressivo para evitar dados "stale" na troca de rota rápida
+      queryOptions: {
+        staleTime: 0,
+        refetchOnMount: true,
+      }
+    },
     columns,
   });
 
-  // [NOVO] Sincroniza filtros quando os parâmetros da URL mudam (navegação client-side)
+  // 3. Sincronização URL -> Refine Filters
   useEffect(() => {
     const filters: CrudFilters = [];
 
-    // Filtro de Busca Geral
-    filters.push({
-      field: searchField,
-      operator: "contains",
-      value: searchQuery || undefined,
-    });
+    // Lógica de Busca Global (q -> searchField)
+    if (searchQuery) {
+      filters.push({
+        field: searchField,
+        operator: "contains",
+        value: searchQuery,
+      });
+    } else {
+      // Importante: Passar undefined força o Refine a limpar o filtro no merge
+      filters.push({
+        field: searchField,
+        operator: "contains",
+        value: undefined,
+      });
+    }
 
-    // Filtro por ID (se houver)
-    filters.push({
-      field: "id",
-      operator: "eq",
-      value: paramId || undefined,
-    });
+    // Lógica de Filtro por ID
+    if (paramId) {
+      filters.push({
+        field: "id",
+        operator: "eq",
+        value: paramId,
+      });
+    } else {
+      filters.push({
+        field: "id",
+        operator: "eq",
+        value: undefined,
+      });
+    }
 
+    // Aplica os filtros. O modo "merge" atualiza os existentes e adiciona novos.
+    // Ao passar value: undefined, removemos o filtro ativo.
+    console.log("🐛 [useServerTable] URL Params changed. Applying filters:", filters);
     table.refineCore.setFilters(filters, "merge");
+
   }, [searchQuery, paramId, searchField, table.refineCore.setFilters]);
 
   return table;

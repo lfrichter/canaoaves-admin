@@ -11,9 +11,8 @@ import { TableName } from "../../types/app";
 // GET LIST
 // =========================================================
 export async function getList(resource: string, params: any) {
-  if (resource === 'profiles') {
-    console.log("👤 [DEBUG PROFILES] Params:", JSON.stringify(params, null, 2));
-  }
+  console.log(`[getList Action] Resource: ${resource}, Params:`, JSON.stringify(params, null, 2));
+
   try {
     await verifyUserRole(["admin", "master"]);
     validateResource(resource);
@@ -93,13 +92,13 @@ export async function getList(resource: string, params: any) {
 
           if (resource === 'profiles' && filter.field === 'status') return;
 
-          // LIMPEZA GERAL DE FILTROS FANTASMAS (Para Todos os Recursos)
-          // Se a busca global (q=...) foi limpa, ignoramos os filtros residuais
-          // das colunas de texto principais. Isso conserta Serviços, Categorias, etc.
-          if (!searchQuery) {
+          // NOVO: Se há uma busca global (searchQuery), e o filtro atual é
+          // um dos "campos fantasmas", então ignoramos este filtro específico do Refine.
+          // O searchQuery já tratará a busca em texto nos campos relevantes.
+          if (searchQuery) {
              const ghostFields = ['name', 'full_name', 'public_name', 'title', 'description', 'caption', 'content'];
 
-             // Se for um desses campos, é lixo de memória do frontend. Ignorar.
+             // Se for um desses campos, o searchQuery já vai cuidar, então ignorar o CrudFilter redundante.
              if (ghostFields.includes(filter.field)) {
                 return;
              }
