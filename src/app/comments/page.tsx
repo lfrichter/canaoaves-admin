@@ -29,7 +29,8 @@ import {
   ExternalLink,
   Loader2,
   Trash2,
-  User
+  User,
+  Calendar
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -41,7 +42,7 @@ interface IComment {
   id: string;
   content: string;
   created_at: string;
-  target_type: "service" | "profile";
+  target_type: "service" | "profile" | "event";
   target_name: string | null;
   target_slug: string | null;
   author_full_name: string | null;
@@ -145,102 +146,118 @@ export default function CommentList({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  // [MELHORIA] Adicionado hook para responsividade (caso precise no futuro)
-  const isMobile = useIsMobile();
-  const pathname = usePathname();
+    const isMobile = useIsMobile();
+    const pathname = usePathname();
 
-  // Garantir que searchParams existe
-  const safeParams = searchParams || {};
+    // Garantir que searchParams existe
+    const safeParams = searchParams || {};
 
-  const columns = React.useMemo<ColumnDef<IComment>[]>(
-    () => {
-      const allColumns: ColumnDef<IComment>[] = [
-        {
-          id: "author",
-          header: "Autor",
-          cell: ({ row }) => {
-            const name = row.original.author_public_name || row.original.author_full_name || "Anônimo";
-            const avatar = row.original.author_avatar_url;
-            return (
-              <div className="flex items-center gap-2">
-                {avatar ? (
-                  <Image src={avatar} alt="Avatar" width={32} height={32} className="rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>
-                )}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{name}</span>
-                  <span className="text-xs text-muted-foreground">{row.original.author_email}</span>
+    const columns = React.useMemo<ColumnDef<IComment>[]>(
+      () => {
+        const allColumns: ColumnDef<IComment>[] = [
+          {
+            id: "target",
+            header: "Onde",
+            cell: ({ row }) => {
+              const type = row.original.target_type;
+              const name = row.original.target_name;
+              const slug = row.original.target_slug;
+
+              let href = "#";
+              let TypeIcon = User;
+              let typeLabel = "Desconhecido";
+              let badgeClasses = "text-[10px] px-1 py-0 h-5"; // Estilo base
+
+              // Lógica condicional de UI por tipo
+              if (type === 'service') {
+                href = slug ? `https://www.canaoaves.com.br/service/${slug}` : "#";
+                TypeIcon = Coffee;
+                typeLabel = "Serviço";
+              } else if (type === 'profile') {
+                href = slug ? `https://www.canaoaves.com.br/person/${slug}` : "#";
+                TypeIcon = User;
+                typeLabel = "Observador";
+              } else if (type === 'event') {
+                href = slug ? `https://www.canaoaves.com.br/eventos/${slug}` : "#"; // Ajuste a rota se for /agenda/
+                TypeIcon = Calendar;
+                typeLabel = "Evento";
+                // Badge roxo para diferenciar de perfis e serviços
+                badgeClasses += " border-purple-200 text-purple-700 bg-purple-50";
+              }
+
+              return (
+                <div className="flex flex-col items-start gap-1">
+                  <Badge variant="outline" className={badgeClasses}>
+                    <TypeIcon className="w-3 h-3 mr-1" />
+                    {typeLabel}
+                  </Badge>
+                  {slug ? (
+                    <Link href={href} target="_blank" className="text-xs font-medium hover:underline flex items-center text-blue-600">
+                      {name || 'Ver página'} <ExternalLink className="w-3 h-3 ml-1" />
+                    </Link>
+                  ) : (
+                    <span className="text-xs font-medium text-gray-400">Sem link ({type})</span>
+                  )}
                 </div>
-              </div>
-            );
+              );
+            },
           },
-        },
-        {
-          id: "content",
-          accessorKey: "content",
-          header: "Comentário",
-          cell: ({ row }) => (
-            <div className="max-w-md">
-              <p className="text-sm line-clamp-2 text-muted-foreground" title={row.original.content}>
-                {row.original.content}
-              </p>
-            </div>
-          ),
-        },
-        {
-          id: "target",
-          header: "Onde",
-          cell: ({ row }) => {
-            const type = row.original.target_type;
-            const name = row.original.target_name;
-            const slug = row.original.target_slug;
+          {
+            accessorKey: "author_full_name",
+            header: "Autor",
+            cell: ({ row }) => {
+              const avatar = row.original.author_avatar_url;
+              const publicName = row.original.author_public_name;
+              const fullName = row.original.author_full_name;
+              const email = row.original.author_email;
 
-            let href = "#";
-            if (slug) {
-              if (type === 'service') href = `https://www.canaoaves.com.br/service/${slug}`;
-              if (type === 'profile') href = `https://www.canaoaves.com.br/person/${slug}`;
-            }
-
-            return (
-              <div className="flex flex-col items-start gap-1">
-                <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">
-                  {type === 'service' ? <Coffee className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
-                  {type === 'service' ? 'Serviço' : 'Observador'}
-                </Badge>
-                <Link href={href} target="_blank" className="text-xs font-medium hover:underline flex items-center text-blue-600">
-                  {name} <ExternalLink className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            );
+              return (
+                <div className="flex items-center gap-2">
+                  {avatar ? (
+                    <Image
+                      src={avatar}
+                      alt={publicName || fullName || "Avatar"}
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <User className="h-6 w-6 text-muted-foreground" />
+                  )}
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{publicName || fullName || "Desconhecido"}</span>
+                    {email && <span className="text-xs text-muted-foreground">{email}</span>}
+                  </div>
+                </div>
+              );
+            },
           },
-        },
-        {
-          id: "created_at",
-          header: "Data",
-          accessorKey: "created_at",
-          cell: ({ getValue }) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(getValue() as string).toLocaleDateString("pt-BR")} {new Date(getValue() as string).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}</span>
-        },
-        {
-          id: "actions",
-          header: "Ações",
-          cell: function render({ row, table }) {
-            const refreshTable = () => {
-              (table as any).options.meta?.refineCore?.tableQuery?.refetch();
-            };
-            return <CommentActions row={row.original} onRefresh={refreshTable} />;
+          {
+            accessorKey: "content",
+            header: "Conteúdo",
+            cell: ({ row }) => (
+              <p className="text-sm line-clamp-2 max-w-[300px]">{row.original.content}</p>
+            ),
           },
-        },
-      ];
-
-      // Ocultar coluna Data no mobile para não quebrar layout
-      if (isMobile) {
-        return allColumns.filter(col => col.id !== 'created_at');
-      }
-      return allColumns;
-    },
-    [isMobile]
-  );
+          {
+            accessorKey: "created_at",
+            header: "Data",
+            cell: ({ row }) => {
+              const date = new Date(row.original.created_at);
+              return <span className="text-sm">{date.toLocaleDateString()}</span>;
+            },
+          },
+          {
+            id: "actions",
+            cell: ({ row, table }) => (
+              <CommentActions row={row.original} onRefresh={table.refetch} />
+            ),
+          },
+        ];
+        return allColumns;
+      },
+      [] // Removed isMobile from here
+    );
 
   const table = useServerTable<IComment>({
     resource: "comments",
@@ -251,13 +268,13 @@ export default function CommentList({
     sorters: {
       initial: [{ field: "created_at", order: "desc" }],
     }
-  } as any); // [CORREÇÃO] Bypass para erro de tipagem no 'sorters'
+  });
 
   return (
     <ListView>
       <ListViewHeader title="Gestão de Comentários">
         {/* [CORREÇÃO] Bypass para erro de tipagem no 'placeholder' */}
-        <TableSearchInput {...({ placeholder: "Buscar comentários..." } as any)} />
+        <TableSearchInput placeholder="Buscar comentários..." />
       </ListViewHeader>
 
       {safeParams.id && (
