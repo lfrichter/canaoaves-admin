@@ -1,6 +1,6 @@
 "use client";
 
-import { CrudFilters, HttpError } from "@refinedev/core";
+import { CrudFilters, CrudSorting, HttpError } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
@@ -18,7 +18,7 @@ export function useServerTable<TData extends object>({
   columns: ColumnDef<TData>[];
   initialPageSize?: number;
   searchField?: string;
-  sorters?: any;
+  sorters?: CrudSorting[];
   meta?: any;
 }) {
   const searchParams = useSearchParams();

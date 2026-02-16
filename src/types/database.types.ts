@@ -1518,6 +1518,7 @@ export type Database = {
         Row: {
           approved: boolean | null
           category_icon: string | null
+          city_id: string | null
           city_name: string | null
           city_state: string | null
           created_at: string | null
@@ -1533,6 +1534,13 @@ export type Database = {
           user_email: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "city_descriptions_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "city_descriptions_submitted_by_user_id_fkey"
             columns: ["submitted_by_user_id"]
@@ -2419,7 +2427,7 @@ export type Database = {
     }
     Enums: {
       claim_status: "pending" | "approved" | "rejected"
-      comment_target_type: "profile" | "service"
+      comment_target_type: "profile" | "service" | "event"
       event_type: "presencial" | "online" | "hibrido"
       like_target_type: "profile" | "service" | "city" | "comment"
       photo_target_type: "profile" | "service" | "city"
@@ -2431,7 +2439,7 @@ export type Database = {
         | "fraud"
         | "other"
       report_status: "pending" | "resolved" | "dismissed"
-      report_target_type: "profile" | "service" | "comment" | "photo"
+      report_target_type: "profile" | "service" | "comment" | "photo" | "event"
     }
     CompositeTypes: {
       confirmation_count: {
@@ -2563,7 +2571,7 @@ export const Constants = {
   public: {
     Enums: {
       claim_status: ["pending", "approved", "rejected"],
-      comment_target_type: ["profile", "service"],
+      comment_target_type: ["profile", "service", "event"],
       event_type: ["presencial", "online", "hibrido"],
       like_target_type: ["profile", "service", "city", "comment"],
       photo_target_type: ["profile", "service", "city"],
@@ -2576,7 +2584,7 @@ export const Constants = {
         "other",
       ],
       report_status: ["pending", "resolved", "dismissed"],
-      report_target_type: ["profile", "service", "comment", "photo"],
+      report_target_type: ["profile", "service", "comment", "photo", "event"],
     },
   },
 } as const

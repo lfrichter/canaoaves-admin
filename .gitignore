@@ -81,3 +81,6 @@ mcp-inject.sh
 .gemini/temp/
 .gemini/help/
 .envrc
+
+# Supabase temporary files
+supabase/.temp/

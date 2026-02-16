@@ -24,18 +24,18 @@ import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowLeft,
+  Calendar,
   Coffee,
   Edit,
   ExternalLink,
   Loader2,
   Trash2,
-  User,
-  Calendar
+  User
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
 import { usePathname } from "next/navigation";
+import React, { useState } from "react";
 import { toast } from "sonner";
 
 interface IComment {
@@ -178,7 +178,7 @@ export default function CommentList({
                 TypeIcon = User;
                 typeLabel = "Observador";
               } else if (type === 'event') {
-                href = slug ? `https://www.canaoaves.com.br/eventos/${slug}` : "#"; // Ajuste a rota se for /agenda/
+                href = slug ? `https://www.canaoaves.com.br/agenda/${slug}` : "#"; // Ajuste a rota se for /agenda/
                 TypeIcon = Calendar;
                 typeLabel = "Evento";
                 // Badge roxo para diferenciar de perfis e serviços

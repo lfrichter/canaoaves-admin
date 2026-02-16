@@ -119,7 +119,7 @@ export function AsyncSelect({
 
     return () => { isMounted = false; };
     // Roda novamente se o valor mudar, garantindo o resgate do label
-  }, [debouncedInputValue, resource, selectColumns, optionLabel, currentValue]);
+  }, [debouncedInputValue, resource, selectColumns, optionLabel, currentValue, optionValue]);
 
   return (
     <FormField
