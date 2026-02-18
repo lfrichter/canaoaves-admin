@@ -182,7 +182,8 @@ export default function CommentList({
                 TypeIcon = Calendar;
                 typeLabel = "Evento";
                 // Badge roxo para diferenciar de perfis e serviços
-                badgeClasses += " border-purple-200 text-purple-700 bg-purple-50";
+                //badgeClasses += " border-purple-200 text-purple-700 bg-purple-50";
+                badgeClasses += " border-purple-300 text-purple-700 dark:border-purple-800 dark:text-purple-400 bg-transparent";
               }
 
               return (
